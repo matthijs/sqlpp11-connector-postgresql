@@ -6,6 +6,7 @@
 
 # Compiled Dynamic libraries
 *.so
+*.os
 *.dylib
 *.dll
 
@@ -19,3 +20,8 @@
 *.exe
 *.out
 *.app
+
+# SCons specific
+config.log
+.sconf_temp
+.sconsign.dblite

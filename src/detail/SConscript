@@ -1,0 +1,12 @@
+#!/usr/bin/python
+#
+# Python scripts
+Import('env')
+
+# Check the objs
+objs = []
+objs.append(env.SharedObject(Glob('*.cpp')))
+
+# Return
+Return('objs')
+
