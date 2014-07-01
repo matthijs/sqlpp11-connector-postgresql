@@ -34,18 +34,18 @@ namespace sqlpp {
 				template<typename ResultRow>
 					void next(ResultRow &result_row) {
 						if (!this->_handle) {
-							result_row.invalidate();
+							result_row._invalidate();
 							return;
 						}
 
 						if (this->next_impl()) {
 							if (!result_row) {
-								result_row.validate();
+								result_row._validate();
 							}
 							result_row._bind(*this);
 						} else {
 							if (result_row) {
-								result_row.invalidate();
+								result_row._invalidate();
 							}
 						}
 					}
