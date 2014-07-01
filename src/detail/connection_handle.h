@@ -2,6 +2,8 @@
 #define SQLPP_POSTGRESQL_CONNECTION_HANDLE_H
 
 #include <memory>
+#include <vector>
+
 #include <postgresql/libpq-fe.h>
 
 namespace sqlpp {
@@ -16,6 +18,7 @@ namespace sqlpp {
 			struct connection_handle {
 				const std::shared_ptr<connection_config> config;
 				PGconn *postgres {nullptr};
+				std::vector<std::string> prepared_statement_names;
 
 				connection_handle(const std::shared_ptr<connection_config> &config);
 				~connection_handle();

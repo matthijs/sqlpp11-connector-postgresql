@@ -1,6 +1,7 @@
 #include <sqlpp11/postgresql/connection.h>
 #include <sqlpp11/exception.h>
 
+#include <algorithm>
 #include <iostream>
 
 #include "detail/prepared_statement_handle.h"
@@ -16,14 +17,30 @@ namespace sqlpp {
 					std::cerr << "PostgreSQL debug: preparing: " << stmt << std::endl;
 				}
 
-				detail::prepared_statement_handle_t result(nullptr, handle.config->debug);
-				result.stmt = PQprepare(handle.postgres,
-						"",
+				detail::prepared_statement_handle_t result(handle.postgres, handle.config->debug);
+
+				// Generate a random name for the prepared statement
+				while(std::find(handle.prepared_statement_names.begin(), handle.prepared_statement_names.end(), result.name) != handle.prepared_statement_names.end()) {
+					std::generate_n(result.name.begin(), 6, []() {
+							const char charset[] =
+								"0123456789"
+								"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+								"abcdefghijklmnopqrstuvwxyz";
+							constexpr size_t max = (sizeof(charset) - 1);
+							std::random_device rd;
+							return charset[rd() % max];
+						});
+				}
+				handle.prepared_statement_names.push_back(result.name);
+
+				// Create the prepared statement
+				PGresult *res = PQprepare(handle.postgres,
+						result.name.c_str(),
 						stmt.c_str(),
 						0,
 						nullptr);
 				std::string errmsg = "PostgreSQL error: ";
-				ExecStatusType ret = PQresultStatus(result.stmt);
+				ExecStatusType ret = PQresultStatus(res);
 				switch(ret) {
 					case PGRES_EMPTY_QUERY:
 					case PGRES_COPY_OUT:
@@ -38,9 +55,12 @@ namespace sqlpp {
 					case PGRES_TUPLES_OK:
 					case PGRES_SINGLE_TUPLE:
 					default:
+						result.valid = true;
 						break;
 				}
 
+				// Clear the result object
+				PQclear(res);
 				return result;
 			}
 
