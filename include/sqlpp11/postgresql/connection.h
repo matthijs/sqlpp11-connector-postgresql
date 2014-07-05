@@ -31,7 +31,7 @@ namespace sqlpp {
 					return _os << t;
 				}
 
-			std::string escape(std::string arg);
+			std::string escape(const std::string &arg);
 
 			std::string str() const {
 				return _os.str();
@@ -73,7 +73,7 @@ namespace sqlpp {
 				using _prepared_statement_t = prepared_statement_t;
 				using _context_t = context_t;
 				//using _serializer_context_t = ;
-				//using _interpreter_context_t = ;
+				//using _interpreter_context_t = interpreter_t;
 
 				// ctor / dtor
 				connection(const std::shared_ptr<connection_config> &config);
@@ -197,10 +197,12 @@ namespace sqlpp {
 				void report_rollback_failure(const std::string &message) noexcept;
 		};
 
-		std::string context_t::escape(std::string arg) {
+		std::string context_t::escape(const std::string &arg) {
 			return _db.escape(arg);
 		}
 	}
 }
+
+#include <sqlpp11/postgresql/interpreter.h>
 
 #endif
