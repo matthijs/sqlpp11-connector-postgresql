@@ -24,7 +24,7 @@ namespace sqlpp {
 			throw sqlpp::exception("binding boolean parameter: not yet implemented");
 		}
 
-		void prepared_statement_t::_bind_floating_point_parameter(size_t index, const signed char *value, bool is_null) {
+		void prepared_statement_t::_bind_floating_point_parameter(size_t index, const double *value, bool is_null) {
 			if (_handle->debug) {
 				std::cerr << "binding floating_point parameter " << *value << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
 			}
@@ -32,7 +32,7 @@ namespace sqlpp {
 			throw sqlpp::exception("binding floating_point parameter: not yet implemented");
 		}
 
-		void prepared_statement_t::_bind_integral_parameter(size_t index, const signed char *value, bool is_null) {
+		void prepared_statement_t::_bind_integral_parameter(size_t index, const int64_t *value, bool is_null) {
 			if (_handle->debug) {
 				std::cerr << "binding integral parameter " << *value << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
 			}
@@ -40,7 +40,7 @@ namespace sqlpp {
 			throw sqlpp::exception("binding integral parameter: not yet implemented");
 		}
 
-		void prepared_statement_t::_bind_text_parameter(size_t index, const signed char *value, bool is_null) {
+		void prepared_statement_t::_bind_text_parameter(size_t index, const std::string *value, bool is_null) {
 			if (_handle->debug) {
 				std::cerr << "binding text parameter " << *value << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
 			}
