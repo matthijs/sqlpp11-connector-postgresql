@@ -41,6 +41,7 @@ namespace sqlpp {
 						nullptr);
 				std::string errmsg = "PostgreSQL error: ";
 				ExecStatusType ret = PQresultStatus(res);
+				PQclear(res);
 				switch(ret) {
 					case PGRES_EMPTY_QUERY:
 					case PGRES_COPY_OUT:
@@ -59,8 +60,6 @@ namespace sqlpp {
 						break;
 				}
 
-				// Clear the result object
-				PQclear(res);
 				return result;
 			}
 
