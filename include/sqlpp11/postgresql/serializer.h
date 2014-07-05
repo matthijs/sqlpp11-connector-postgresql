@@ -8,7 +8,7 @@
 namespace sqlpp {
 
 	template<typename ValueType, typename NameType>
-		struct interpreter_t<postgresql::context_t, parameter_t<ValueType, NameType>> {
+		struct serializer_t<postgresql::context_t, parameter_t<ValueType, NameType>> {
 			using T = parameter_t<ValueType, NameType>;
 
 			static postgresql::context_t &_(const T &t, postgresql::context_t &context) {

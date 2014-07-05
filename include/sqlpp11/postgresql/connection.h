@@ -72,8 +72,8 @@ namespace sqlpp {
 			public:
 				using _prepared_statement_t = prepared_statement_t;
 				using _context_t = context_t;
-				//using _serializer_context_t = ;
-				//using _interpreter_context_t = interpreter_t;
+				using _serializer_context_t = _context_t;
+				using _interpreter_context_t = _context_t;
 
 				// ctor / dtor
 				connection(const std::shared_ptr<connection_config> &config);
@@ -203,6 +203,6 @@ namespace sqlpp {
 	}
 }
 
-#include <sqlpp11/postgresql/interpreter.h>
+#include <sqlpp11/postgresql/serializer.h>
 
 #endif
