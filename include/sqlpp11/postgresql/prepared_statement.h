@@ -8,7 +8,7 @@ namespace sqlpp {
 	namespace postgresql {
 
 		// Forward declaration
-		struct connection;
+		class connection;
 
 		// Detail namespace
 		namespace detail {
