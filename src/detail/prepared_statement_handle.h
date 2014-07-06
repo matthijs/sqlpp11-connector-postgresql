@@ -2,6 +2,9 @@
 #define SQLPP_POSTGRESQL_PREPARED_STATEMENT_HANDLE_H
 
 #include <iostream>
+#include <vector>
+#include <string>
+
 #include <postgresql/libpq-fe.h>
 
 namespace sqlpp {
@@ -20,8 +23,17 @@ namespace sqlpp {
 				uint32_t totalCount = {0};
 				uint32_t fields = {0};
 
+				// Store prepared statement arguments
+				std::vector<bool> nullValues;
+				std::vector<std::string> paramValues;
+
 				// ctor
-				prepared_statement_handle_t(PGconn *_connection, bool _debug) : connection(_connection), debug(_debug) {}
+				prepared_statement_handle_t(PGconn *_connection, const size_t &paramCount, bool _debug) :
+					connection(_connection),
+					debug(_debug),
+					nullValues(paramCount),
+					paramValues(paramCount)
+				{}
 				prepared_statement_handle_t(const prepared_statement_handle_t &) = delete;
 				prepared_statement_handle_t(prepared_statement_handle_t &&) = default;
 				prepared_statement_handle_t &operator=(const prepared_statement_handle_t &) = delete;

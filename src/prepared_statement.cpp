@@ -4,6 +4,7 @@
 #include "detail/prepared_statement_handle.h"
 
 #include <iostream>
+#include <sstream>
 
 namespace sqlpp {
 
@@ -18,34 +19,52 @@ namespace sqlpp {
 
 		void prepared_statement_t::_bind_boolean_parameter(size_t index, const signed char *value, bool is_null) {
 			if (_handle->debug) {
-				std::cerr << "binding boolean parameter " << (*value ? "true" :  "false") << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
+				std::cerr << "PostgreSQL debug: binding boolean parameter " << (*value ? "true" :  "false") << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
 			}
 
-			throw sqlpp::exception("binding boolean parameter: not yet implemented");
+			_handle->nullValues[index] = is_null;
+			if (!is_null) {
+				if (*value) {
+					_handle->paramValues[index] = "TRUE";
+				} else {
+					_handle->paramValues[index] = "FALSE";
+				}
+			}
 		}
 
 		void prepared_statement_t::_bind_floating_point_parameter(size_t index, const double *value, bool is_null) {
 			if (_handle->debug) {
-				std::cerr << "binding floating_point parameter " << *value << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
+				std::cerr << "PostgreSQL debug: binding floating_point parameter " << *value << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
 			}
 
-			throw sqlpp::exception("binding floating_point parameter: not yet implemented");
+			_handle->nullValues[index] = is_null;
+			if (!is_null) {
+				_handle->paramValues[index] = std::to_string(*value);
+			}
 		}
 
 		void prepared_statement_t::_bind_integral_parameter(size_t index, const int64_t *value, bool is_null) {
 			if (_handle->debug) {
-				std::cerr << "binding integral parameter " << *value << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
+				std::cerr << "PostgreSQL debug: binding integral parameter " << *value << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
 			}
 
-			throw sqlpp::exception("binding integral parameter: not yet implemented");
+			// Assign values
+			_handle->nullValues[index] = is_null;
+			if (!is_null) {
+				_handle->paramValues[index] = std::to_string(*value);
+			}
 		}
 
 		void prepared_statement_t::_bind_text_parameter(size_t index, const std::string *value, bool is_null) {
 			if (_handle->debug) {
-				std::cerr << "binding text parameter " << *value << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
+				std::cerr << "PostgreSQL debug: binding text parameter " << *value << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
 			}
 
-			throw sqlpp::exception("binding text parameter: not yet implemented");
+			// Assign values
+			_handle->nullValues[index] = is_null;
+			if (!is_null) {
+				_handle->paramValues[index] = *value;
+			}
 		}
 	}
 }

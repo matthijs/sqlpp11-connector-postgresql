@@ -63,7 +63,7 @@ namespace sqlpp {
 				size_t remove_impl(const std::string &stmt);
 
 				// prepared execution
-				prepared_statement_t prepare_impl(const std::string &stmt);
+				prepared_statement_t prepare_impl(const std::string &stmt, const size_t &paramCount);
 				bind_result_t run_prepared_select_impl(prepared_statement_t &prep);
 				size_t run_prepared_insert_impl(prepared_statement_t &prep);
 				size_t run_prepared_update_impl(prepared_statement_t &prep);
@@ -96,7 +96,7 @@ namespace sqlpp {
 					_prepared_statement_t prepare_select(Select &s) {
 						_context_t ctx (*this);
 						serialize(s, ctx);
-						return prepare_impl(ctx.str());
+						return prepare_impl(ctx.str(), ctx.count() - 1);
 					}
 
 				template<typename PreparedSelect>
@@ -117,7 +117,7 @@ namespace sqlpp {
 					prepared_statement_t prepare_insert(Insert &i) {
 						_context_t ctx (*this);
 						serialize(i, ctx);
-						return prepare_impl(ctx.str());
+						return prepare_impl(ctx.str(), ctx.count() - 1);
 					}
 
 				template<typename PreparedInsert>
@@ -138,7 +138,7 @@ namespace sqlpp {
 					prepared_statement_t prepare_update(Update &u) {
 						_context_t ctx (*this);
 						serialize(u, ctx);
-						return prepare_impl(ctx.str());
+						return prepare_impl(ctx.str(), ctx.count() - 1);
 					}
 
 				template<typename PreparedUpdate>
@@ -159,7 +159,7 @@ namespace sqlpp {
 					prepared_statement_t prepare_remove(Remove &r) {
 						_context_t ctx (*this);
 						serialize(r, ctx);
-						return prepare_impl(ctx.str());
+						return prepare_impl(ctx.str(), ctx.count() - 1);
 					}
 
 				template<typename PreparedRemove>

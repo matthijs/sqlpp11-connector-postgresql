@@ -12,12 +12,12 @@ namespace sqlpp {
 	namespace postgresql {
 
 		namespace {
-			detail::prepared_statement_handle_t prepare_statement(detail::connection_handle &handle, const std::string &stmt) {
+			detail::prepared_statement_handle_t prepare_statement(detail::connection_handle &handle, const std::string &stmt, const size_t &paramCount) {
 				if (handle.config->debug) {
 					std::cerr << "PostgreSQL debug: preparing: " << stmt << std::endl;
 				}
 
-				detail::prepared_statement_handle_t result(handle.postgres, handle.config->debug);
+				detail::prepared_statement_handle_t result(handle.postgres, paramCount, handle.config->debug);
 
 				// Generate a random name for the prepared statement
 				while(std::find(handle.prepared_statement_names.begin(), handle.prepared_statement_names.end(), result.name) != handle.prepared_statement_names.end()) {
@@ -66,13 +66,54 @@ namespace sqlpp {
 			void execute_statement(detail::connection_handle &handle, detail::prepared_statement_handle_t &prepared) {
 
 				// Execute a prepared statement
+				char *paramValues[prepared.paramValues.size()];
+				//int paramLengths[prepared.paramValues.size()];
+				for (uint32_t i = 0; i < prepared.paramValues.size(); i++) {
+					if (!prepared.nullValues[i]) {
+						paramValues[i] = const_cast<char *>(prepared.paramValues[i].c_str());
+						//paramLengths[i] = prepared.paramValues[i].size();
+					} else {
+						paramValues[i] = nullptr;
+						//paramLengths[i] = 0;
+					}
+				}
+
+				// Execute prepared statement with the parameters.
+				if (prepared.result) {
+					PQclear(prepared.result);
+					prepared.result = nullptr;
+				}
+				prepared.count = 0;
+				prepared.totalCount = 0;
 				prepared.result = PQexecPrepared(handle.postgres,
 						prepared.name.c_str(),
-						prepared.count,
-						NULL,
-						NULL,
-						NULL,
+						prepared.paramValues.size(),
+						paramValues,
+						nullptr,
+						nullptr,
 						0);
+
+				// check statement
+				std::string errmsg = "PostgreSQL error: ";
+				ExecStatusType ret = PQresultStatus(prepared.result);
+				switch(ret) {
+					case PGRES_EMPTY_QUERY:
+					case PGRES_COPY_OUT:
+					case PGRES_COPY_IN:
+					case PGRES_BAD_RESPONSE:
+					case PGRES_NONFATAL_ERROR:
+					case PGRES_FATAL_ERROR:
+					case PGRES_COPY_BOTH:
+						prepared.valid = false;
+						errmsg.append(PQresStatus(ret));
+						throw sqlpp::exception(errmsg);
+					case PGRES_COMMAND_OK:
+					case PGRES_TUPLES_OK:
+					case PGRES_SINGLE_TUPLE:
+					default:
+						prepared.valid = true;
+						break;
+				}
 			}
 		}
 
@@ -86,7 +127,7 @@ namespace sqlpp {
 		bind_result_t connection::select_impl(const std::string &stmt) {
 
 			// Prepare statement
-			std::unique_ptr<detail::prepared_statement_handle_t> prepared(new detail::prepared_statement_handle_t(prepare_statement(*_handle, stmt)));
+			std::unique_ptr<detail::prepared_statement_handle_t> prepared(new detail::prepared_statement_handle_t(prepare_statement(*_handle, stmt, 0)));
 			if (!prepared) {
 
 				throw sqlpp::exception("PostgreSQL error: could not store result set");
@@ -100,7 +141,7 @@ namespace sqlpp {
 		size_t connection::insert_impl(const std::string &stmt) {
 
 			// Prepare statement
-			detail::prepared_statement_handle_t prepared = prepare_statement(*_handle, stmt);
+			detail::prepared_statement_handle_t prepared = prepare_statement(*_handle, stmt, 0);
 			if (!prepared) {
 
 				throw sqlpp::exception("PostgreSQL error: could not store result set");
@@ -117,7 +158,7 @@ namespace sqlpp {
 		size_t connection::update_impl(const std::string &stmt) {
 
 			// Prepare statement
-			detail::prepared_statement_handle_t prepared = prepare_statement(*_handle, stmt);
+			detail::prepared_statement_handle_t prepared = prepare_statement(*_handle, stmt, 0);
 			if (!prepared) {
 
 				throw sqlpp::exception("PostgreSQL error: could not store result set");
@@ -134,7 +175,7 @@ namespace sqlpp {
 		size_t connection::remove_impl(const std::string &stmt) {
 
 			// Prepare statement
-			detail::prepared_statement_handle_t prepared = prepare_statement(*_handle, stmt);
+			detail::prepared_statement_handle_t prepared = prepare_statement(*_handle, stmt, 0);
 			if (!prepared) {
 
 				throw sqlpp::exception("PostgreSQL error: could not store result set");
@@ -149,8 +190,8 @@ namespace sqlpp {
 		}
 
 		// prepared execution
-		prepared_statement_t connection::prepare_impl(const std::string &stmt) {
-			return { std::unique_ptr<detail::prepared_statement_handle_t>(new detail::prepared_statement_handle_t(prepare_statement(*_handle, stmt))) };
+		prepared_statement_t connection::prepare_impl(const std::string &stmt, const size_t &paramCount) {
+			return { std::unique_ptr<detail::prepared_statement_handle_t>(new detail::prepared_statement_handle_t(prepare_statement(*_handle, stmt, paramCount))) };
 		}
 
 		bind_result_t connection::run_prepared_select_impl(prepared_statement_t &prep) {
@@ -200,7 +241,7 @@ namespace sqlpp {
 				throw sqlpp::exception("PostgreSQL error: transaction already open");
 			}
 
-			auto prepared = prepare_statement(*_handle, "BEGIN");
+			auto prepared = prepare_statement(*_handle, "BEGIN", 0);
 			execute_statement(*_handle, prepared);
 			_transaction_active = true;
 		}
@@ -213,7 +254,7 @@ namespace sqlpp {
 			}
 
 			_transaction_active = false;
-			auto prepared = prepare_statement(*_handle, "COMMIT");
+			auto prepared = prepare_statement(*_handle, "COMMIT", 0);
 			execute_statement(*_handle, prepared);
 		}
 
@@ -227,7 +268,7 @@ namespace sqlpp {
 			}
 
 			_transaction_active = false;
-			auto prepared = prepare_statement(*_handle, "ROLLBACK");
+			auto prepared = prepare_statement(*_handle, "ROLLBACK", 0);
 			execute_statement(*_handle, prepared);
 		}
 
