@@ -229,9 +229,12 @@ namespace sqlpp {
 
 		// TODO: Fix escaping.
 		std::string connection::escape(const std::string &s) const {
-			/*char *escaped = PQescapeLiteral(_handle->postgres, s.c_str(), s.length());
-			PQfreemem(escaped);*/
-			std::string result(s);
+
+			// Escape strings
+			char to[(s.size() * 2) + 1];
+			int err;
+			size_t length = PQescapeStringConn(_handle->postgres, to, s.c_str(), s.size(), &err);
+			std::string result(to, length);
 			return std::move(result);
 		}
 
