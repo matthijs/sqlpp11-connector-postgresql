@@ -112,7 +112,7 @@ for table in tables:
 
     _writeLine(fd, 2, "using _value_type = sqlpp::no_value_t;")
     _writeLine(fd, 2, "struct _name_t {")
-    _writeLine(fd, 3, "static constexpr const char *_get_name() { return " + table[0] + "; }")
+    _writeLine(fd, 3, "static constexpr const char *_get_name() { return \"" + table[0] + "\"; }")
     _writeLine(fd, 3, "template<typename T>")
     _writeLine(fd, 4, "struct _member_t {")
     _writeLine(fd, 5, "T " + table[0] + ";")
