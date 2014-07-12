@@ -52,7 +52,6 @@ curs = conn.cursor()
 curs.execute("""SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'""")
 tables = curs.fetchall()
 for table in tables:
-    print "Table: " + table[0]
     fd = open(os.path.join(args.outputdir, table[0] + '.h'), 'w')
     _writeLine(fd, 0, "#ifndef " + _getIncludeGuard(args.namespace, table[0]))
     _writeLine(fd, 0, "#define " + _getIncludeGuard(args.namespace, table[0]))
@@ -69,7 +68,6 @@ for table in tables:
     curs.execute("""SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '%s' ORDER BY table_name ASC, ordinal_position ASC""" % (table[0],))
     columns = curs.fetchall()
     for column in columns:
-        print "Column: " + column[3] + ", type: " + column[7] + " null: " + column[6]
         _writeLine(fd, 2, "struct " + column[3].capitalize() + " {")
         _writeLine(fd, 3, "struct _name_t {")
         _writeLine(fd, 4, "static constexpr const char *_get_name() { return \"" + column[3] + "\"; }")
