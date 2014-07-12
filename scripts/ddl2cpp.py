@@ -46,7 +46,6 @@ types = {
 # Connect to the database and fetch information from the information_schema
 # schema
 conn = psycopg2.connect("host=" + args.host + " user=" + args.user + " password=" + args.password + " dbname=" + args.dbname)
-#conn = psycopg2.connect("host=192.168.5.10 user=moneymaker password=0AqY4Xan4FK7qszM dbname=moneymaker")
 curs = conn.cursor()
 
 # First fetch all tables
