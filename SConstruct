@@ -1,36 +1,6 @@
 #!/usr/bin/python
 #
-# Build script for our cms.
-
-# Imports
-import os
-
-# Test boost version
-def CheckBoost(context, version):
-    # Boost versions are in format major.minor.subminor
-    v_arr = version.split(".")
-    version_n = 0
-    if len(v_arr) > 0:
-            version_n += int(v_arr[0])*100000
-    if len(v_arr) > 1:
-            version_n += int(v_arr[1])*100
-    if len(v_arr) > 2:
-            version_n += int(v_arr[2])
-
-    context.Message('Checking for Boost version >= %s... ' % (version))
-    ret = context.TryCompile("""
-#include <boost/version.hpp>
-
-#if BOOST_VERSION < %d
-#error Installed boost is too old!
-#endif
-
-int main() {
-    return 0;
-}
-""" % version_n, '.cpp')
-    context.Result(ret)
-    return ret
+# Scons script for sqlpp11-connector-postgresql
 
 # Environment
 env = Environment()
@@ -43,13 +13,10 @@ except:
 if not env.GetOption('clean'):
 
     # Configure, check if all dependencies exists.
-    conf = Configure(env, custom_tests = {
-        'CheckBoost': CheckBoost })
+    conf = Configure(env)
 
     # Flags we want anyway
-    # -Werror removed
-    #conf.env.Append(CCFLAGS = "-Wall -std=c++11 -fvisibility=hidden -fvisibility-inlines-hidden -DBOOST_SPIRIT_USE_PHOENIX_V3 -I../sqlpp11/include -I../sqlpp11-connector-postgresql/include")
-    conf.env.Append(CCFLAGS = "-Wall -std=c++11 -DBOOST_SPIRIT_USE_PHOENIX_V3 -I../sqlpp11/include -I../sqlpp11-connector-postgresql/include")
+    conf.env.Append(CCFLAGS = "-Wall -Werror -std=c++11 -fvisibility=hidden -fvisibility-inlines-hidden -I../sqlpp11/include -I../sqlpp11-connector-postgresql/include")
 
     # Coverage reporting
     if ARGUMENTS.get('coverage', 0):
@@ -60,7 +27,6 @@ if not env.GetOption('clean'):
     if ARGUMENTS.get('debug', 0):
         conf.env.Append(CCFLAGS = "-g")
     else:
-        conf.env.Append(CCFLAGS = "-DBOOST_DISABLE_ASSERTS")
         conf.env.Append(LINKFLAGS = "-s")
 
     # Better view.
@@ -78,7 +44,6 @@ if not env.GetOption('clean'):
 Export('env')
 
 objs = []
-#objs.append(env.Object(env.Glob('*.cpp')))
 objs.append(env.SConscript(['src/SConscript']))
 
 sqlpppostgresql = env.SharedLibrary(target='sqlpp-postgresql', source=objs)
