@@ -43,7 +43,7 @@ namespace sqlpp {
 			struct prepared_statement_handle_t;
 		}
 
-		class prepared_statement_t {
+		class __attribute__((__visibility__("default"))) prepared_statement_t {
 			friend sqlpp::postgresql::connection;
 			private:
 				std::shared_ptr<detail::prepared_statement_handle_t> _handle;

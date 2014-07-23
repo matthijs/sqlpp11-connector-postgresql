@@ -34,7 +34,7 @@ namespace sqlpp {
 
 	namespace postgresql {
 
-		struct connection_config {
+		struct __attribute__((__visibility__("default"))) connection_config {
 			enum class sslmode_t {
 				disable,
 				allow,

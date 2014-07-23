@@ -78,7 +78,7 @@ namespace sqlpp {
 		};
 
 		// Connection
-		class connection : public sqlpp::connection {
+		class __attribute__((__visibility__("default"))) connection : public sqlpp::connection {
 			private:
 				std::unique_ptr<detail::connection_handle> _handle;
 				bool _transaction_active {false};
