@@ -59,7 +59,7 @@ for table in tables:
     _writeLine(fd, 0, "#include <sqlpp11/table.h>")
     _writeLine(fd, 0, "#include <sqlpp11/column_types.h>")
     _writeLine(fd, 0, "")
-    _writeLine(fd, 0, "namespace model {")
+    _writeLine(fd, 0, "namespace " + args.namespace + " {")
     _writeLine(fd, 0, "")
     _writeLine(fd, 1, "namespace " + table[0] + "_ {")
     _writeLine(fd, 0, "")
@@ -81,8 +81,9 @@ for table in tables:
         _writeLine(fd, 3, "using _value_type = sqlpp::" + types[column[7]] + ";")
         _writeLine(fd, 3, "struct _column_type {");
 
-        # Default value
-        if column[5]:
+        # Check for an autoincrement value (check if nextval is available and we
+        # have a sequence in the form of tablename_columnname_seq)
+        if column[5] and column[5].find("nextval") >= 0 and column[5].find(table[0] + "_" + column[3] + "_seq") >= 0:
             _writeLine(fd, 4, "using _must_not_insert = std::true_type;")
             _writeLine(fd, 4, "using _must_not_update = std::true_type;")
 
