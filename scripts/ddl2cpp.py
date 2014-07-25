@@ -62,12 +62,12 @@ for table in tables:
     _writeLine(fd, 0, "namespace " + args.namespace + " {")
     _writeLine(fd, 0, "")
     _writeLine(fd, 1, "namespace " + table[0] + "_ {")
-    _writeLine(fd, 0, "")
 
     # Fetch all columns for this table
     curs.execute("""SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '%s' ORDER BY table_name ASC, ordinal_position ASC""" % (table[0],))
     columns = curs.fetchall()
     for column in columns:
+        _writeLine(fd, 0, "")
         _writeLine(fd, 2, "struct " + column[3].capitalize() + " {")
         _writeLine(fd, 3, "struct _name_t {")
         _writeLine(fd, 4, "static constexpr const char *_get_name() { return \"" + column[3] + "\"; }")
@@ -78,24 +78,25 @@ for table in tables:
         _writeLine(fd, 6, "const T &operator()() const { return " + column[3] + "; }")
         _writeLine(fd, 5, "};")
         _writeLine(fd, 3, "};")
-        _writeLine(fd, 3, "using _value_type = sqlpp::" + types[column[7]] + ";")
-        _writeLine(fd, 3, "struct _column_type {");
+
+        # Build the traits
+        traits = "using _traits = sqlpp::make_traits<sqlpp::" + types[column[7]]
 
         # Check for an autoincrement value (check if nextval is available and we
         # have a sequence in the form of tablename_columnname_seq)
         if column[5] and column[5].find("nextval") >= 0 and column[5].find(table[0] + "_" + column[3] + "_seq") >= 0:
-            _writeLine(fd, 4, "using _must_not_insert = std::true_type;")
-            _writeLine(fd, 4, "using _must_not_update = std::true_type;")
+            traits+= ", sqlpp::tag::must_not_insert, sqlpp::tag::must_not_update"
 
         # Is column not null and no default value?
         if column[6] == "NO" and not column[5]:
-            _writeLine(fd, 4, "using _require_insert = std::true_type;")
+            traits+= ", sqlpp::tag::require_insert"
 
         # Field can be NULL
         if column[6] == "YES":
-            _writeLine(fd, 4, "using _can_be_null = std::true_type;")
+            traits+= ", sqlpp::tag::can_be_null"
 
-        _writeLine(fd, 3, "};")
+        _writeLine(fd, 0, "")
+        _writeLine(fd, 3, traits + ">;")
         _writeLine(fd, 2, "};")
 
     _writeLine(fd, 1, "}")
