@@ -29,10 +29,6 @@ if not env.GetOption('clean'):
     else:
         conf.env.Append(LINKFLAGS = "-s")
 
-    # Better view.
-    conf.env.Append(CXXCOMSTR = "Compiling $TARGET")
-    conf.env.Append(LINKCOMSTR = "Linking $TARGET")
-
     # check if the ldap library is available
     if not conf.CheckLib('pq', language='c++'):
         print "Libpq not installed"
