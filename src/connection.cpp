@@ -306,6 +306,17 @@ namespace sqlpp {
 		void connection::report_rollback_failure(const std::string &message) noexcept {
 			std::cerr << "PostgreSQL error: " << message << std::endl;
 		}
+
+		uint64_t connection::last_insert_id(const std::string &table, const std::string &fieldname) {
+			std::string sql = "SELECT currval('" + table + "_" + fieldname + "_seq')";
+			PGresult *res = PQexec(_handle->postgres, sql.c_str());
+
+			// Parse the number and return.
+			// TODO: A copy is happening here, how to prevent that?
+			std::string in {PQgetvalue(res, 0, 0)};
+			PQclear(res);
+			return std::stoi(in);
+		}
 	}
 }
 

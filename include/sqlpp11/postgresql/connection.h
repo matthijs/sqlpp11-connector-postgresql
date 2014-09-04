@@ -222,9 +222,12 @@ namespace sqlpp {
 
 				//! report rollback failure
 				void report_rollback_failure(const std::string &message) noexcept;
+
+				//! get the last inserted id for a certain table
+				uint64_t last_insert_id(const std::string &table, const std::string &fieldname);
 		};
 
-		std::string context_t::escape(const std::string &arg) {
+		inline std::string context_t::escape(const std::string &arg) {
 			return _db.escape(arg);
 		}
 	}
