@@ -102,6 +102,20 @@ namespace sqlpp {
 				using _serializer_context_t = _context_t;
 				using _interpreter_context_t = _context_t;
 
+				struct _tags {
+					using _null_result_is_trivial_value = std::true_type;
+				};
+
+				template<typename T>
+					static _context_t& _serialize_interpretable(const T& t, _context_t& context) {
+					return ::sqlpp::serialize(t, context);
+				}
+
+				template<typename T>
+					static _context_t& _interpret_interpretable(const T& t, _context_t& context) {
+					return ::sqlpp::serialize(t, context);
+				}
+
 				// ctor / dtor
 				connection(const std::shared_ptr<connection_config> &config);
 				~connection();
