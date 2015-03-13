@@ -36,6 +36,9 @@
 
 #include <sstream>
 
+struct pg_conn;
+typedef struct pg_conn PGconn;
+
 namespace sqlpp {
 
 	namespace postgresql {
@@ -245,6 +248,8 @@ namespace sqlpp {
 
 				//! get the last inserted id for a certain table
 				uint64_t last_insert_id(const std::string &table, const std::string &fieldname);
+
+				::PGconn* native_handle();
 		};
 
 		inline std::string context_t::escape(const std::string &arg) {
