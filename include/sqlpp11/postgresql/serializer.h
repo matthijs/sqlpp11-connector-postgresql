@@ -38,7 +38,7 @@ namespace sqlpp {
 		struct serializer_t<postgresql::context_t, parameter_t<ValueType, NameType>> {
 			using T = parameter_t<ValueType, NameType>;
 
-			static postgresql::context_t &_(const T &t, postgresql::context_t &context) {
+            static postgresql::context_t &_(const T &, postgresql::context_t &context) {
 				context << "$" << context.count();
 				context.pop_count();
 				return context;

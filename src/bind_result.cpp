@@ -53,6 +53,8 @@ namespace sqlpp {
 			// Fetch total amount
 			if (_handle->totalCount == 0U) {
 				_handle->totalCount = PQntuples(_handle->result);
+				if (_handle->totalCount == 0U)
+					return false;
 			} else {
 
 				// Next row

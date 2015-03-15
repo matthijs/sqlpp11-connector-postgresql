@@ -68,6 +68,7 @@ namespace sqlpp {
 						nullptr);
 				std::string errmsg = "PostgreSQL error: ";
 				ExecStatusType ret = PQresultStatus(res);
+				std::string rerrmsg(PQresultErrorMessage(res));
 				PQclear(res);
 				switch(ret) {
 					case PGRES_EMPTY_QUERY:
@@ -77,7 +78,7 @@ namespace sqlpp {
 					case PGRES_NONFATAL_ERROR:
 					case PGRES_FATAL_ERROR:
 					case PGRES_COPY_BOTH:
-						errmsg.append(PQresStatus(ret));
+						errmsg.append(std::string(PQresStatus(ret)) + std::string(": ") + rerrmsg);
 						throw sqlpp::exception(errmsg);
 					case PGRES_COMMAND_OK:
 					case PGRES_TUPLES_OK:
@@ -132,7 +133,7 @@ namespace sqlpp {
 					case PGRES_FATAL_ERROR:
 					case PGRES_COPY_BOTH:
 						prepared.valid = false;
-						errmsg.append(PQresStatus(ret));
+						errmsg.append(std::string(PQresStatus(ret)) + std::string(": ") + std::string(PQresultErrorMessage(prepared.result)));
 						throw sqlpp::exception(errmsg);
 					case PGRES_COMMAND_OK:
 					case PGRES_TUPLES_OK:
@@ -316,6 +317,10 @@ namespace sqlpp {
 			std::string in {PQgetvalue(res, 0, 0)};
 			PQclear(res);
 			return std::stoi(in);
+		}
+
+		::PGconn* connection::native_handle() {
+			return _handle->postgres;
 		}
 	}
 }
