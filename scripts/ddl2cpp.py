@@ -37,8 +37,10 @@ types = {
     'bool': 'boolean',
     'double': 'floating_point',
     'float': 'floating_point',
+    'numeric': 'floating_point',
 
     # For now keep this a varchar
+    'date': 'varchar',
     'time without time zone': 'varchar',
     'timestamp without time zone': 'varchar',
 }
