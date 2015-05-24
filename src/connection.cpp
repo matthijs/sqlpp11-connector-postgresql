@@ -228,6 +228,15 @@ namespace sqlpp {
 			return { prep._handle };
 		}
 
+		size_t connection::run_prepared_execute_impl(prepared_statement_t &prep) {
+			execute_statement(*_handle, *prep._handle.get());
+
+			std::istringstream in(PQcmdTuples(prep._handle->result));
+			size_t result;
+			in >> result;
+			return result;
+		}
+
 		size_t connection::run_prepared_insert_impl(prepared_statement_t &prep) {
 			execute_statement(*_handle, *prep._handle.get());
 
