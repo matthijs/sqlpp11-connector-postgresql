@@ -36,6 +36,7 @@ namespace sqlpp {
 
 	template<typename ValueType, typename NameType>
 		struct serializer_t<postgresql::context_t, parameter_t<ValueType, NameType>> {
+			using _serialize_check = consistent_t;
 			using T = parameter_t<ValueType, NameType>;
 
             static postgresql::context_t &_(const T &, postgresql::context_t &context) {
