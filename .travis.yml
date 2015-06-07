@@ -16,5 +16,11 @@ notifications:
 install:
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install cmake; fi
 
-script: cmake
+beforescript:
+    - mkdir build
+    - cd build
+    - cmake ..
+
+script:
+    - cmake --build .
 
