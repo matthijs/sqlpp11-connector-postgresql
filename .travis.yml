@@ -23,11 +23,13 @@ install:
     - sudo update-alternatives --quiet --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9 --slave /usr/bin/gcov gcov /usr/bin/gcov-4.9
     - sudo update-alternatives --quiet --set gcc /usr/bin/gcc-4.9
     - clang++ -v
+    - cd ..
     - git clone https://github.com/rbock/sqlpp11.git
     - cd sqlpp11
     - cmake .
     - sudo make install
     - cd ..
+    - cd sqlpp11-connector-postgresql
 
 before_script:
     - mkdir build
