@@ -1,0 +1,20 @@
+language: cpp
+
+os:
+    - linux
+    - osx
+
+compiler:
+    - clang
+    - gcc
+
+notifications:
+    email:
+        on_success: change
+        on_failure: always
+
+install:
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install cmake; fi
+
+script: cmake
+
