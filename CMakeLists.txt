@@ -33,14 +33,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "-Wall -std=c++11 ${CMAKE_CXX_FLAGS}")
 endif ()
 
-set(SQLPP11_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../sqlpp11/include" CACHE FILEPATH "Path to sqlpp11 includes")
+# Find required Sqlpp11 library
+find_package(Sqlpp11 REQUIRED)
 
-if(NOT EXISTS ${SQLPP11_INCLUDE_DIR}/sqlpp11/exception.h)
-	message(SEND_ERROR "Can't find exception.h in ${SQLPP11_INCLUDE_DIR}")
-endif()
-
-message(SEND_MESSAGE "including sqlpp11 from ${SQLPP11_INCLUDE_DIR}")
-include_directories("${SQLPP11_INCLUDE_DIR}")
 set(include_dir "${PROJECT_SOURCE_DIR}/include")
 file(GLOB_RECURSE sqlpp_headers ${include_dir}/*.h ${SQLPP11_INCLUDE_DIR}/*.h)
 include_directories(${include_dir})
