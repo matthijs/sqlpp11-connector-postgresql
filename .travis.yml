@@ -1,9 +1,5 @@
 language: cpp
 
-os:
-    - linux
-    - osx
-
 compiler:
     - clang
     - gcc
@@ -13,8 +9,13 @@ notifications:
         on_success: change
         on_failure: always
 
+before_install:
+    # install a newer cmake since at this time Travis only has version 2.8
+    - yes | sudo add-apt-repository ppa:kalakris/cmake
+    - sudo apt-get update -qq
+
 install:
-    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install cmake; fi
+    - sudo apt-get install cmake
 
 before_script:
     - mkdir build
