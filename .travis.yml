@@ -9,13 +9,16 @@ notifications:
         on_success: change
         on_failure: always
 
-before_install:
-    # install a newer cmake since at this time Travis only has version 2.8
-    - yes | sudo add-apt-repository ppa:kalakris/cmake
-    - sudo apt-get update -qq
-
 install:
-    - sudo apt-get install cmake
+    # install a newer cmake since at this time Travis only has version 2.8
+    - CMAKE_VERSION_MM=3.2
+    - CMAKE_VERSION_FULL=$CMAKE_VERSION_MM.3
+    - wget http://www.cmake.org/files/v${CMAKE_VERSION_FULL}/cmake-${CMAKE_VERSION_FULL}-Linux-x86_64.sh
+    - sudo sh cmake-${CMAKE_VERSION_FULL}-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir
+    - sudo apt-get install g++-4.8 --no-install-recommends
+    - sudo update-alternatives --quiet --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.6 --slave /usr/bin/gcov gcov /usr/bin/gcov-4.6
+    - sudo update-alternatives --quiet --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8 --slave /usr/bin/gcov gcov /usr/bin/gcov-4.8
+    - sudo update-alternatives --quiet --set gcc /usr/bin/gcc-4.8
 
 before_script:
     - mkdir build
