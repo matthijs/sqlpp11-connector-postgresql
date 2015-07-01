@@ -33,7 +33,7 @@
 #include <sqlpp11/postgresql/connection_config.h>
 #include <sqlpp11/postgresql/bind_result.h>
 #include <sqlpp11/postgresql/prepared_statement.h>
-
+#include <sqlpp11/postgresql/result.h>
 #include <sstream>
 
 struct pg_conn;
@@ -214,16 +214,18 @@ namespace sqlpp {
 					}
 
 				// Execute
-				size_t execute(const std::string& command);
+                                std::shared_ptr<detail::prepared_statement_handle_t> execute(const std::string& command);
 
 				template<typename Execute,
 								 typename Enable = typename std::enable_if<not std::is_convertible<Execute, std::string>::value, void>::type>
-				size_t execute(const Execute& x)
+                                std::shared_ptr<detail::prepared_statement_handle_t> execute(const Execute& x)
 				{
 					_context_t ctx(*this);
 					serialize(x, ctx);
-					return execute(ctx.str());
+                                        return execute(ctx.str());
 				}
+
+
 
 				template<typename Execute>
 					_prepared_statement_t prepare_execute(Execute& x)

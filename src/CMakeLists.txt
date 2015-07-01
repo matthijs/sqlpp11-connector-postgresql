@@ -27,7 +27,9 @@ add_library(sqlpp-postgresql SHARED
 	bind_result.cpp
 	connection.cpp
 	prepared_statement.cpp
-	detail/connection_handle.cpp)
+        detail/connection_handle.cpp
+        result.cpp
+)
 
 # Keep this in sync with the releases in sqlpp11
 set(sqlpp-postgresql_VERSION_MAJOR 0)
