@@ -145,6 +145,20 @@ namespace sqlpp {
 			}
 		}
 
+        size_t connection::execute(const std::string &stmt){
+            detail::prepared_statement_handle_t prepared = prepare_statement(*_handle, stmt, 0);
+            if (!prepared) {
+                throw sqlpp::exception("PostgreSQL error: could not store result set");
+            }
+
+            // Execute statement
+            execute_statement(*_handle, prepared);
+            std::istringstream in(PQcmdTuples(prepared.result));
+            size_t result;
+            in >> result;
+            return result;
+        }
+
 		connection::connection(const std::shared_ptr<connection_config> &config) : _handle(new detail::connection_handle(config)) {
 		}
 
