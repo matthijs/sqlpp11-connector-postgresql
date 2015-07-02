@@ -72,7 +72,7 @@ namespace sqlpp {
 				return result;
 			}
 
-			void execute_statement(detail::connection_handle &handle, detail::prepared_statement_handle_t &prepared) {
+            void execute_statement(detail::connection_handle &handle, detail::prepared_statement_handle_t &prepared) {
 
 				// Execute a prepared statement
 				char *paramValues[prepared.paramValues.size()];
@@ -88,10 +88,9 @@ namespace sqlpp {
 				}
 
 				// Execute prepared statement with the parameters.
-				if (prepared.result) {
-					PQclear(prepared.result);
-					prepared.result = nullptr;
-				}
+
+                prepared.result.clear();
+
 				prepared.count = 0;
 				prepared.totalCount = 0;
 				prepared.result = PQexecPrepared(handle.postgres,
@@ -103,26 +102,11 @@ namespace sqlpp {
 						0);
 
 				// check statement
-				std::string errmsg = "PostgreSQL error: ";
-				ExecStatusType ret = PQresultStatus(prepared.result);
-				switch(ret) {
-					case PGRES_EMPTY_QUERY:
-					case PGRES_COPY_OUT:
-					case PGRES_COPY_IN:
-					case PGRES_BAD_RESPONSE:
-					case PGRES_NONFATAL_ERROR:
-					case PGRES_FATAL_ERROR:
-					case PGRES_COPY_BOTH:
-						prepared.valid = false;
-						errmsg.append(std::string(PQresStatus(ret)) + std::string(": ") + std::string(PQresultErrorMessage(prepared.result)));
-						throw sqlpp::exception(errmsg);
-					case PGRES_COMMAND_OK:
-					case PGRES_TUPLES_OK:
-					case PGRES_SINGLE_TUPLE:
-					default:
-						prepared.valid = true;
-						break;
-				}
+                if(prepared.result.hasError()){
+                    prepared.valid = false;
+                    throw(prepared.result.errorStr());
+                }
+                prepared.valid = true;
 			}
 		}
 
@@ -147,27 +131,15 @@ namespace sqlpp {
 		}
 
 		size_t connection::insert_impl(const std::string &stmt) {
-            auto res = execute(stmt);
-            std::istringstream in(PQcmdTuples(res->result));
-            size_t result;
-            in >> result;
-			return result;
+            return execute(stmt)->result.affected_rows();
 		}
 
 		size_t connection::update_impl(const std::string &stmt) {
-            auto res = execute(stmt);
-            std::istringstream in(PQcmdTuples(res->result));
-            size_t result;
-            in >> result;
-            return result;
+            return execute(stmt)->result.affected_rows();
 		}
 
 		size_t connection::remove_impl(const std::string &stmt) {
-            auto res = execute(stmt);
-            std::istringstream in(PQcmdTuples(res->result));
-            size_t result;
-            in >> result;
-            return result;
+            return execute(stmt)->result.affected_rows();
 		}
 
 		// prepared execution
@@ -183,38 +155,22 @@ namespace sqlpp {
 
 		size_t connection::run_prepared_execute_impl(prepared_statement_t &prep) {
 			execute_statement(*_handle, *prep._handle.get());
-
-			std::istringstream in(PQcmdTuples(prep._handle->result));
-			size_t result;
-			in >> result;
-			return result;
+            return prep._handle->result.affected_rows();
 		}
 
 		size_t connection::run_prepared_insert_impl(prepared_statement_t &prep) {
 			execute_statement(*_handle, *prep._handle.get());
-
-			std::istringstream in(PQcmdTuples(prep._handle->result));
-			size_t result;
-			in >> result;
-			return result;
+            return prep._handle->result.affected_rows();
 		}
 
 		size_t connection::run_prepared_update_impl(prepared_statement_t &prep) {
 			execute_statement(*_handle, *prep._handle.get());
-
-			std::istringstream in(PQcmdTuples(prep._handle->result));
-			size_t result;
-			in >> result;
-			return result;
+            return prep._handle->result.affected_rows();
 		}
 
 		size_t connection::run_prepared_remove_impl(prepared_statement_t &prep) {
 			execute_statement(*_handle, *prep._handle.get());
-
-			std::istringstream in(PQcmdTuples(prep._handle->result));
-			size_t result;
-			in >> result;
-			return result;
+            return prep._handle->result.affected_rows();
 		}
 
 		// TODO: Fix escaping.

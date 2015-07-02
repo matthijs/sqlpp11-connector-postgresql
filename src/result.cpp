@@ -49,8 +49,20 @@ void Result::operator =(PGresult *res){
     m_result = res;
 }
 
+size_t Result::affected_rows(){
+    return boost::lexical_cast<size_t>(PQcmdTuples(m_result));
+}
+
+size_t Result::records_size(){
+    return PQntuples(m_result);
+}
+
+size_t Result::field_count(){
+    return PQnfields(m_result);
+}
+
 Result::~Result(){
-    PQclear(m_result);
+    clear();
 }
 
 }

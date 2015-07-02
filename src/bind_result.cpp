@@ -52,7 +52,7 @@ namespace sqlpp {
 
 			// Fetch total amount
 			if (_handle->totalCount == 0U) {
-				_handle->totalCount = PQntuples(_handle->result);
+                _handle->totalCount = _handle->result.records_size();
 				if (_handle->totalCount == 0U)
 					return false;
 			} else {
@@ -67,7 +67,7 @@ namespace sqlpp {
 
 			// Really needed?
 			if (_handle->fields == 0U) {
-				_handle->fields = PQnfields(_handle->result);
+                _handle->fields = _handle->result.field_count();
 			}
 
 			return true;
@@ -82,9 +82,9 @@ namespace sqlpp {
 			}
 
 			// Assign value
-			std::istringstream in(PQgetvalue(_handle->result, _handle->count, index));
-			in >> *value;
-			*is_null = PQgetisnull(_handle->result, _handle->count, index);
+            const auto &res = _handle->result;
+            *value = res.getValue<bool>(_handle->count, index);
+            *is_null = res.isNull(_handle->count, index);
 		}
 
 		void bind_result_t::_bind_floating_point_result(size_t index, double *value, bool *is_null) {
@@ -95,9 +95,9 @@ namespace sqlpp {
 				throw sqlpp::exception("PostgreSQL error: index out of range");
 			}
 
-			std::istringstream in(PQgetvalue(_handle->result, _handle->count, index));
-			in >> *value;
-			*is_null = PQgetisnull(_handle->result, _handle->count, index);
+            const auto &res = _handle->result;
+            *value = res.getValue<double>(_handle->count, index);
+            *is_null = res.isNull(_handle->count, index);
 		}
 
 		void bind_result_t::_bind_integral_result(size_t index, int64_t *value, bool *is_null) {
@@ -108,9 +108,9 @@ namespace sqlpp {
 				throw sqlpp::exception("PostgreSQL error: index out of range");
 			}
 
-			std::istringstream in(PQgetvalue(_handle->result, _handle->count, index));
-			in >> *value;
-			*is_null = PQgetisnull(_handle->result, _handle->count, index);
+            const auto &res = _handle->result;
+            *value = res.getValue<int64_t>(_handle->count, index);
+            *is_null = res.isNull(_handle->count, index);
 		}
 
 		void bind_result_t::_bind_text_result(size_t index, const char **value, size_t *len) {
@@ -121,9 +121,10 @@ namespace sqlpp {
 				throw sqlpp::exception("PostgreSQL error: index out of range");
 			}
 
-			*value = const_cast<const char *>(PQgetvalue(_handle->result, _handle->count, index));
-			*len = PQgetlength(_handle->result, _handle->count, index);
+            const auto &res = _handle->result;
+            *value = res.getValue<const char *>(_handle->count, index);
+            *len = res.length(_handle->count, index);
 		}
-	}
+    }
 }
 

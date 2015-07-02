@@ -33,6 +33,7 @@
 #include <string>
 
 #include <postgresql/libpq-fe.h>
+#include <sqlpp11/postgresql/result.h>
 
 namespace sqlpp {
 
@@ -42,7 +43,7 @@ namespace sqlpp {
 
 			struct prepared_statement_handle_t {
 				PGconn *connection {nullptr};
-				PGresult *result {nullptr};
+                                Result result;
 				std::string name {"xxxxxx"};
 				bool valid {false};
 				bool debug {false};
@@ -70,7 +71,7 @@ namespace sqlpp {
 
 					// Clear the result
 					if (result) {
-						PQclear(result);
+                                                result.clear();
 					}
 
 					// Execute DEALLOCATE on the connection_handle for this
