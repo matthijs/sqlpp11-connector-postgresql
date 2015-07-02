@@ -63,6 +63,15 @@ template<>
 inline const char * Result::getValue<const char *>(size_t record, size_t field) const {
     return const_cast<const char *>(PQgetvalue(m_result, record, field));
 }
+template<>
+inline bool Result::getValue<bool>(size_t record, size_t field) const {
+    auto val = PQgetvalue(m_result, record, field);
+    if( *val == 't' )
+        return true;
+    else if( *val == 'f' )
+        return false;
+    return const_cast<const char *>(val);
+}
 
 }
 }
