@@ -26,7 +26,7 @@
  */
 
 #include <sqlpp11/postgresql/connection.h>
-#include <sqlpp11/exception.h>
+#include <sqlpp11/postgresql/pgexception.h>
 
 #include <algorithm>
 #include <iostream>
@@ -61,13 +61,12 @@ namespace sqlpp {
 				handle.prepared_statement_names.push_back(result.name);
 
 				// Create the prepared statement
-                Result res = PQprepare(handle.postgres,
+                result.result = PQprepare(handle.postgres,
 						result.name.c_str(),
 						stmt.c_str(),
 						0,
 						nullptr);
-                if(res.hasError())
-                    throw(res.errorStr());
+
                 result.valid = true;
 				return result;
 			}
@@ -90,7 +89,7 @@ namespace sqlpp {
 				// Execute prepared statement with the parameters.
 
                 prepared.result.clear();
-
+                prepared.valid = false;
 				prepared.count = 0;
 				prepared.totalCount = 0;
 				prepared.result = PQexecPrepared(handle.postgres,
@@ -101,21 +100,20 @@ namespace sqlpp {
 						nullptr,
 						0);
 
-				// check statement
-                if(prepared.result.hasError()){
-                    prepared.valid = false;
-                    throw(prepared.result.errorStr());
-                }
                 prepared.valid = true;
 			}
 		}
 
         std::shared_ptr<detail::prepared_statement_handle_t> connection::execute(const std::string &stmt){
-            auto result = std::make_shared<detail::prepared_statement_handle_t>(native_handle(), 0, _handle->config->debug);
+            if (_handle->config->debug) {
+                std::cerr << "PostgreSQL debug: executing: " << stmt << std::endl;
+            }
 
+            auto result = std::make_shared<detail::prepared_statement_handle_t>(native_handle(), 0, _handle->config->debug);
+            result->name = "";
             result->result = PQexec(native_handle(), stmt.c_str());
             result->valid = true;
-            result->name = "";
+
             return result;
         }
 
@@ -186,36 +184,24 @@ namespace sqlpp {
 
 		//! start transaction
 		void connection::start_transaction() {
-			if (_transaction_active) {
-				throw sqlpp::exception("PostgreSQL error: transaction already open");
-			}
-
             execute("BEGIN");
 			_transaction_active = true;
 		}
 
-		//! commit transaction (or throw transaction if transaction has
-		// finished already)
+        //! commit transaction
 		void connection::commit_transaction() {
-			if (!_transaction_active) {
-				throw sqlpp::exception("PostgreSQL error: transaction failed or finished.");
-			}
-
 			_transaction_active = false;
             execute("COMMIT");
 		}
 
 		//! rollback transaction
 		void connection::rollback_transaction(bool report) {
-			if (!_transaction_active) {
-				throw sqlpp::exception("PostgreSQL error: transaction failed or finished.");
-			}
-			if (report) {
+            _transaction_active = false;
+            execute("ROLLBACK");
+
+            if (report) {
 				std::cerr << "PostgreSQL warning: rolling back unfinished transaction" << std::endl;
 			}
-
-			_transaction_active = false;
-            execute("ROLLBACK");
 		}
 
 		//! report rollback failure

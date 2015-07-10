@@ -1,5 +1,6 @@
 #include "sqlpp11/postgresql/result.h"
 #include "string"
+#include "postgresql/libpq-fe.h"
 
 std::string errmsg = "PostgreSQL error: ";
 
@@ -16,6 +17,8 @@ Result::Result():
 Result::Result(PGresult *res):
     m_result(res)
 {
+    if(hasError())
+        throw sqlpp::exception( errorStr() );
 }
 
 ExecStatusType Result::status(){
@@ -47,10 +50,18 @@ bool Result::hasError(){
 
 void Result::operator =(PGresult *res){
     m_result = res;
+    if(hasError())
+        throw sqlpp::exception( errorStr() );
 }
 
 size_t Result::affected_rows(){
-    return boost::lexical_cast<size_t>(PQcmdTuples(m_result));
+    size_t affected = 0;
+    try{
+         affected = boost::lexical_cast<size_t>( PQcmdTuples(m_result));
+    }
+    catch(boost::bad_lexical_cast){}
+
+    return affected;
 }
 
 size_t Result::records_size(){

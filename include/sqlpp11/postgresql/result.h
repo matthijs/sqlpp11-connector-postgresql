@@ -5,6 +5,8 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include <sqlpp11/postgresql/pgexception.h>
+
 namespace sqlpp{
 namespace postgresql {
 
@@ -42,7 +44,15 @@ public:
 
     template<typename T>
     inline T getValue(size_t record, size_t field) const {
-        return boost::lexical_cast<T>(PQgetvalue(m_result, record, field));
+        static_assert(std::is_arithmetic<T>::value, "Value must be numeric");
+        T t(0);
+        try{
+            t = boost::lexical_cast<T>(PQgetvalue(m_result, record, field));
+        }
+        catch(boost::bad_lexical_cast){
+            std::cout << "Bad cast !";
+        }
+        return t;
     }
 
     size_t length(size_t record, size_t field) const {
@@ -55,7 +65,10 @@ public:
         return m_result;
     }
 
-private:
+private:    
+    void validate() throw (PgException){
+
+    }
     PGresult *m_result;
 };
 

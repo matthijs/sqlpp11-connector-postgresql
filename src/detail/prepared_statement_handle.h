@@ -37,61 +37,65 @@
 
 namespace sqlpp {
 
-	namespace postgresql {
+namespace postgresql {
 
-		namespace detail {
+namespace detail {
 
-			struct prepared_statement_handle_t {
-				PGconn *connection {nullptr};
-                                Result result;
-				std::string name {"xxxxxx"};
-				bool valid {false};
-				bool debug {false};
-				uint32_t count {0};
-				uint32_t totalCount = {0};
-				uint32_t fields = {0};
+struct statement_handle_t{
 
-				// Store prepared statement arguments
-				std::vector<bool> nullValues;
-				std::vector<std::string> paramValues;
+};
 
-				// ctor
-				prepared_statement_handle_t(PGconn *_connection, const size_t &paramCount, bool _debug) :
-					connection(_connection),
-					debug(_debug),
-					nullValues(paramCount),
-					paramValues(paramCount)
-				{}
-				prepared_statement_handle_t(const prepared_statement_handle_t &) = delete;
-				prepared_statement_handle_t(prepared_statement_handle_t &&) = default;
-				prepared_statement_handle_t &operator=(const prepared_statement_handle_t &) = delete;
-				prepared_statement_handle_t &operator=(prepared_statement_handle_t &&) = default;
+struct prepared_statement_handle_t {
+    PGconn *connection {nullptr};
+    Result result;
+    std::string name {"xxxxxx"};
+    bool valid {false};
+    bool debug {false};
+    uint32_t count {0};
+    uint32_t totalCount = {0};
+    uint32_t fields = {0};
 
-				~prepared_statement_handle_t() {
+    // Store prepared statement arguments
+    std::vector<bool> nullValues;
+    std::vector<std::string> paramValues;
 
-					// Clear the result
-					if (result) {
-                                                result.clear();
-					}
+    // ctor
+    prepared_statement_handle_t(PGconn *_connection, const size_t &paramCount, bool _debug) :
+        connection(_connection),
+        debug(_debug),
+        nullValues(paramCount),
+        paramValues(paramCount)
+    {}
+    prepared_statement_handle_t(const prepared_statement_handle_t &) = delete;
+    prepared_statement_handle_t(prepared_statement_handle_t &&) = default;
+    prepared_statement_handle_t &operator=(const prepared_statement_handle_t &) = delete;
+    prepared_statement_handle_t &operator=(prepared_statement_handle_t &&) = default;
 
-					// Execute DEALLOCATE on the connection_handle for this
-					// prepared statement.
-					if (valid && !name.empty()) {
-						std::string cmd = "DEALLOCATE \"" + name + "\"";
-						PGresult *result = PQexec(connection, cmd.c_str());
-						PQclear(result);
-					}
+    ~prepared_statement_handle_t() {
 
-					// TODO: remove the name from the prepared_statement_names
-					// in the connection_handle.
-				}
+        // Clear the result
+        if (result) {
+            result.clear();
+        }
 
-				bool operator!() const {
-					return !valid;
-				}
-			};
-		}
-	}
+        // Execute DEALLOCATE on the connection_handle for this
+        // prepared statement.
+        if (valid && !name.empty()) {
+            std::string cmd = "DEALLOCATE \"" + name + "\"";
+            PGresult *result = PQexec(connection, cmd.c_str());
+            PQclear(result);
+        }
+
+        // TODO: remove the name from the prepared_statement_names
+        // in the connection_handle.
+    }
+
+    bool operator!() const {
+        return !valid;
+    }
+};
+}
+}
 }
 
 #endif
