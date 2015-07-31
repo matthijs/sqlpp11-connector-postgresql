@@ -34,6 +34,7 @@
 #include <sqlpp11/postgresql/bind_result.h>
 #include <sqlpp11/postgresql/prepared_statement.h>
 #include <sqlpp11/postgresql/result.h>
+
 #include <sstream>
 
 struct pg_conn;
@@ -84,7 +85,6 @@ namespace sqlpp {
 		class __attribute__((__visibility__("default"))) connection : public sqlpp::connection {
 			private:
 				std::unique_ptr<detail::connection_handle> _handle;
-				bool _transaction_active {false};
 
 				// direct execution
 				bind_result_t select_impl(const std::string &stmt);
@@ -94,7 +94,7 @@ namespace sqlpp {
 
 				// prepared execution
 				prepared_statement_t prepare_impl(const std::string &stmt, const size_t &paramCount);
-				bind_result_t run_prepared_select_impl(prepared_statement_t &prep);
+                                bind_result_t run_prepared_select_impl(prepared_statement_t &prep);
 				size_t run_prepared_execute_impl(prepared_statement_t& prep);
 				size_t run_prepared_insert_impl(prepared_statement_t &prep);
 				size_t run_prepared_update_impl(prepared_statement_t &prep);
@@ -286,12 +286,21 @@ namespace sqlpp {
 				//! start transaction
 				void start_transaction();
 
+                                //! create savepoint
+                                void savepoint( const std::string &name );
+
+                                //! ROLLBACK TO SAVEPOINT
+                                void rollback_to_savepoint( const std::string &name );
+
+                                //! release_savepoint
+                                void release_savepoint( const std::string &name );
+
 				//! commit transaction (or throw transaction if transaction has
 				// finished already)
 				void commit_transaction();
 
 				//! rollback transaction
-				void rollback_transaction(bool report);
+                                void rollback_transaction(bool report = false);
 
 				//! report rollback failure
 				void report_rollback_failure(const std::string &message) noexcept;

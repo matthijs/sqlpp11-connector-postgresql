@@ -145,9 +145,8 @@ namespace sqlpp {
 			return { std::unique_ptr<detail::prepared_statement_handle_t>(new detail::prepared_statement_handle_t(prepare_statement(*_handle, stmt, paramCount))) };
 		}
 
-		bind_result_t connection::run_prepared_select_impl(prepared_statement_t &prep) {
-			execute_statement(*_handle, *prep._handle.get());
-
+        bind_result_t connection::run_prepared_select_impl(prepared_statement_t &prep) {
+            execute_statement(*_handle, *prep._handle.get());
 			return { prep._handle };
 		}
 
@@ -185,20 +184,34 @@ namespace sqlpp {
 		//! start transaction
 		void connection::start_transaction() {
             execute("BEGIN");
-			_transaction_active = true;
 		}
+
+        //! create savepoint
+        void connection::savepoint( const std::string &name ){
+            ///TODO prevent from sql injection?
+            execute("SAVEPOINT " + name );
+        }
+
+        //! ROLLBACK TO SAVEPOINT
+        void connection::rollback_to_savepoint( const std::string &name ){
+            ///TODO prevent from sql injection?
+            execute("ROLLBACK TO SAVEPOINT " + name );
+        }
+
+        //! release_savepoint
+        void connection::release_savepoint( const std::string &name ){
+            ///TODO prevent from sql injection?
+            execute("RELEASE SAVEPOINT " + name );
+        }
 
         //! commit transaction
 		void connection::commit_transaction() {
-			_transaction_active = false;
             execute("COMMIT");
 		}
 
 		//! rollback transaction
 		void connection::rollback_transaction(bool report) {
-            _transaction_active = false;
             execute("ROLLBACK");
-
             if (report) {
 				std::cerr << "PostgreSQL warning: rolling back unfinished transaction" << std::endl;
 			}

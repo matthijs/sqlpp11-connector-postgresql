@@ -41,19 +41,46 @@ namespace postgresql {
 
 namespace detail {
 
-struct statement_handle_t{
+//struct statement_handle_t {
+//    PGconn *connection {nullptr};
+//    Result result;
+//    bool valid {false};
+//    bool debug {false};
+//    uint32_t count {0};
+//    uint32_t totalCount = {0};
+//    uint32_t fields = {0};
 
-};
+//    // ctor
+//    statement_handle_t(PGconn *_connection, bool _debug) :
+//        connection(_connection),
+//        debug(_debug)
+//    {}
+//    statement_handle_t(const statement_handle_t &) = delete;
+//    statement_handle_t(statement_handle_t &&) = default;
+//    statement_handle_t &operator=(const statement_handle_t &) = delete;
+//    statement_handle_t &operator=(statement_handle_t &&) = default;
 
-struct prepared_statement_handle_t {
+//    virtual ~statement_handle_t() {
+//        // Clear the result
+//        if (result) {
+//            result.clear();
+//        }
+//    }
+
+//    bool operator!() const {
+//        return !valid;
+//    }
+//};
+
+struct prepared_statement_handle_t  {
     PGconn *connection {nullptr};
     Result result;
-    std::string name {"xxxxxx"};
     bool valid {false};
     bool debug {false};
     uint32_t count {0};
     uint32_t totalCount = {0};
     uint32_t fields = {0};
+    std::string name {"xxxxxx"};
 
     // Store prepared statement arguments
     std::vector<bool> nullValues;

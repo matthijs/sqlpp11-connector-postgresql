@@ -2,8 +2,6 @@
 #include "string"
 #include "postgresql/libpq-fe.h"
 
-std::string errmsg = "PostgreSQL error: ";
-
 namespace sqlpp{
 namespace postgresql{
 
@@ -18,15 +16,11 @@ Result::Result(PGresult *res):
     m_result(res)
 {
     if(hasError())
-        throw sqlpp::exception( errorStr() );
+        throw pg_exception( m_result );
 }
 
 ExecStatusType Result::status(){
-    return PQresultStatus(m_result);
-}
-
-string Result::errorStr(){
-    return errmsg + string(PQresStatus(status()))+ string(": ")+ string(PQresultErrorMessage(m_result));
+    return PQresultStatus( m_result );
 }
 
 bool Result::hasError(){
@@ -50,8 +44,9 @@ bool Result::hasError(){
 
 void Result::operator =(PGresult *res){
     m_result = res;
-    if(hasError())
-        throw sqlpp::exception( errorStr() );
+    if(hasError()){
+        throw pg_exception( m_result );
+    }
 }
 
 size_t Result::affected_rows(){
@@ -62,18 +57,6 @@ size_t Result::affected_rows(){
     catch(boost::bad_lexical_cast){}
 
     return affected;
-}
-
-size_t Result::records_size(){
-    return PQntuples(m_result);
-}
-
-size_t Result::field_count(){
-    return PQnfields(m_result);
-}
-
-Result::~Result(){
-    clear();
 }
 
 }

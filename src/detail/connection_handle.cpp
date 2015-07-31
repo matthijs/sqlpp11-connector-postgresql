@@ -28,7 +28,7 @@
 #include "connection_handle.h"
 
 #include <sqlpp11/postgresql/connection_config.h>
-#include <sqlpp11/exception.h>
+#include <sqlpp11/postgresql/pgexception.h>
 
 #include <iostream> // DEBUG
 
@@ -134,7 +134,7 @@ namespace sqlpp {
 				}
 				this->postgres = PQconnectdb(conninfo.c_str());
 				if (PQstatus(this->postgres) != CONNECTION_OK) {
-					throw sqlpp::exception("PostgreSQL error: failed to connect to the database");
+                    throw pg_exception ( PQgetResult(this->postgres) );
 				}
 			}
 

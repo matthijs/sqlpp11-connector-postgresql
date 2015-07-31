@@ -34,21 +34,21 @@ namespace sqlpp {
 
 	namespace postgresql {
 
-		namespace detail {
-			struct prepared_statement_handle_t;
+                namespace detail {
+                        struct prepared_statement_handle_t;
 		}
 
 		class __attribute__((__visibility__("default"))) bind_result_t {
 
 			private:
-				std::shared_ptr<detail::prepared_statement_handle_t> _handle;
+                                std::shared_ptr<detail::prepared_statement_handle_t> _handle;
 
 				bool next_impl();
 
 			public:
 				bind_result_t() = default;
-				bind_result_t(const std::shared_ptr<detail::prepared_statement_handle_t> &handle);
-				bind_result_t(const bind_result_t &) = delete;
+                                bind_result_t(const std::shared_ptr<detail::prepared_statement_handle_t> &handle);
+                                bind_result_t(const bind_result_t &) = delete;
 				bind_result_t(bind_result_t &&) = default;
 				bind_result_t &operator=(const bind_result_t &) = delete;
 				bind_result_t &operator=(bind_result_t &&) = default;

@@ -39,14 +39,14 @@ namespace sqlpp {
 
 		// Detail namespace
 		namespace detail {
-
+//                        struct statement_handle_t;
 			struct prepared_statement_handle_t;
 		}
 
 		class __attribute__((__visibility__("default"))) prepared_statement_t {
 			friend sqlpp::postgresql::connection;
 			private:
-				std::shared_ptr<detail::prepared_statement_handle_t> _handle;
+                                std::shared_ptr<detail::prepared_statement_handle_t> _handle;
 
 			public:
 				prepared_statement_t() = delete;

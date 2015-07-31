@@ -1,7 +1,8 @@
 #pragma once
 #include "postgresql/libpq-fe.h"
 #include <sstream>
-#include "string"
+#include <string>
+#include <iostream>
 
 #include <boost/lexical_cast.hpp>
 
@@ -18,8 +19,7 @@ public:
     Result( PGresult *res );
 
     ExecStatusType status();
-    bool hasError();
-    string errorStr();
+
 
     void operator = ( PGresult *res );
     operator bool () const {
@@ -34,9 +34,13 @@ public:
 
     size_t affected_rows();
 
-    size_t records_size();
+    size_t records_size() const{
+        return PQntuples(m_result);
+    }
 
-    size_t field_count();
+    size_t field_count() const {
+        return PQnfields(m_result);
+    }
 
     bool isNull(size_t record, size_t field) const {
         return PQgetisnull(m_result, record, field);
@@ -44,14 +48,13 @@ public:
 
     template<typename T>
     inline T getValue(size_t record, size_t field) const {
-        static_assert(std::is_arithmetic<T>::value, "Value must be numeric");
+        checkIndex(record, field);
+        static_assert(std::is_arithmetic<T>::value, "Value must be numeric type");
         T t(0);
         try{
             t = boost::lexical_cast<T>(PQgetvalue(m_result, record, field));
         }
-        catch(boost::bad_lexical_cast){
-            std::cout << "Bad cast !";
-        }
+        catch(boost::bad_lexical_cast){}
         return t;
     }
 
@@ -59,16 +62,22 @@ public:
         return PQgetlength(m_result, record, field);
     }
 
-    ~Result();
+    ~Result(){
+        clear();
+    }
 
     PGresult *get(){
         return m_result;
     }
 
-private:    
-    void validate() throw (PgException){
+private:
+    bool hasError();
 
+    void checkIndex(size_t record, size_t field) const throw(pg_exception) {
+        if(record > records_size() || field > field_count() )
+            throw pg_exception("libpq error: index out of range");
     }
+
     PGresult *m_result;
 };
 
@@ -76,8 +85,10 @@ template<>
 inline const char * Result::getValue<const char *>(size_t record, size_t field) const {
     return const_cast<const char *>(PQgetvalue(m_result, record, field));
 }
+
 template<>
 inline bool Result::getValue<bool>(size_t record, size_t field) const {
+    checkIndex(record, field);
     auto val = PQgetvalue(m_result, record, field);
     if( *val == 't' )
         return true;
