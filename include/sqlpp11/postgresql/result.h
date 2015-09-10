@@ -73,9 +73,9 @@ public:
 private:
     bool hasError();
 
-    void checkIndex(size_t record, size_t field) const throw(pg_exception) {
+    void checkIndex(size_t record, size_t field) const throw(std::out_of_range) {
         if(record > records_size() || field > field_count() )
-            throw pg_exception("libpq error: index out of range");
+            throw std::out_of_range("libpq error: index out of range");
     }
 
     PGresult *m_result;
