@@ -23,12 +23,15 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+
+
 add_library(sqlpp-postgresql SHARED
 	bind_result.cpp
 	connection.cpp
         prepared_statement.cpp
         detail/connection_handle.cpp
         result.cpp
+        ${postgresql_headers}
 )
 
 # Keep this in sync with the releases in sqlpp11

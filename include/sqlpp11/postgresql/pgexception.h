@@ -31,9 +31,14 @@ public:
     // http://www.postgresql.org/docs/9.4/static/errcodes-appendix.html
     pg_error_class( const char *error_code )
     {
-        //only 2 first chars from error code are needed
-        m_class_id[0] = error_code[0];
-        m_class_id[1] = error_code[1];
+        if(!error_code){
+            m_class_id[0] = '0';
+            m_class_id[1] = '0';
+        }else{
+            //only 2 first chars from error code are needed
+            m_class_id[0] = error_code[0];
+            m_class_id[1] = error_code[1];
+        }
     }
 
     bool isError() const {
@@ -108,7 +113,15 @@ public:
         pg_error_code("00000"){}
 
     pg_error_code(PGresult *res):
-        pg_error_code( PQresultErrorField(res, PG_DIAG_SQLSTATE) ){}
+        pg_error_code("00000")
+    {
+        ///TODO sometimes PGresult gives NULL in return
+        auto char_code = PQresultErrorField(res, PG_DIAG_SQLSTATE);
+        if(char_code){
+            m_class = pg_error_class(char_code);
+            m_code = std::string(char_code);
+        }
+    }
 
     pg_error_code(const char * code):
         m_class(code), m_code(code) {}
@@ -132,9 +145,6 @@ public:
         m_message(res),
         m_code(res)
     {}
-
-//    pg_exception( const char *what ):
-//        exception( what ){ }
 
     const char *what() const noexcept override {
         return std::string( exception::what()+ std::string("Error code: ")+ code().toString()+ "\n" ).c_str();

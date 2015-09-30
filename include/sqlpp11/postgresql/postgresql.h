@@ -30,4 +30,6 @@
 
 #include <sqlpp11/postgresql/connection.h>
 
+#include <sqlpp11/postgresql/insert.h>
+
 #endif

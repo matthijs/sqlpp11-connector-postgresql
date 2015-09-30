@@ -30,16 +30,17 @@ project(sqlpp11-connector-postgresql)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 
 message(STATUS "Using ${CMAKE_CXX_COMPILER} (compiler id: ${CMAKE_CXX_COMPILER_ID})")
-set(CMAKE_CXX_FLAGS "-Wall -std=c++11 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-Wall -std=c++1y ${CMAKE_CXX_FLAGS}")
 
 # Find required Sqlpp11 library
 find_package(Sqlpp11 REQUIRED)
 
 set(include_dir "${PROJECT_SOURCE_DIR}/include")
-file(GLOB_RECURSE sqlpp_headers ${include_dir}/*.h ${SQLPP11_INCLUDE_DIR}/*.h)
+file(GLOB_RECURSE postgresql_headers ${include_dir}/*.h )
+file(GLOB_RECURSE sqlpp_headers ${postgresql_headers} ${SQLPP11_INCLUDE_DIR}/*.h)
 include_directories(${include_dir})
 
 add_subdirectory(src)
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp11" DESTINATION include)
