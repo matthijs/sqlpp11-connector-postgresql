@@ -4,6 +4,7 @@
 #include <sqlpp11/exception.h>
 #include <postgresql/libpq-fe.h>
 #include <iostream>
+#include <cstring>
 #include <assert.h>
 
 namespace sqlpp {
@@ -31,14 +32,17 @@ public:
     // http://www.postgresql.org/docs/9.4/static/errcodes-appendix.html
     pg_error_class( const char *error_code )
     {
-        if(!error_code){
-            m_class_id[0] = '0';
-            m_class_id[1] = '0';
-        }else{
-            //only 2 first chars from error code are needed
-            m_class_id[0] = error_code[0];
-            m_class_id[1] = error_code[1];
-        }
+        // Class code is saved in 2 first letters
+        if(error_code)
+            m_class = std::string(error_code).substr(0,2);
+    }
+
+    bool operator == ( const char * code ){
+        return m_class == code;
+    }
+
+    bool operator != (const char * code ){
+        return ~this->operator ==(code);
     }
 
     bool isError() const {
@@ -84,26 +88,24 @@ public:
         };
 
         for(const auto &id: errors){
-            if(id == m_class_id)
+            if(id == m_class)
                 return true;
         }
         return false;
     }
-
     bool isWarning() const {
         static constexpr auto warnings = {
             "01",
             "02"
         };
 
-        for(const auto &id: warnings){
-            if(id == m_class_id)
+        for(const auto &id: warnings)
+            if(id == m_class)
                 return true;
-        }
         return false;
     }
 private:
-    char m_class_id[2];
+    std::string m_class;
 };
 
 class pg_error_code {
@@ -123,16 +125,17 @@ public:
         }
     }
 
-    pg_error_code(const char * code):
-        m_class(code), m_code(code) {}
-
     bool operator == ( const char* e ) const { return m_code == e; }
     bool operator != ( const char* e ) const { return m_code != e; }
 
     std::string toString() const{ return m_code; }
+    pg_error_class pgClass() const { return m_class; }
 
-    pg_error_class error_class() const { return m_class; }
+protected:
+    pg_error_code(const char * code):
+        m_class(code), m_code(code) {}
 private:
+
     pg_error_class m_class;
     std::string m_code;
 };
