@@ -24,6 +24,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+set(LIB_HEADERS
+    detail/prepared_statement_handle.h
+)
 
 add_library(sqlpp-postgresql SHARED
 	bind_result.cpp
@@ -32,6 +35,7 @@ add_library(sqlpp-postgresql SHARED
         detail/connection_handle.cpp
         result.cpp
         ${postgresql_headers}
+        ${LIB_HEADERS}
 )
 
 # Keep this in sync with the releases in sqlpp11

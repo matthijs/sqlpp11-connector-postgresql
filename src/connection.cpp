@@ -71,7 +71,7 @@ namespace sqlpp {
 				return result;
 			}
 
-            void execute_statement(detail::connection_handle &handle, detail::prepared_statement_handle_t &prepared) {
+            void execute_prepared_statement(detail::connection_handle &handle, detail::prepared_statement_handle_t &prepared) {
 
 				// Execute a prepared statement
 				char *paramValues[prepared.paramValues.size()];
@@ -88,7 +88,7 @@ namespace sqlpp {
 
 				// Execute prepared statement with the parameters.
 
-                prepared.result.clear();
+                prepared.clearResult();
                 prepared.valid = false;
 				prepared.count = 0;
 				prepared.totalCount = 0;
@@ -104,13 +104,12 @@ namespace sqlpp {
 			}
 		}
 
-        std::shared_ptr<detail::prepared_statement_handle_t> connection::execute(const std::string &stmt){
+        std::shared_ptr<detail::statement_handle_t> connection::execute(const std::string &stmt){
             if (_handle->config->debug) {
                 std::cerr << "PostgreSQL debug: executing: " << stmt << std::endl;
             }
 
-            auto result = std::make_shared<detail::prepared_statement_handle_t>(native_handle(), 0, _handle->config->debug);
-            result->name = "";
+            auto result = std::make_shared<detail::statement_handle_t>(native_handle(), _handle->config->debug);
             result->result = PQexec(native_handle(), stmt.c_str());
             result->valid = true;
 
@@ -146,39 +145,39 @@ namespace sqlpp {
 		}
 
         bind_result_t connection::run_prepared_select_impl(prepared_statement_t &prep) {
-            execute_statement(*_handle, *prep._handle.get());
+            execute_prepared_statement(*_handle, *prep._handle.get());
 			return { prep._handle };
 		}
 
 		size_t connection::run_prepared_execute_impl(prepared_statement_t &prep) {
-			execute_statement(*_handle, *prep._handle.get());
+            execute_prepared_statement(*_handle, *prep._handle.get());
             return prep._handle->result.affected_rows();
 		}
 
 		size_t connection::run_prepared_insert_impl(prepared_statement_t &prep) {
-			execute_statement(*_handle, *prep._handle.get());
+            execute_prepared_statement(*_handle, *prep._handle.get());
             return prep._handle->result.affected_rows();
 		}
 
 		size_t connection::run_prepared_update_impl(prepared_statement_t &prep) {
-			execute_statement(*_handle, *prep._handle.get());
+            execute_prepared_statement(*_handle, *prep._handle.get());
             return prep._handle->result.affected_rows();
 		}
 
 		size_t connection::run_prepared_remove_impl(prepared_statement_t &prep) {
-			execute_statement(*_handle, *prep._handle.get());
+            execute_prepared_statement(*_handle, *prep._handle.get());
             return prep._handle->result.affected_rows();
 		}
 
-		// TODO: Fix escaping.
 		std::string connection::escape(const std::string &s) const {
-
 			// Escape strings
-			char to[(s.size() * 2) + 1];
+            std::string result;
+            result.resize((s.size() * 2) + 1);
+
 			int err;
-			size_t length = PQescapeStringConn(_handle->postgres, to, s.c_str(), s.size(), &err);
-			std::string result(to, length);
-			return std::move(result);
+            size_t length = PQescapeStringConn(_handle->postgres, &result[0], s.c_str(), s.size(), &err);
+            result.resize(length);
+            return std::move(result);
 		}
 
 		//! start transaction
@@ -188,19 +187,19 @@ namespace sqlpp {
 
         //! create savepoint
         void connection::savepoint( const std::string &name ){
-            ///TODO prevent from sql injection?
+            ///NOTE prevent from sql injection?
             execute("SAVEPOINT " + name );
         }
 
         //! ROLLBACK TO SAVEPOINT
         void connection::rollback_to_savepoint( const std::string &name ){
-            ///TODO prevent from sql injection?
+            ///NOTE prevent from sql injection?
             execute("ROLLBACK TO SAVEPOINT " + name );
         }
 
         //! release_savepoint
         void connection::release_savepoint( const std::string &name ){
-            ///TODO prevent from sql injection?
+            ///NOTE prevent from sql injection?
             execute("RELEASE SAVEPOINT " + name );
         }
 
@@ -227,7 +226,8 @@ namespace sqlpp {
 			PGresult *res = PQexec(_handle->postgres, sql.c_str());
 
 			// Parse the number and return.
-			// TODO: A copy is happening here, how to prevent that?
+            ///NOTE: A copy is happening here, how to prevent that?
+            /// It's only a number( length < 5? ), how slow can it be?
 			std::string in {PQgetvalue(res, 0, 0)};
 			PQclear(res);
 			return std::stoi(in);

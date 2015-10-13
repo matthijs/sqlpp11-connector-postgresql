@@ -1,4 +1,5 @@
 #include "sqlpp11/postgresql/result.h"
+#include <sqlpp11/postgresql/pgexception.h>
 #include "string"
 #include "postgresql/libpq-fe.h"
 
@@ -42,6 +43,11 @@ bool Result::hasError(){
     }
 }
 
+void Result::checkIndex(size_t record, size_t field) const throw(std::out_of_range) {
+    if(record > records_size() || field > field_count() )
+        throw std::out_of_range("libpq error: index out of range");
+}
+
 void Result::operator =(PGresult *res){
     m_result = res;
     if(hasError()){
@@ -49,14 +55,48 @@ void Result::operator =(PGresult *res){
     }
 }
 
+sqlpp::postgresql::Result::operator bool() const {
+    return m_result == nullptr ? false : true;
+}
+
+void Result::clear(){
+    if(m_result)
+        PQclear(m_result);
+    m_result = nullptr;
+}
+
 size_t Result::affected_rows(){
     size_t affected = 0;
     try{
-         affected = boost::lexical_cast<size_t>( PQcmdTuples(m_result));
+        affected = boost::lexical_cast<size_t>( PQcmdTuples(m_result));
     }
     catch(boost::bad_lexical_cast){}
 
     return affected;
+}
+
+size_t Result::records_size() const{
+    return PQntuples(m_result);
+}
+
+size_t Result::field_count() const {
+    return PQnfields(m_result);
+}
+
+bool Result::isNull(size_t record, size_t field) const {
+    return PQgetisnull(m_result, record, field);
+}
+
+size_t Result::length(size_t record, size_t field) const {
+    return PQgetlength(m_result, record, field);
+}
+
+Result::~Result(){
+    clear();
+}
+
+PGresult *Result::get(){
+    return m_result;
 }
 
 }

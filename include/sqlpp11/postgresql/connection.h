@@ -82,7 +82,7 @@ namespace sqlpp {
 		};
 
 		// Connection
-		class __attribute__((__visibility__("default"))) connection : public sqlpp::connection {
+        class DLL_PUBLIC connection : public sqlpp::connection {
 			private:
 				std::unique_ptr<detail::connection_handle> _handle;
 
@@ -214,7 +214,7 @@ namespace sqlpp {
 					}
 
 				// Execute
-                                std::shared_ptr<detail::prepared_statement_handle_t> execute(const std::string& command);
+                std::shared_ptr<sqlpp::postgresql::detail::statement_handle_t> execute(const std::string& command);
 
 				template<typename Execute,
 								 typename Enable = typename std::enable_if<not std::is_convertible<Execute, std::string>::value, void>::type>

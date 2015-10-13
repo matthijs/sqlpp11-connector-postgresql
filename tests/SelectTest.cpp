@@ -71,7 +71,7 @@ constexpr tab2 t2;
 int main(){
     std::shared_ptr<sqlpp::postgresql::connection_config>conf( new sqlpp::postgresql::connection_config );
     conf->host = "localhost";
-    conf->dbname = "postagres";
+    conf->dbname = "postgres";
     conf->user = "postgres";
     conf->password = "postgres";
     conf->debug = true;
@@ -86,8 +86,8 @@ int main(){
         std::cout << sel.front().c_uid;
 
         auto multi_insert = sqlpp::postgresql::insert_into(a).columns(a.c_uid).returning(a.c_uid);
-        multi_insert.values.add(a.c_uid=1000001);
-        multi_insert.values.add(a.c_uid=1000003);
+        multi_insert.values.add(a.c_uid=1);
+        multi_insert.values.add(a.c_uid=1);
         auto inserted = db(multi_insert);
 
         for(const auto &row: inserted )
@@ -97,5 +97,7 @@ int main(){
     }
     catch(sqlpp::postgresql::pg_exception e){
         std::cout << e.what();
+        std::cout << "\n" << e.code().toString();
+        std::cout << "\n" << e.message().toString();
     }
 }

@@ -41,38 +41,7 @@ namespace postgresql {
 
 namespace detail {
 
-//struct statement_handle_t {
-//    PGconn *connection {nullptr};
-//    Result result;
-//    bool valid {false};
-//    bool debug {false};
-//    uint32_t count {0};
-//    uint32_t totalCount = {0};
-//    uint32_t fields = {0};
-
-//    // ctor
-//    statement_handle_t(PGconn *_connection, bool _debug) :
-//        connection(_connection),
-//        debug(_debug)
-//    {}
-//    statement_handle_t(const statement_handle_t &) = delete;
-//    statement_handle_t(statement_handle_t &&) = default;
-//    statement_handle_t &operator=(const statement_handle_t &) = delete;
-//    statement_handle_t &operator=(statement_handle_t &&) = default;
-
-//    virtual ~statement_handle_t() {
-//        // Clear the result
-//        if (result) {
-//            result.clear();
-//        }
-//    }
-
-//    bool operator!() const {
-//        return !valid;
-//    }
-//};
-
-struct prepared_statement_handle_t  {
+struct statement_handle_t {
     PGconn *connection {nullptr};
     Result result;
     bool valid {false};
@@ -80,6 +49,33 @@ struct prepared_statement_handle_t  {
     uint32_t count {0};
     uint32_t totalCount = {0};
     uint32_t fields = {0};
+
+    // ctor
+    statement_handle_t(PGconn *_connection, bool _debug) :
+        connection(_connection),
+        debug(_debug)
+    {}
+    statement_handle_t(const statement_handle_t &) = delete;
+    statement_handle_t(statement_handle_t &&) = default;
+    statement_handle_t &operator=(const statement_handle_t &) = delete;
+    statement_handle_t &operator=(statement_handle_t &&) = default;
+
+    virtual ~statement_handle_t() {
+        clearResult();
+    }
+
+    bool operator!() const {
+        return !valid;
+    }
+
+    void clearResult(){
+        if (result) {
+            result.clear();
+        }
+    }
+};
+
+struct prepared_statement_handle_t : public statement_handle_t {
     std::string name {"xxxxxx"};
 
     // Store prepared statement arguments
@@ -88,8 +84,7 @@ struct prepared_statement_handle_t  {
 
     // ctor
     prepared_statement_handle_t(PGconn *_connection, const size_t &paramCount, bool _debug) :
-        connection(_connection),
-        debug(_debug),
+        statement_handle_t(_connection, _debug),
         nullValues(paramCount),
         paramValues(paramCount)
     {}
@@ -99,11 +94,7 @@ struct prepared_statement_handle_t  {
     prepared_statement_handle_t &operator=(prepared_statement_handle_t &&) = default;
 
     ~prepared_statement_handle_t() {
-
-        // Clear the result
-        if (result) {
-            result.clear();
-        }
+        clearResult();
 
         // Execute DEALLOCATE on the connection_handle for this
         // prepared statement.
@@ -115,10 +106,6 @@ struct prepared_statement_handle_t  {
 
         // TODO: remove the name from the prepared_statement_names
         // in the connection_handle.
-    }
-
-    bool operator!() const {
-        return !valid;
     }
 };
 }

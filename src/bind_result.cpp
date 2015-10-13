@@ -34,13 +34,10 @@
 #include "detail/prepared_statement_handle.h"
 
 namespace sqlpp {
-
 	namespace postgresql {
 
-        bind_result_t::bind_result_t(const std::shared_ptr<detail::prepared_statement_handle_t> &handle) : _handle(handle) {
+        bind_result_t::bind_result_t(const std::shared_ptr<detail::statement_handle_t> &handle) : _handle(handle) {
             if (this->_handle && this->_handle->debug) {
-
-                // cerr
                 std::cerr << "PostgreSQL debug: constructing bind result, using handle at: " << this->_handle.get() << std::endl;
             }
         }

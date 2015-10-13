@@ -6,45 +6,34 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <sqlpp11/postgresql/pgexception.h>
-
 namespace sqlpp{
 namespace postgresql {
-
-using std::string;
 
 class __attribute__((__visibility__("default"))) Result{
 public:
     Result();
     Result( PGresult *res );
+    ~Result();
 
     ExecStatusType status();
 
-
-    void operator = ( PGresult *res );
-    operator bool () const {
-        return m_result == nullptr ? false : true;
-    }
-
-    void clear(){
-        if(m_result)
-            PQclear(m_result);
-        m_result = nullptr;
-    }
+    void clear();
 
     size_t affected_rows();
 
-    size_t records_size() const{
-        return PQntuples(m_result);
-    }
+    size_t records_size() const;
 
-    size_t field_count() const {
-        return PQnfields(m_result);
-    }
+    size_t field_count() const;
 
-    bool isNull(size_t record, size_t field) const {
-        return PQgetisnull(m_result, record, field);
-    }
+    size_t length(size_t record, size_t field) const;
+
+    bool isNull(size_t record, size_t field) const;
+
+    PGresult *get();
+
+    void operator = ( PGresult *res );
+
+    operator bool () const;
 
     template<typename T>
     inline T getValue(size_t record, size_t field) const {
@@ -58,25 +47,9 @@ public:
         return t;
     }
 
-    size_t length(size_t record, size_t field) const {
-        return PQgetlength(m_result, record, field);
-    }
-
-    ~Result(){
-        clear();
-    }
-
-    PGresult *get(){
-        return m_result;
-    }
-
 private:
     bool hasError();
-
-    void checkIndex(size_t record, size_t field) const throw(std::out_of_range) {
-        if(record > records_size() || field > field_count() )
-            throw std::out_of_range("libpq error: index out of range");
-    }
+    void checkIndex(size_t record, size_t field) const throw(std::out_of_range);
 
     PGresult *m_result;
 };

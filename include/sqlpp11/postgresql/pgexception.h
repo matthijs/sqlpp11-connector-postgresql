@@ -117,7 +117,6 @@ public:
     pg_error_code(PGresult *res):
         pg_error_code("00000")
     {
-        ///TODO sometimes PGresult gives NULL in return
         auto char_code = PQresultErrorField(res, PG_DIAG_SQLSTATE);
         if(char_code){
             m_class = pg_error_class(char_code);
