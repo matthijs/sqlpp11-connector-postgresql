@@ -289,7 +289,7 @@ namespace sqlpp
       int err;
       size_t length = PQescapeStringConn(_handle->postgres, to, s.c_str(), s.size(), &err);
       std::string result(to, length);
-      return std::move(result);
+      return result;
     }
 
     //! start transaction
