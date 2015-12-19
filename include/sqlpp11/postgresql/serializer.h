@@ -32,19 +32,21 @@
 #include <sqlpp11/wrap_operand.h>
 #include <sqlpp11/parameter.h>
 
-namespace sqlpp {
+namespace sqlpp
+{
+  template <typename ValueType, typename NameType>
+  struct serializer_t<postgresql::context_t, parameter_t<ValueType, NameType>>
+  {
+    using _serialize_check = consistent_t;
+    using T = parameter_t<ValueType, NameType>;
 
-	template<typename ValueType, typename NameType>
-		struct serializer_t<postgresql::context_t, parameter_t<ValueType, NameType>> {
-			using _serialize_check = consistent_t;
-			using T = parameter_t<ValueType, NameType>;
-
-            static postgresql::context_t &_(const T &, postgresql::context_t &context) {
-				context << "$" << context.count();
-				context.pop_count();
-				return context;
-			}
-		};
+    static postgresql::context_t& _(const T&, postgresql::context_t& context)
+    {
+      context << "$" << context.count();
+      context.pop_count();
+      return context;
+    }
+  };
 }
 
 #endif
