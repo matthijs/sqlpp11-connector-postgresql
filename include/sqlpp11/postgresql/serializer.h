@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, Matthijs Möhlmann
+ * Copyright © 2014-2015, Matthijs Möhlmann
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,9 +36,10 @@ namespace sqlpp {
 
 	template<typename ValueType, typename NameType>
 		struct serializer_t<postgresql::context_t, parameter_t<ValueType, NameType>> {
+			using _serialize_check = consistent_t;
 			using T = parameter_t<ValueType, NameType>;
 
-			static postgresql::context_t &_(const T &t, postgresql::context_t &context) {
+            static postgresql::context_t &_(const T &, postgresql::context_t &context) {
 				context << "$" << context.count();
 				context.pop_count();
 				return context;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, Matthijs Möhlmann
+ * Copyright © 2014-2015, Matthijs Möhlmann
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,6 +68,7 @@ namespace sqlpp {
 						nullptr);
 				std::string errmsg = "PostgreSQL error: ";
 				ExecStatusType ret = PQresultStatus(res);
+				std::string rerrmsg(PQresultErrorMessage(res));
 				PQclear(res);
 				switch(ret) {
 					case PGRES_EMPTY_QUERY:
@@ -77,7 +78,7 @@ namespace sqlpp {
 					case PGRES_NONFATAL_ERROR:
 					case PGRES_FATAL_ERROR:
 					case PGRES_COPY_BOTH:
-						errmsg.append(PQresStatus(ret));
+						errmsg.append(std::string(PQresStatus(ret)) + std::string(": ") + rerrmsg);
 						throw sqlpp::exception(errmsg);
 					case PGRES_COMMAND_OK:
 					case PGRES_TUPLES_OK:
@@ -132,7 +133,7 @@ namespace sqlpp {
 					case PGRES_FATAL_ERROR:
 					case PGRES_COPY_BOTH:
 						prepared.valid = false;
-						errmsg.append(PQresStatus(ret));
+						errmsg.append(std::string(PQresStatus(ret)) + std::string(": ") + std::string(PQresultErrorMessage(prepared.result)));
 						throw sqlpp::exception(errmsg);
 					case PGRES_COMMAND_OK:
 					case PGRES_TUPLES_OK:
@@ -227,6 +228,15 @@ namespace sqlpp {
 			return { prep._handle };
 		}
 
+		size_t connection::run_prepared_execute_impl(prepared_statement_t &prep) {
+			execute_statement(*_handle, *prep._handle.get());
+
+			std::istringstream in(PQcmdTuples(prep._handle->result));
+			size_t result;
+			in >> result;
+			return result;
+		}
+
 		size_t connection::run_prepared_insert_impl(prepared_statement_t &prep) {
 			execute_statement(*_handle, *prep._handle.get());
 
@@ -305,6 +315,21 @@ namespace sqlpp {
 		//! report rollback failure
 		void connection::report_rollback_failure(const std::string &message) noexcept {
 			std::cerr << "PostgreSQL error: " << message << std::endl;
+		}
+
+		uint64_t connection::last_insert_id(const std::string &table, const std::string &fieldname) {
+			std::string sql = "SELECT currval('" + table + "_" + fieldname + "_seq')";
+			PGresult *res = PQexec(_handle->postgres, sql.c_str());
+
+			// Parse the number and return.
+			// TODO: A copy is happening here, how to prevent that?
+			std::string in {PQgetvalue(res, 0, 0)};
+			PQclear(res);
+			return std::stoi(in);
+		}
+
+		::PGconn* connection::native_handle() {
+			return _handle->postgres;
 		}
 	}
 }

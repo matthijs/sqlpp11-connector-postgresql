@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, Matthijs Möhlmann
+ * Copyright © 2014-2015, Matthijs Möhlmann
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

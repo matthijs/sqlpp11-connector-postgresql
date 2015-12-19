@@ -35,12 +35,18 @@ types = {
     'character varying': 'varchar',
     'text': 'text',
     'bool': 'boolean',
+    'boolean': 'boolean',
     'double': 'floating_point',
     'float': 'floating_point',
+    'numeric': 'floating_point',
 
     # For now keep this a varchar
+    'date': 'varchar',
     'time without time zone': 'varchar',
     'timestamp without time zone': 'varchar',
+
+    # User defined types, for now a varchar
+    'USER-DEFINED': 'varchar',
 }
 
 # Connect to the database and fetch information from the information_schema
@@ -57,6 +63,7 @@ for table in tables:
     _writeLine(fd, 0, "#define " + _getIncludeGuard(args.namespace, table[0]))
     _writeLine(fd, 0, "")
     _writeLine(fd, 0, "#include <sqlpp11/table.h>")
+    _writeLine(fd, 0, "#include <sqlpp11/char_sequence.h>")
     _writeLine(fd, 0, "#include <sqlpp11/column_types.h>")
     _writeLine(fd, 0, "")
     _writeLine(fd, 0, "namespace " + args.namespace + " {")
@@ -69,8 +76,9 @@ for table in tables:
     for column in columns:
         _writeLine(fd, 0, "")
         _writeLine(fd, 2, "struct " + column[3].capitalize() + " {")
-        _writeLine(fd, 3, "struct _name_t {")
-        _writeLine(fd, 4, "static constexpr const char *_get_name() { return \"" + column[3] + "\"; }")
+        _writeLine(fd, 3, "struct _alias_t {")
+        _writeLine(fd, 4, "static constexpr const char _literal[] =\"" + column[3] + "\";")
+        _writeLine(fd, 4, "using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;")
         _writeLine(fd, 4, "template<typename T>")
         _writeLine(fd, 5, "struct _member_t {")
         _writeLine(fd, 6, "T " + column[3] + ";")
@@ -80,7 +88,7 @@ for table in tables:
         _writeLine(fd, 3, "};")
 
         # Build the traits
-        traits = "using _traits = sqlpp::make_traits<sqlpp::" + types[column[7]]
+        traits = "using _traits = ::sqlpp::make_traits<::sqlpp::" + types[column[7]]
 
         # Check for an autoincrement value (check if nextval is available and we
         # have a sequence in the form of tablename_columnname_seq)
@@ -113,8 +121,9 @@ for table in tables:
         _writeLine(fd, 4, table[0] + "_::" + columns[-1][3].capitalize() + "> {")
 
     _writeLine(fd, 2, "using _value_type = sqlpp::no_value_t;")
-    _writeLine(fd, 2, "struct _name_t {")
-    _writeLine(fd, 3, "static constexpr const char *_get_name() { return \"" + table[0] + "\"; }")
+    _writeLine(fd, 2, "struct _alias_t {")
+    _writeLine(fd, 3, "static constexpr const char _literal[] = \"" + table[0] + "\";")
+    _writeLine(fd, 3, "using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;")
     _writeLine(fd, 3, "template<typename T>")
     _writeLine(fd, 4, "struct _member_t {")
     _writeLine(fd, 5, "T " + table[0] + ";")

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, Matthijs Möhlmann
+ * Copyright © 2014-2015, Matthijs Möhlmann
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,8 @@ namespace sqlpp {
 			// Fetch total amount
 			if (_handle->totalCount == 0U) {
 				_handle->totalCount = PQntuples(_handle->result);
+				if (_handle->totalCount == 0U)
+					return false;
 			} else {
 
 				// Next row
