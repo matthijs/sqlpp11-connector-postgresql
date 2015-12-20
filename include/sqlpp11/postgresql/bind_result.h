@@ -39,7 +39,7 @@ namespace sqlpp
       struct prepared_statement_handle_t;
     }
 
-    class __attribute__((__visibility__("default"))) bind_result_t
+    class bind_result_t
     {
     private:
       std::shared_ptr<detail::prepared_statement_handle_t> _handle;
