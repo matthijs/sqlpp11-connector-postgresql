@@ -281,10 +281,10 @@ namespace sqlpp
 
       template <typename T>
       auto operator()(const T& t)
-          -> decltype(this->_run(t, typename sqlpp::run_check_t<_serializer_context_t, T>::type{}))
+          -> decltype(this->_run(t, sqlpp::run_check_t<_serializer_context_t, T>{}))
       {
         sqlpp::run_check_t<_serializer_context_t, T>::_();
-        return _run(t, typename sqlpp::run_check_t<_serializer_context_t, T>::type{});
+        return _run(t, sqlpp::run_check_t<_serializer_context_t, T>{});
       }
 
       //! call prepare on the argument
@@ -299,10 +299,10 @@ namespace sqlpp
 
       template <typename T>
       auto prepare(const T& t)
-          -> decltype(this->_prepare(t, typename sqlpp::prepare_check_t<_serializer_context_t, T>::type{}))
+          -> decltype(this->_prepare(t, sqlpp::prepare_check_t<_serializer_context_t, T>{}))
       {
         sqlpp::prepare_check_t<_serializer_context_t, T>::_();
-        return _prepare(t, typename sqlpp::prepare_check_t<_serializer_context_t, T>::type{});
+        return _prepare(t, sqlpp::prepare_check_t<_serializer_context_t, T>{});
       }
 
       //! start transaction
