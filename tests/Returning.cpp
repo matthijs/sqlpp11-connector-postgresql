@@ -10,10 +10,6 @@ int Returning(int argc, char **argv) {
 
   // Configuration
   auto config = std::make_shared<sqlpp::postgresql::connection_config>();
-  config->host = "192.168.5.10";
-  config->user = "moneymaker";
-  config->password = "0AqY4Xan4FK7qszM";
-  config->dbname = "moneymaker";
 
   // DB connection
   sqlpp::postgresql::connection db(config);
