@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Matthijs Möhlmann
+# Copyright © 2015, Matthijs Möhlmann
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,7 +24,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 cmake_minimum_required(VERSION 3.0)
-project(sqlpp11-connector-postgresql)
+project(sqlpp11-connector-postgresql VERSION 0.1 LANGUAGES CXX)
+
+# Enable tests
+enable_testing()
 
 # Add source directory as source for modules too.
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
@@ -40,6 +43,6 @@ file(GLOB_RECURSE sqlpp_headers ${include_dir}/*.h ${SQLPP11_INCLUDE_DIR}/*.h)
 include_directories(${include_dir} "${SQLPP11_INCLUDE_DIR}")
 
 add_subdirectory(src)
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp11" DESTINATION include)
