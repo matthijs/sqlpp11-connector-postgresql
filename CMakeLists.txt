@@ -37,6 +37,7 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++11 ${CMAKE_CXX_FLAGS}")
 
 # Find required Sqlpp11 library
 find_package(Sqlpp11 REQUIRED)
+find_package(PostgreSQL REQUIRED)
 
 set(include_dir "${PROJECT_SOURCE_DIR}/include")
 file(GLOB_RECURSE sqlpp_headers ${include_dir}/*.h ${SQLPP11_INCLUDE_DIR}/*.h)

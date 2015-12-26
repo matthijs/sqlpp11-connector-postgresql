@@ -31,7 +31,7 @@ set(test_names Returning)
 
 create_test_sourcelist(test_sources test_main.cpp ${test_names})
 add_executable(sqlpp11_postgresql_tests ${test_sources})
-target_link_libraries(sqlpp11_postgresql_tests PRIVATE sqlpp11 sqlpp11_postgresql_testing)
+target_link_libraries(sqlpp11_postgresql_tests PRIVATE sqlpp-postgresql sqlpp11_postgresql_testing)
 
 foreach(test IN LISTS test_names)
 	add_test(NAME sqlpp11.tests.${test} COMMAND sqlpp11_postgresql_tests ${test})
