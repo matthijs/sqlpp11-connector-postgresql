@@ -39,5 +39,5 @@ before_script:
     - cmake .. -DCMAKE_INCLUDE_DIR=$PWD/../../date
 
 script:
-    - cmake --build $PWD/build
+    - cmake --build .
 
