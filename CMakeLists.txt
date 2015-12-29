@@ -37,7 +37,7 @@ find_package(Sqlpp11 REQUIRED)
 
 set(include_dir "${PROJECT_SOURCE_DIR}/include")
 file(GLOB_RECURSE sqlpp_headers ${include_dir}/*.h ${SQLPP11_INCLUDE_DIR}/*.h)
-include_directories(${include_dir})
+include_directories(${include_dir} "${SQLPP11_INCLUDE_DIR}")
 
 add_subdirectory(src)
 #add_subdirectory(tests)
