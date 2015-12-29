@@ -29,7 +29,7 @@ add_library(sqlpp-postgresql SHARED
 	prepared_statement.cpp
 	detail/connection_handle.cpp)
 
-target_compile_features(sqlpp-postgresql PUBLIC
+target_compile_features(sqlpp-postgresql PRIVATE
 	cxx_auto_type)
 
 # Keep this in sync with the releases in sqlpp11
