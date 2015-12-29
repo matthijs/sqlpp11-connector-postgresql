@@ -13,6 +13,7 @@ install:
     # install a newer cmake since at this time Travis only has version 2.8
     - CMAKE_VERSION_MM=3.2
     - CMAKE_VERSION_FULL=$CMAKE_VERSION_MM.3
+    - git clone https://github.com/HowardHinnant/date
     - wget --no-check-certificate http://www.cmake.org/files/v${CMAKE_VERSION_MM}/cmake-${CMAKE_VERSION_FULL}-Linux-x86_64.sh
     - sudo sh cmake-${CMAKE_VERSION_FULL}-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir
     - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
@@ -33,8 +34,8 @@ install:
 before_script:
     - mkdir build
     - cd build
-    - cmake ..
+    - cmake .. -DCMAKE_INCLUDE_DIR=$PWD/../date
 
 script:
-    - cmake --build .
+    - cmake --build $PWD/build
 
