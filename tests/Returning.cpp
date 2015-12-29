@@ -16,7 +16,7 @@ int Returning(int argc, char **argv) {
 
   // Model
   test::TabBar t_bar;
-  auto ins_news = insert_into(t_bar)
+  auto ins_news = sqlpp::postgresql::insert_into(t_bar)
 	  .set(t_bar.gamma = true, t_bar.beta = "test")
 	  .returning(t_bar.beta);
 

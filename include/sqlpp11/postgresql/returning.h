@@ -32,34 +32,83 @@
 
 namespace sqlpp
 {
+  SQLPP_VALUE_TRAIT_GENERATOR(is_returning)
+
   namespace postgresql
   {
     // RETURNING DATA
     template <typename Database, typename... Expressions>
     struct returning_data_t
     {
+      returning_data_t(Expressions... expressions) : _expressions(expressions...)
+      {
+      }
+
+      std::tuple<Expressions...> _expressions;
     };
 
     // RETURNING(EXPR)
     template <typename Database, typename... Expressions>
     struct returning_t
     {
+      using _traits = make_traits<no_value_t, tag::is_returning>;
+      using _nodes = ::sqlpp::detail::type_vector<>;
+
+      template <typename Policies>
+      struct _impl_t
+      {
+      };
+
+      template <typename Policies>
+      struct _base_t
+      {
+        using _consistency_check = consistent_t;
+      };
     };
 
     struct no_returning_t
     {
+      using _traits = make_traits<no_value_t, tag::is_returning>;
+      using _nodes = ::sqlpp::detail::type_vector<>;
+      using _data_t = no_data_t;
+
+      template <typename Policies>
+      struct _impl_t
+      {
+        _data_t _data;
+      };
+
       template <typename Policies>
       struct _base_t  // base class for the statement
       {
         template <typename Check, typename T>
         using _new_statement_t = new_statement_t<Check::value, Policies, no_returning_t, T>;
 
-        template <typename Database, typename... Expressions>
+        using _consistency_check = consistent_t;
+        using _data_t = no_data_t;
+
+        _impl_t<Policies> no_returning;
+        _impl_t<Policies>& operator()()
+        {
+          return no_returning;
+        }
+        const _impl_t<Policies>& operator()() const
+        {
+          return no_returning;
+        }
+
+        template <typename T>
+        static auto _get_member(T t) -> decltype(t.no_returning)
+        {
+          return t.no_returning;
+        }
+
+        template <typename... Expressions>
         auto returning(Expressions... expressions) const
             -> _new_statement_t<std::true_type, returning_t<void, Expressions...>>
         {
           return {static_cast<const derived_statement_t<Policies>&>(*this),
-                  returning_data_t<Database, Expressions...>{expressions...}};
+                  returning_data_t<void, Expressions...>{expressions...}};
         }
       };
     };
