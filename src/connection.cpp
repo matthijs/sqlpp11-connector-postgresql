@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <random>
 
 #include "detail/prepared_statement_handle.h"
 #include "detail/connection_handle.h"
