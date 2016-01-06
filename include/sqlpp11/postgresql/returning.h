@@ -101,7 +101,7 @@ namespace sqlpp
             -> _new_statement_t<void, returning_column_list_t<_database_t, Columns...>>
         {
           return {static_cast<const derived_statement_t<Policies>&>(*this),
-                  returning_column_list_t<_database_t, Columns...>{columns...}};
+                  typename returning_column_list_t<_database_t, Columns...>::_data_t{columns...}};
         }
       };
     };
