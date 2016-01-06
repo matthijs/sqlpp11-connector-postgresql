@@ -29,6 +29,7 @@
 #define SQLPP_POSTGRESQL_RETURNING_H
 
 #include <sqlpp11/statement.h>
+#include <sqlpp11/postgresql/returning_column_list.h>
 
 namespace sqlpp
 {
@@ -36,56 +37,41 @@ namespace sqlpp
 
   namespace postgresql
   {
-    // RETURNING DATA
-    template <typename Database, typename... Expressions>
-    struct returning_data_t
-    {
-      returning_data_t(Expressions... expressions) : _expressions(expressions...)
-      {
-      }
-
-      std::tuple<Expressions...> _expressions;
-    };
-
-    // RETURNING(EXPR)
-    template <typename Database, typename... Expressions>
+    template <typename Database, typename... Columns>
     struct returning_t
     {
-      using _traits = make_traits<no_value_t, tag::is_returning>;
-      using _nodes = ::sqlpp::detail::type_vector<>;
-
-      template <typename Policies>
-      struct _impl_t
-      {
-      };
-
-      template <typename Policies>
-      struct _base_t
-      {
-        using _consistency_check = consistent_t;
-      };
     };
 
     struct no_returning_t
     {
       using _traits = make_traits<no_value_t, tag::is_returning>;
       using _nodes = ::sqlpp::detail::type_vector<>;
+
       using _data_t = no_data_t;
 
       template <typename Policies>
       struct _impl_t
       {
+        // workaround for msvc bug https://connect.microsoft.com/VisualStudio/Feedback/Details/2173269
+        _impl_t() = default;
+        _impl_t(const _data_t& data) : _data(data)
+        {
+        }
+
         _data_t _data;
       };
 
       template <typename Policies>
-      struct _base_t  // base class for the statement
+      struct _base_t
       {
-        template <typename Check, typename T>
-        using _new_statement_t = new_statement_t<Check::value, Policies, no_returning_t, T>;
-
-        using _consistency_check = consistent_t;
         using _data_t = no_data_t;
+
+        // workaround for msvc bug https://connect.microsoft.com/VisualStudio/Feedback/Details/2173269
+        template <typename... Args>
+        _base_t(Args&&... args)
+            : no_returning{std::forward<Args>(args)...}
+        {
+        }
 
         _impl_t<Policies> no_returning;
         _impl_t<Policies>& operator()()
@@ -103,31 +89,23 @@ namespace sqlpp
           return t.no_returning;
         }
 
-        template <typename... Expressions>
-        auto returning(Expressions... expressions) const
-            -> _new_statement_t<std::true_type, returning_t<void, Expressions...>>
+        using _database_t = typename Policies::_database_t;
+
+        template <typename Check, typename T>
+        using _new_statement_t = new_statement_t<true, Policies, no_returning_t, T>;
+
+        using _consistency_check = consistent_t;
+
+        template <typename... Columns>
+        auto returning(Columns... columns) const
+            -> _new_statement_t<void, returning_column_list_t<_database_t, Columns...>>
         {
           return {static_cast<const derived_statement_t<Policies>&>(*this),
-                  returning_data_t<void, Expressions...>{expressions...}};
+                  returning_column_list_t<_database_t, Columns...>{columns...}};
         }
       };
     };
   }
-
-  // Interpreter
-  template <typename Context, typename Database, typename... Expressions>
-  struct serializer_t<Context, postgresql::returning_data_t<Database, Expressions...>>
-  {
-    using _serialize_check = consistent_t;
-    using T = postgresql::returning_data_t<Database, Expressions...>;
-
-    static Context& _(const T&, Context& context)
-    {
-      context << " RETURNING ";
-
-      return context;
-    }
-  };
 }
 
 #endif
