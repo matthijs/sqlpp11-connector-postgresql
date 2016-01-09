@@ -29,9 +29,12 @@ add_library(sqlpp-postgresql SHARED
 	prepared_statement.cpp
 	detail/connection_handle.cpp)
 
+target_compile_features(sqlpp-postgresql PRIVATE
+	cxx_auto_type)
+
 # Keep this in sync with the releases in sqlpp11
 set(sqlpp-postgresql_VERSION_MAJOR 0)
-set(sqlpp-postgresql_VERSION_MINOR 34)
+set(sqlpp-postgresql_VERSION_MINOR 35)
 set(sqlpp-postgresql_VERSION_PATCH 0)
 set(sqlpp-postgresql_VERSION_STRING ${cwf_VERSION_MAJOR}.${cwf_VERSION_MINOR}.${cwf_VERSION_PATCH})
 
