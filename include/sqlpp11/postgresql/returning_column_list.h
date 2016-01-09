@@ -450,6 +450,7 @@ namespace sqlpp
 
     static Context& _(const T& t, Context& context)
     {
+      context << " RETURNING ";
       interpret_tuple(t._columns, ',', context);
       if (sizeof...(Columns) and not t._dynamic_columns.empty())
         context << ',';
