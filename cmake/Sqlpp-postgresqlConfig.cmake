@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Matthijs Möhlmann
+# Copyright (c) 2016, Christian David
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -23,28 +23,13 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
-project(sqlpp11-connector-postgresql VERSION 0.1 LANGUAGES CXX)
+include("${CMAKE_CURRENT_LIST_DIR}/Sqlpp-postgresqlTargets.cmake")
 
-set(ConfigPackageLocation lib/cmake/sqlpp-postgresql)
+include(CMakeFindDependencyMacro)
 
-find_package(Sqlpp11 REQUIRED)
-find_package(PostgreSQL REQUIRED)
+find_dependency(Sqlpp11 REQUIRED)
+find_dependency(PostgreSQL REQUIRED)
 
-add_subdirectory(src)
-#add_subdirectory(tests)
-
-configure_file(cmake/Sqlpp-postgresqlConfig.cmake
-  "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlConfig.cmake"
-  COPYONLY
-)
-
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp11" DESTINATION include COMPONENT Devel)
-install(
-  FILES
-    cmake/Sqlpp-postgresqlConfig.cmake
-  DESTINATION
-    ${ConfigPackageLocation}
-  COMPONENT
-    Devel
+set_target_properties(Sqlpp::sqlpp-postgresql PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${PostgreSQL_INCLUDE_DIRS}
 )
