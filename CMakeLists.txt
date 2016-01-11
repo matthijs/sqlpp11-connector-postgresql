@@ -30,6 +30,8 @@ project(sqlpp11-connector-postgresql VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 
 message(STATUS "Using ${CMAKE_CXX_COMPILER} (compiler id: ${CMAKE_CXX_COMPILER_ID})")
+set(CMAKE_CXX_FLAGS "-Wall -std=c++1y ${CMAKE_CXX_FLAGS}")
+
 
 # Find required Sqlpp11 library
 find_package(Sqlpp11 REQUIRED)
