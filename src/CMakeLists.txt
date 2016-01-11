@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Matthijs Möhlmann
+# Copyright © 2015, Matthijs Möhlmann
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -41,11 +41,17 @@ add_library(sqlpp-postgresql SHARED
 target_compile_features(sqlpp-postgresql PRIVATE
 	cxx_auto_type)
 
+target_compile_features(sqlpp-postgresql PRIVATE
+	cxx_auto_type)
+
 # Keep this in sync with the releases in sqlpp11
 set(sqlpp-postgresql_VERSION_MAJOR 0)
 set(sqlpp-postgresql_VERSION_MINOR 35)
 set(sqlpp-postgresql_VERSION_PATCH 0)
 set(sqlpp-postgresql_VERSION_STRING ${cwf_VERSION_MAJOR}.${cwf_VERSION_MINOR}.${cwf_VERSION_PATCH})
+
+target_link_libraries(sqlpp-postgresql ${PostgreSQL_LIBRARIES})
+
 set_target_properties(sqlpp-postgresql PROPERTIES VERSION ${sqlpp-postgresql_VERSION_STRING}
 	        SOVERSION ${sqlpp-postgresql_VERSION_MAJOR})
 

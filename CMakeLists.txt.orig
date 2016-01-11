@@ -25,24 +25,34 @@
 
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 project(sqlpp11-connector-postgresql VERSION 0.1 LANGUAGES CXX)
+<<<<<<< HEAD
+=======
 
 # Enable tests
 enable_testing()
+>>>>>>> 22b96dbdeb8bea21d7550d0ac0c03012aa23a842
 
 # Add source directory as source for modules too.
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 
 message(STATUS "Using ${CMAKE_CXX_COMPILER} (compiler id: ${CMAKE_CXX_COMPILER_ID})")
+<<<<<<< HEAD
 set(CMAKE_CXX_FLAGS "-Wall -std=c++1y ${CMAKE_CXX_FLAGS}")
 
+=======
+>>>>>>> 22b96dbdeb8bea21d7550d0ac0c03012aa23a842
 
 # Find required Sqlpp11 library
 find_package(Sqlpp11 REQUIRED)
-#find_package(PostgreSQL REQUIRED)
+find_package(PostgreSQL REQUIRED)
 
 set(include_dir "${PROJECT_SOURCE_DIR}/include")
+<<<<<<< HEAD
 file(GLOB_RECURSE postgresql_headers ${include_dir}/*.h )
 file(GLOB_RECURSE sqlpp_headers ${postgresql_headers} ${SQLPP11_INCLUDE_DIR}/*.h)
+=======
+file(GLOB_RECURSE sqlpp_headers ${include_dir}/*.h ${SQLPP11_INCLUDE_DIR}/*.h)
+>>>>>>> 22b96dbdeb8bea21d7550d0ac0c03012aa23a842
 include_directories(${include_dir} "${SQLPP11_INCLUDE_DIR}")
 
 add_subdirectory(src)

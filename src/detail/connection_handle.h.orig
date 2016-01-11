@@ -25,35 +25,44 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SQLPP_POSTGRESQL_INSERT_H
-#define SQLPP_POSTGRESQL_INSERT_H
+#ifndef SQLPP_POSTGRESQL_CONNECTION_HANDLE_H
+#define SQLPP_POSTGRESQL_CONNECTION_HANDLE_H
 
-#include <sqlpp11/insert.h>
-#include <sqlpp11/postgresql/returning.h>
+#include <memory>
+#include <vector>
+
+#include <postgresql/libpq-fe.h>
+<<<<<<< HEAD
+#include <sqlpp11/postgresql/visibility.h>
+=======
+>>>>>>> 22b96dbdeb8bea21d7550d0ac0c03012aa23a842
 
 namespace sqlpp
 {
   namespace postgresql
   {
-    template <typename Database>
-    using blank_insert_t = statement_t<Database, insert_t, no_into_t, no_insert_value_list_t, no_returning_t>;
+    // Forward declaration
+    struct connection_config;
 
-    inline auto insert() -> blank_insert_t<void>
+    namespace detail
     {
-      return {blank_insert_t<void>()};
-    }
+<<<<<<< HEAD
+      struct DLL_LOCAL connection_handle
+=======
+      struct connection_handle
+>>>>>>> 22b96dbdeb8bea21d7550d0ac0c03012aa23a842
+      {
+        const std::shared_ptr<connection_config> config;
+        PGconn* postgres{nullptr};
+        std::vector<std::string> prepared_statement_names;
 
-    template <typename Table>
-    constexpr auto insert_into(Table table) -> decltype(blank_insert_t<void>().into(table))
-    {
-      return {blank_insert_t<void>().into(table)};
-    }
-
-    template <typename Database>
-    constexpr auto dynamic_insert(const Database&) -> decltype(blank_insert_t<Database>())
-    {
-      static_assert(std::is_base_of<connection, Database>::value, "Invalid database parameter");
-      return {blank_insert_t<Database>()};
+        connection_handle(const std::shared_ptr<connection_config>& config);
+        ~connection_handle();
+        connection_handle(const connection_handle&) = delete;
+        connection_handle(connection_handle&&) = delete;
+        connection_handle& operator=(const connection_handle&) = delete;
+        connection_handle& operator=(connection_handle&&) = delete;
+      };
     }
   }
 }

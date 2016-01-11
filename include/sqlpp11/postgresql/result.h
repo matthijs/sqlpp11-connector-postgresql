@@ -40,8 +40,8 @@ namespace sqlpp
       template <typename T>
       inline T getValue(size_t record, size_t field) const
       {
-        checkIndex(record, field);
         static_assert(std::is_arithmetic<T>::value, "Value must be numeric type");
+        checkIndex(record, field);
         T t(0);
         try
         {
