@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <random>
 
 #include "detail/prepared_statement_handle.h"
 #include "detail/connection_handle.h"
@@ -196,7 +197,7 @@ namespace sqlpp
       int err;
       size_t length = PQescapeStringConn(_handle->postgres, &result[0], s.c_str(), s.size(), &err);
       result.resize(length);
-      return std::move(result);
+      return result;
     }
 
     //! start transaction

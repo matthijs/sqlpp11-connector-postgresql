@@ -44,7 +44,7 @@ namespace sqlpp
       struct prepared_statement_handle_t;
     }
 
-    class __attribute__((__visibility__("default"))) prepared_statement_t
+    class prepared_statement_t
     {
       friend sqlpp::postgresql::connection;
 

@@ -23,14 +23,13 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-cmake_minimum_required(VERSION 3.0)
-project(sqlpp11-connector-postgresql)
+cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
+project(sqlpp11-connector-postgresql VERSION 0.1 LANGUAGES CXX)
 
 # Add source directory as source for modules too.
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 
 message(STATUS "Using ${CMAKE_CXX_COMPILER} (compiler id: ${CMAKE_CXX_COMPILER_ID})")
-set(CMAKE_CXX_FLAGS "-Wall -std=c++1y ${CMAKE_CXX_FLAGS}")
 
 # Find required Sqlpp11 library
 find_package(Sqlpp11 REQUIRED)
@@ -38,7 +37,7 @@ find_package(Sqlpp11 REQUIRED)
 set(include_dir "${PROJECT_SOURCE_DIR}/include")
 file(GLOB_RECURSE postgresql_headers ${include_dir}/*.h )
 file(GLOB_RECURSE sqlpp_headers ${postgresql_headers} ${SQLPP11_INCLUDE_DIR}/*.h)
-include_directories(${include_dir})
+include_directories(${include_dir} "${SQLPP11_INCLUDE_DIR}")
 
 add_subdirectory(src)
 add_subdirectory(tests)

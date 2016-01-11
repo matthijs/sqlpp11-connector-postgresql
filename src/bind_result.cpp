@@ -41,6 +41,7 @@ namespace sqlpp
     {
       if (this->_handle && this->_handle->debug)
       {
+        // cerr
         std::cerr << "PostgreSQL debug: constructing bind result, using handle at: " << this->_handle.get()
                   << std::endl;
       }
