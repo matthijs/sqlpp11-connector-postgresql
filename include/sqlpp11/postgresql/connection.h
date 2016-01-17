@@ -65,6 +65,10 @@ namespace sqlpp
       {
         return _os << t;
       }
+      std::ostream& operator<<(bool t)
+      {
+        return _os << (t ? "TRUE" : "FALSE");
+      }
 
       std::string escape(const std::string& arg);
 
