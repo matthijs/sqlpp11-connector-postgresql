@@ -32,14 +32,14 @@ int Returning(int argc, char **argv) {
 	  .returning(t_bar.beta), printer).str() << std::endl;
   printer.reset();
 
-  std::cout << serialize(sqlpp::postgresql::insert_into(t_bar)
-                         .set(t_bar.gamma = true, t_bar.beta = "test")
-                         .returning(all_of(t_bar)), printer).str() << std::endl;
-  printer.reset();
+//  std::cout << serialize(sqlpp::postgresql::insert_into(t_bar)
+//                         .set(t_bar.gamma = true, t_bar.beta = "test")
+//                         .returning(all_of(t_bar)), printer).str() << std::endl;
+//  printer.reset();
 
-  std::cout << serialize(sqlpp::postgresql::insert_into(t_bar)
-                         .set(t_bar.gamma = true, t_bar.beta = "test")
-                         .returning(t_foo.delta), printer).str() << std::endl;
+//  std::cout << serialize(sqlpp::postgresql::insert_into(t_bar)
+//                         .set(t_bar.gamma = true, t_bar.beta = "test")
+//                         .returning(t_foo.delta), printer).str() << std::endl;
 
   return 0;
 }
