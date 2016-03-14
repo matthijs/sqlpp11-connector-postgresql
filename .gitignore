@@ -28,3 +28,4 @@ config.log
 *.txt.user
 # Build directory
 build
+*.txt.user.*
