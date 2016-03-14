@@ -34,6 +34,7 @@
 
 #include "detail/prepared_statement_handle.h"
 #include "detail/connection_handle.h"
+#include "detail/make_unique.h"
 
 namespace sqlpp
 {
@@ -41,7 +42,7 @@ namespace sqlpp
   {
     namespace
     {
-      detail::prepared_statement_handle_t prepare_statement(detail::connection_handle& handle,
+      std::unique_ptr<detail::prepared_statement_handle_t> prepare_statement(detail::connection_handle& handle,
                                                             const std::string& stmt,
                                                             const size_t& paramCount)
       {
@@ -50,13 +51,13 @@ namespace sqlpp
           std::cerr << "PostgreSQL debug: preparing: " << stmt << std::endl;
         }
 
-        detail::prepared_statement_handle_t result(handle.postgres, paramCount, handle.config->debug);
+        auto result = make_unique<detail::prepared_statement_handle_t>(handle.postgres, paramCount, handle.config->debug);
 
         // Generate a random name for the prepared statement
-        while (std::find(handle.prepared_statement_names.begin(), handle.prepared_statement_names.end(), result.name) !=
+        while (std::find(handle.prepared_statement_names.begin(), handle.prepared_statement_names.end(), result->name) !=
                handle.prepared_statement_names.end())
         {
-          std::generate_n(result.name.begin(), 6, []()
+          std::generate_n(result->name.begin(), 6, []()
                           {
                             const char charset[] = "0123456789"
                                                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -66,13 +67,13 @@ namespace sqlpp
                             return charset[rd() % max];
                           });
         }
-        handle.prepared_statement_names.push_back(result.name);
+        handle.prepared_statement_names.push_back(result->name);
 
         // Create the prepared statement
-        result.result = PQprepare(handle.postgres, result.name.c_str(), stmt.c_str(), 0, nullptr);
+        result->result = PQprepare(handle.postgres, result->name.c_str(), stmt.c_str(), 0, nullptr);
 
-        result.valid = true;
-        return result;
+        result->valid = true;
+        return std::move(result);
       }
 
       void execute_prepared_statement(detail::connection_handle& handle, detail::prepared_statement_handle_t& prepared)
@@ -154,8 +155,7 @@ namespace sqlpp
     // prepared execution
     prepared_statement_t connection::prepare_impl(const std::string& stmt, const size_t& paramCount)
     {
-      return {std::unique_ptr<detail::prepared_statement_handle_t>(
-          new detail::prepared_statement_handle_t(prepare_statement(*_handle, stmt, paramCount)))};
+      return {prepare_statement(*_handle, stmt, paramCount)};
     }
 
     bind_result_t connection::run_prepared_select_impl(prepared_statement_t& prep)
@@ -255,8 +255,6 @@ namespace sqlpp
       PGresult* res = PQexec(_handle->postgres, sql.c_str());
 
       // Parse the number and return.
-      /// NOTE: A copy is happening here, how to prevent that?
-      /// It's only a number( length < 5? ), how slow can it be?
       std::string in{PQgetvalue(res, 0, 0)};
       PQclear(res);
       return std::stoi(in);

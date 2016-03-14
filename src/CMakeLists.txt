@@ -50,7 +50,7 @@ set(sqlpp-postgresql_VERSION_MINOR 35)
 set(sqlpp-postgresql_VERSION_PATCH 0)
 set(sqlpp-postgresql_VERSION_STRING ${cwf_VERSION_MAJOR}.${cwf_VERSION_MINOR}.${cwf_VERSION_PATCH})
 
-target_link_libraries(sqlpp-postgresql ${PostgreSQL_LIBRARIES})
+target_link_libraries(sqlpp-postgresql pq)
 
 set_target_properties(sqlpp-postgresql PROPERTIES VERSION ${sqlpp-postgresql_VERSION_STRING}
 	        SOVERSION ${sqlpp-postgresql_VERSION_MAJOR})

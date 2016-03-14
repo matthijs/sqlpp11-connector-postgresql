@@ -1,7 +1,7 @@
 #include "sqlpp11/postgresql/result.h"
 #include <sqlpp11/postgresql/pgexception.h>
 #include "string"
-#include "postgresql/libpq-fe.h"
+#include "pgsql/libpq-fe.h"
 
 namespace sqlpp
 {

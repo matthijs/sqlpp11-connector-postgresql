@@ -27,7 +27,9 @@ add_library(sqlpp11_postgresql_testing INTERFACE)
 
 target_include_directories(sqlpp11_postgresql_testing INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(test_names Returning)
+set(test_names
+    Select
+    Returning)
 
 target_compile_features(sqlpp11_postgresql_testing INTERFACE
 	cxx_auto_type)

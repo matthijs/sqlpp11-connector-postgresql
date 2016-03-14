@@ -131,5 +131,15 @@ namespace sqlpp
       *value = res.getValue<const char*>(_handle->count, index);
       *len = res.length(_handle->count, index);
     }
+
+    void bind_result_t::_bind_date_result(size_t index, ::sqlpp::chrono::day_point *value, bool *is_null)
+    {
+
+    }
+
+    void bind_result_t::_bind_date_time_result(size_t index, ::sqlpp::chrono::microsecond_point *value, bool *is_null)
+    {
+
+    }
   }
 }

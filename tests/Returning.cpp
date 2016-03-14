@@ -5,7 +5,8 @@
 #include <sqlpp11/sqlpp11.h>
 
 #include "MockDb.h"
-#include "Sample.h"
+#include "TabFoo.h"
+#include "TabBar.h"
 
 int Returning(int argc, char **argv) {
 
@@ -20,22 +21,24 @@ int Returning(int argc, char **argv) {
   MockDb::_serializer_context_t printer = {};
 
   // Model
-  test::TabBar t_bar;
-  test::TabFoo t_foo;
-  std::cout << serialize(sqlpp::postgresql::insert_into(t_bar)
-	  .set(t_bar.gamma = true, t_bar.beta = "test")
-	  .returning(t_bar.beta, t_bar.gamma), printer).str() << std::endl;
-  printer.reset();
+//  model::TabBar t_bar;
+//  model::TabFoo t_foo;
+//  std::cout << serialize(sqlpp::postgresql::insert_into(t_bar)
+//	  .set(t_bar.gamma = true, t_bar.beta = "test")
+//	  .returning(t_bar.beta, t_bar.gamma), printer).str() << std::endl;
+//  printer.reset();
 
-  std::cout << serialize(sqlpp::postgresql::insert_into(t_bar)
-	  .set(t_bar.gamma = true, t_bar.beta = "test")
-	  .returning(t_bar.beta), printer).str() << std::endl;
-  printer.reset();
+//  std::cout << serialize(sqlpp::postgresql::insert_into(t_bar)
+//	  .set(t_bar.gamma = true, t_bar.beta = "test")
+//	  .returning(t_bar.beta), printer).str() << std::endl;
+//  printer.reset();
 
 //  std::cout << serialize(sqlpp::postgresql::insert_into(t_bar)
 //                         .set(t_bar.gamma = true, t_bar.beta = "test")
-//                         .returning(all_of(t_bar)), printer).str() << std::endl;
+//                         .returning(t_bar.beta), printer).str() << std::endl;
 //  printer.reset();
+
+
 
 //  std::cout << serialize(sqlpp::postgresql::insert_into(t_bar)
 //                         .set(t_bar.gamma = true, t_bar.beta = "test")

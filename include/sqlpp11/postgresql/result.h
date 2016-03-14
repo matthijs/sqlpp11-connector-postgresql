@@ -1,5 +1,5 @@
 #pragma once
-#include "postgresql/libpq-fe.h"
+#include "pgsql/libpq-fe.h"
 #include <sstream>
 #include <string>
 #include <iostream>

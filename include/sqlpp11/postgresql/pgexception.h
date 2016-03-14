@@ -2,7 +2,7 @@
 #define SQLPP_POSTGRES_PGEXCEPTION_H
 
 #include <sqlpp11/exception.h>
-#include <postgresql/libpq-fe.h>
+#include <pgsql/libpq-fe.h>
 #include <iostream>
 #include <cstring>
 #include <assert.h>

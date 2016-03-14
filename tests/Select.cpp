@@ -83,68 +83,85 @@ int Select(int argc, char **argv)
   }
   sql::connection db(config);
 
+  db.execute(R"(DROP TABLE IF EXISTS tabfoo;)");
+  db.execute(R"(CREATE TABLE tabfoo
+             (
+               alpha bigserial NOT NULL,
+               beta smallint,
+               gamma text,
+               c_bool boolean,
+               c_timepoint timestamp with time zone,
+               c_day date
+             ))");
+
   testSelectAll(db, 0);
   db(insert_into(tab).default_values());
-//  testSelectAll(db, 1);
-//  db(insert_into(tab).set(tab.gamma = true, tab.beta = "cheesecake"));
-//  testSelectAll(db, 2);
-//  db(insert_into(tab).set(tab.gamma = true, tab.beta = "cheesecake"));
-//  testSelectAll(db, 3);
+  testSelectAll(db, 1);
+  db(insert_into(tab).set(tab.c_bool = true, tab.gamma = "cheesecake"));
+  testSelectAll(db, 2);
+  db(insert_into(tab).set(tab.c_bool = true, tab.gamma = "cheesecake"));
+  testSelectAll(db, 3);
 
-//  // selecting two multicolumns
-//  for (const auto& row :
-//       db(select(multi_column(tab.alpha, tab.beta, tab.gamma).as(left), multi_column(all_of(tab)).as(tab))
-//              .from(tab)
-//              .where(true)))
-//  {
-//    std::cerr << "row.left.alpha: " << row.left.alpha << ", row.left.beta: " << row.left.beta
-//              << ", row.left.gamma: " << row.left.gamma << std::endl;
-//    std::cerr << "row.tabSample.alpha: " << row.tabSample.alpha << ", row.tabSample.beta: " << row.tabSample.beta
-//              << ", row.tabSample.gamma: " << row.tabSample.gamma << std::endl;
-//  };
+  // selecting two multicolumns
+  for (const auto& row :
+       db(select(multi_column(tab.alpha, tab.beta, tab.gamma).as(left), multi_column(all_of(tab)).as(tab))
+              .from(tab)
+              .where(true)))
+  {
+    std::cerr << "row.left.alpha: " << row.left.alpha << ", row.left.beta: " << row.left.beta
+              << ", row.left.gamma: " << row.left.gamma << std::endl;
+//    std::cerr << "row.tabSample.alpha: " << row.tabfoo.alpha << ", row.tabSample.beta: " << row.tabSample.beta
+//              << ", row.tabSample.gamma: " << row.tabfoo.gamma << std::endl;
+  };
 
-//  // test functions and operators
-//  db(select(all_of(tab)).from(tab).where(tab.alpha.is_null()));
-//  db(select(all_of(tab)).from(tab).where(tab.alpha.is_not_null()));
-//  db(select(all_of(tab)).from(tab).where(tab.alpha.in(1, 2, 3)));
-//  db(select(all_of(tab)).from(tab).where(tab.alpha.in(sqlpp::value_list(std::vector<int>{1, 2, 3, 4}))));
-//  db(select(all_of(tab)).from(tab).where(tab.alpha.not_in(1, 2, 3)));
-//  db(select(all_of(tab)).from(tab).where(tab.alpha.not_in(sqlpp::value_list(std::vector<int>{1, 2, 3, 4}))));
-//  db(select(count(tab.alpha)).from(tab).where(true));
-//  db(select(avg(tab.alpha)).from(tab).where(true));
-//  db(select(max(tab.alpha)).from(tab).where(true));
-//  db(select(min(tab.alpha)).from(tab).where(true));
-//  db(select(exists(select(tab.alpha).from(tab).where(tab.alpha > 7))).from(tab).where(true));
-//  db(select(all_of(tab)).from(tab).where(tab.alpha == any(select(tab.alpha).from(tab).where(tab.alpha < 3))));
-//  db(select(all_of(tab)).from(tab).where(tab.alpha == some(select(tab.alpha).from(tab).where(tab.alpha < 3))));
+  // test functions and operators
+  db(select(all_of(tab)).from(tab).where(tab.alpha.is_null()));
+  db(select(all_of(tab)).from(tab).where(tab.alpha.is_not_null()));
+  db(select(all_of(tab)).from(tab).where(tab.alpha.in(1, 2, 3)));
+  db(select(all_of(tab)).from(tab).where(tab.alpha.in(sqlpp::value_list(std::vector<int>{1, 2, 3, 4}))));
+  db(select(all_of(tab)).from(tab).where(tab.alpha.not_in(1, 2, 3)));
+  db(select(all_of(tab)).from(tab).where(tab.alpha.not_in(sqlpp::value_list(std::vector<int>{1, 2, 3, 4}))));
+  db(select(count(tab.alpha)).from(tab).where(true));
+  db(select(avg(tab.alpha)).from(tab).where(true));
+  db(select(max(tab.alpha)).from(tab).where(true));
+  db(select(min(tab.alpha)).from(tab).where(true));
+  db(select(exists(select(tab.alpha).from(tab).where(tab.alpha > 7))).from(tab).where(true));
+  db(select(all_of(tab)).from(tab).where(tab.alpha == any(select(tab.alpha).from(tab).where(tab.alpha < 3))));
+  db(select(all_of(tab)).from(tab).where(tab.alpha == some(select(tab.alpha).from(tab).where(tab.alpha < 3))));
+  db(select(all_of(tab)).from(tab).where(tab.alpha + tab.alpha > 3));
+  db(select(all_of(tab)).from(tab).where((tab.gamma + tab.gamma) == ""));
+  db(select(all_of(tab)).from(tab).where((tab.gamma + tab.gamma).like("%'\"%")));
 
-//  db(select(all_of(tab)).from(tab).where(tab.alpha + tab.alpha > 3));
-//  db(select(all_of(tab)).from(tab).where((tab.beta + tab.beta) == ""));
-//  db(select(all_of(tab)).from(tab).where((tab.beta + tab.beta).like("%'\"%")));
+  // test boolean value
+  db(insert_into(tab).set(tab.c_bool = true, tab.gamma="asdf"));
+  db(insert_into(tab).set(tab.c_bool = false, tab.gamma="asdfg"));
 
-//  // insert
-//  db(insert_into(tab).set(tab.gamma = true));
+  assert(     db(select(tab.c_bool).from(tab).where(tab.gamma == "asdf")).front().c_bool );
+  assert( not db(select(tab.c_bool).from(tab).where(tab.gamma == "asdfg")).front().c_bool );
+  assert( not db(select(tab.c_bool).from(tab).where(tab.alpha == 1)).front().c_bool );
 
-//  // update
-//  db(update(tab).set(tab.gamma = false).where(tab.alpha.in(1)));
-//  db(update(tab).set(tab.gamma = false).where(tab.alpha.in(sqlpp::value_list(std::vector<int>{1, 2, 3, 4}))));
+  // test
 
-//  // remove
-//  db(remove_from(tab).where(tab.alpha == tab.alpha + 3));
+  // update
+  db(update(tab).set(tab.c_bool = false).where(tab.alpha.in(1)));
+  db(update(tab).set(tab.c_bool = false).where(tab.alpha.in(sqlpp::value_list(std::vector<int>{1, 2, 3, 4}))));
 
-//  auto result = db(select(all_of(tab)).from(tab).where(true));
-//  std::cerr << "Accessing a field directly from the result (using the current row): " << result.begin()->alpha
-//            << std::endl;
-//  std::cerr << "Can do that again, no problem: " << result.begin()->alpha << std::endl;
+  // remove
+  db(remove_from(tab).where(tab.alpha == tab.alpha + 3));
 
-//  auto tx = start_transaction(db);
-//  if (const auto& row = *db(select(all_of(tab), select(max(tab.alpha)).from(tab)).from(tab).where(true)).begin())
-//  {
-//    int a = row.alpha;
-//    int m = row.max;
-//    std::cerr << "-----------------------------" << a << ", " << m << std::endl;
-//  }
-//  tx.commit();
+  auto result = db(select(all_of(tab)).from(tab).where(true));
+  std::cerr << "Accessing a field directly from the result (using the current row): " << result.begin()->alpha
+            << std::endl;
+  std::cerr << "Can do that again, no problem: " << result.begin()->alpha << std::endl;
+
+  auto tx = start_transaction(db);
+  if (const auto& row = *db(select(all_of(tab), select(max(tab.alpha)).from(tab)).from(tab).where(true)).begin())
+  {
+    int a = row.alpha;
+    int m = row.max;
+    std::cerr << "-----------------------------" << a << ", " << m << std::endl;
+  }
+  tx.commit();
 
   return 0;
 }
