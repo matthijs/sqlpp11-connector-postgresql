@@ -32,6 +32,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <date.h>
 
 namespace sqlpp
 {
@@ -115,6 +116,50 @@ namespace sqlpp
       {
         _handle->paramValues[index] = *value;
       }
+    }
+
+    void prepared_statement_t::_bind_date_parameter(size_t index, const::sqlpp::chrono::day_point *value, bool is_null)
+    {
+        if (_handle->debug)
+        {
+          std::cerr << "PostgreSQL debug: binding date parameter at index: " << index << ", being "
+                    << (is_null ? "" : "not ") << "null" << std::endl;
+        }
+
+        // Assign values
+        _handle->nullValues[index] = is_null;
+        if (!is_null)
+        {
+            const auto ymd = ::date::year_month_day{*value};
+          _handle->paramValues[index] = std::string(std::to_string(static_cast<int>(ymd.year())) + "-" +
+                                                    std::to_string(static_cast<unsigned>(ymd.month()))+ "-" +
+                                                    std::to_string(static_cast<unsigned>(ymd.day())));
+        }
+    }
+
+    void prepared_statement_t::_bind_date_time_parameter(size_t index, const::sqlpp::chrono::microsecond_point *value, bool is_null)
+    {
+        if (_handle->debug)
+        {
+          std::cerr << "PostgreSQL debug: binding date time parameter at index: " << index << ", being "
+                    << (is_null ? "" : "not ") << "null" << std::endl;
+        }
+
+        // Assign values
+        _handle->nullValues[index] = is_null;
+        if (!is_null)
+        {
+            const auto dp = ::date::floor<::date::days>(*value);
+            const auto time = date::make_time(*value - dp);
+            const auto ymd = ::date::year_month_day{dp};
+          _handle->paramValues[index] = std::string(std::to_string(static_cast<int>(ymd.year())) + "-" +
+                                                    std::to_string(static_cast<unsigned>(ymd.month()))+ "-" +
+                                                    std::to_string(static_cast<unsigned>(ymd.day())) + " "+
+                                                    std::to_string(time.hours().count()) + ":" +
+                                                    std::to_string(time.minutes().count()) + ":" +
+                                                    std::to_string(time.seconds().count()) + "sdasd." +
+                                                    std::to_string(time.subseconds().count()));
+        }
     }
   }
 }

@@ -28,6 +28,7 @@ add_library(sqlpp11_postgresql_testing INTERFACE)
 target_include_directories(sqlpp11_postgresql_testing INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(test_names
+    DateTime
     Select
     Returning)
 
