@@ -157,7 +157,7 @@ namespace sqlpp
                                                     std::to_string(static_cast<unsigned>(ymd.day())) + " "+
                                                     std::to_string(time.hours().count()) + ":" +
                                                     std::to_string(time.minutes().count()) + ":" +
-                                                    std::to_string(time.seconds().count()) + "sdasd." +
+                                                    std::to_string(time.seconds().count()) + "." +
                                                     std::to_string(time.subseconds().count()));
         }
     }
