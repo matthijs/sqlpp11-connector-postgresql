@@ -283,7 +283,7 @@ namespace sqlpp
       }
 
       template <typename T>
-      auto _run(const T& t, const std::false_type&) -> decltype(t._run(*this));
+      auto _run(const T& t, const std::false_type&) -> void;
 
       template <typename T>
       auto operator()(const T& t)
