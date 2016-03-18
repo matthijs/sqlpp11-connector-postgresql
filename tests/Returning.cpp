@@ -55,6 +55,9 @@ int Returning(int , char **) {
 
         std::cout << db(i).front().c_timepoint << std::endl;
 
+        auto updated = db(sqlpp::postgresql::update(foo).set(foo.beta = 0).unconditionally().returning(foo.gamma, foo.beta));
+        for(const auto &row : updated)
+            std::cout << "Gamma: " << row.gamma << " Beta: " << row.beta << std::endl;
     }
     catch(sql::pg_exception e){
         return 1;
