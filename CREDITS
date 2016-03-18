@@ -1,0 +1,10 @@
+Credits:
+========
+This library implements the connector for the PostgreSQL database system.
+I would like to thank the following people for their feedback:
+
+ * Roland Bock: Created the sqlpp11 library
+ * Mark Wright: Update the interface to sqlpp11 version 0.30
+ * Zawisza: Interface update added to the python script
+
+If you miss your name of this list, please let me know.

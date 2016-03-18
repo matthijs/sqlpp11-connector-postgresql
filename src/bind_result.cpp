@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, Matthijs Möhlmann
+ * Copyright © 2014-2015, Matthijs Möhlmann
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,98 +30,144 @@
 
 #include <iostream>
 #include <sstream>
+#include <date.h>
 
 #include "detail/prepared_statement_handle.h"
 
-namespace sqlpp {
+namespace sqlpp
+{
+  namespace postgresql
+  {
+    bind_result_t::bind_result_t(const std::shared_ptr<detail::statement_handle_t>& handle) : _handle(handle)
+    {
+      if (this->_handle && this->_handle->debug)
+      {
+        // cerr
+        std::cerr << "PostgreSQL debug: constructing bind result, using handle at: " << this->_handle.get()
+                  << std::endl;
+      }
+    }
 
-	namespace postgresql {
+    bool bind_result_t::next_impl()
+    {
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: accessing next row of handle at " << _handle.get() << std::endl;
+      }
 
-		bind_result_t::bind_result_t(const std::shared_ptr<detail::prepared_statement_handle_t> &handle) : _handle(handle) {
-			if (this->_handle && this->_handle->debug) {
+      // Fetch total amount
+      if (_handle->totalCount == 0U)
+      {
+        _handle->totalCount = _handle->result.records_size();
+        if (_handle->totalCount == 0U)
+          return false;
+      }
+      else
+      {
+        // Next row
+        if (_handle->count < (_handle->totalCount - 1))
+        {
+          _handle->count++;
+        }
+        else
+        {
+          return false;
+        }
+      }
 
-				// cerr
-				std::cerr << "PostgreSQL debug: constructing bind result, using handle at: " << this->_handle.get() << std::endl;
-			}
-		}
+      // Really needed?
+      if (_handle->fields == 0U)
+      {
+        _handle->fields = _handle->result.field_count();
+      }
 
-		bool bind_result_t::next_impl() {
-			if (_handle->debug) {
-				std::cerr << "PostgreSQL debug: accessing next row of handle at " << _handle.get() << std::endl;
-			}
+      return true;
+    }
 
-			// Fetch total amount
-			if (_handle->totalCount == 0U) {
-				_handle->totalCount = PQntuples(_handle->result);
-			} else {
+    void bind_result_t::_bind_boolean_result(size_t index, signed char* value, bool* is_null)
+    {
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: binding boolean result at index: " << index << std::endl;
+      }
 
-				// Next row
-				if (_handle->count < (_handle->totalCount - 1)) {
-					_handle->count++;
-				} else {
-					return false;
-				}
-			}
+      // Assign value
+      const auto& res = _handle->result;
+      *value = res.getValue<bool>(_handle->count, index);
+      *is_null = res.isNull(_handle->count, index);
+    }
 
-			// Really needed?
-			if (_handle->fields == 0U) {
-				_handle->fields = PQnfields(_handle->result);
-			}
+    void bind_result_t::_bind_floating_point_result(size_t index, double* value, bool* is_null)
+    {
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: binding floating_point result at index: " << index << std::endl;
+      }
 
-			return true;
-		}
+      const auto& res = _handle->result;
+      *value = res.getValue<double>(_handle->count, index);
+      *is_null = res.isNull(_handle->count, index);
+    }
 
-		void bind_result_t::_bind_boolean_result(size_t index, signed char *value, bool *is_null) {
-			if (_handle->debug) {
-				std::cerr << "PostgreSQL debug: binding boolean result at index: " << index << std::endl;
-			}
-			if (index > _handle->fields) {
-				throw sqlpp::exception("PostgreSQL error: index out of range");
-			}
+    void bind_result_t::_bind_integral_result(size_t index, int64_t* value, bool* is_null)
+    {
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: binding integral result at index: " << index << std::endl;
+      }
 
-			// Assign value
-			std::istringstream in(PQgetvalue(_handle->result, _handle->count, index));
-			in >> *value;
-			*is_null = PQgetisnull(_handle->result, _handle->count, index);
-		}
+      const auto& res = _handle->result;
+      *value = res.getValue<int64_t>(_handle->count, index);
+      *is_null = res.isNull(_handle->count, index);
+    }
 
-		void bind_result_t::_bind_floating_point_result(size_t index, double *value, bool *is_null) {
-			if (_handle->debug) {
-				std::cerr << "PostgreSQL debug: binding floating_point result at index: " << index << std::endl;
-			}
-			if (index > _handle->fields) {
-				throw sqlpp::exception("PostgreSQL error: index out of range");
-			}
+    void bind_result_t::_bind_text_result(size_t index, const char** value, size_t* len)
+    {
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: binding text result at index: " << index << std::endl;
+      }
 
-			std::istringstream in(PQgetvalue(_handle->result, _handle->count, index));
-			in >> *value;
-			*is_null = PQgetisnull(_handle->result, _handle->count, index);
-		}
+      const auto& res = _handle->result;
+      *value = res.getValue<const char*>(_handle->count, index);
+      *len = res.length(_handle->count, index);
+    }
 
-		void bind_result_t::_bind_integral_result(size_t index, int64_t *value, bool *is_null) {
-			if (_handle->debug) {
-				std::cerr << "PostgreSQL debug: binding integral result at index: " << index << std::endl;
-			}
-			if (index > _handle->fields) {
-				throw sqlpp::exception("PostgreSQL error: index out of range");
-			}
+    void bind_result_t::_bind_date_result(size_t index, ::sqlpp::chrono::day_point *value, bool *is_null)
+    {
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: binding date result at index: " << index << std::endl;
+      }
 
-			std::istringstream in(PQgetvalue(_handle->result, _handle->count, index));
-			in >> *value;
-			*is_null = PQgetisnull(_handle->result, _handle->count, index);
-		}
+      const auto& res = _handle->result;
+      int y,m,d;
+      const auto buf = res.getValue<const char*>(_handle->count, index);
+      if( strlen(buf) ){
+        sscanf(buf, "%4d-%2d-%2d", &y,&m,&d );
+        *is_null = false;
+        *value = ::date::year(y) / ::date::month(m) / ::date::day(d);
+      }
 
-		void bind_result_t::_bind_text_result(size_t index, const char **value, size_t *len) {
-			if (_handle->debug) {
-				std::cerr << "PostgreSQL debug: binding text result at index: " << index << std::endl;
-			}
-			if (index > _handle->fields) {
-				throw sqlpp::exception("PostgreSQL error: index out of range");
-			}
+    }
 
-			*value = const_cast<const char *>(PQgetvalue(_handle->result, _handle->count, index));
-			*len = PQgetlength(_handle->result, _handle->count, index);
-		}
-	}
+    void bind_result_t::_bind_date_time_result(size_t index, ::sqlpp::chrono::microsecond_point *value, bool *is_null)
+    {
+        if (_handle->debug)
+        {
+          std::cerr << "PostgreSQL debug: binding date result at index: " << index << std::endl;
+        }
+
+        const auto& res = _handle->result;
+        unsigned y,mon,d,h,min,s,ms(0);
+        const auto buf = res.getValue<const char*>(_handle->count, index);
+        if( strlen(buf) ){
+          sscanf(buf, "%4d-%2d-%2d %2d:%2d:%2d.%3d", &y,&mon,&d,&h,&min,&s,&ms );
+          *is_null = false;
+          *value = ::date::day_point( ::date::year(y) / ::date::month(mon) / ::date::day(d) ) +
+                  std::chrono::hours(h) + std::chrono::minutes(min) + std::chrono::seconds(s) +
+                  std::chrono::microseconds(ms*1000);
+        }
+    }
+  }
 }
-

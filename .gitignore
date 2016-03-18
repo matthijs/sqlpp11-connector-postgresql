@@ -25,3 +25,7 @@
 config.log
 .sconf_temp
 .sconsign.dblite
+*.txt.user
+# Build directory
+build
+*.txt.user.*

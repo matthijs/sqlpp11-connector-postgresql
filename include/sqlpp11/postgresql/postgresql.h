@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, Matthijs Möhlmann
+ * Copyright © 2014-2015, Matthijs Möhlmann
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,5 +29,8 @@
 #define SQLPP_POSTGRESQL_H
 
 #include <sqlpp11/postgresql/connection.h>
+#include <sqlpp11/postgresql/pgexception.h>
+#include <sqlpp11/postgresql/insert.h>
+#include <sqlpp11/postgresql/update.h>
 
 #endif

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, Matthijs Möhlmann
+ * Copyright © 2014-2015, Matthijs Möhlmann
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,67 +32,134 @@
 
 #include <iostream>
 #include <sstream>
+#include <date.h>
 
-namespace sqlpp {
+namespace sqlpp
+{
+  namespace postgresql
+  {
+    // ctor
+    prepared_statement_t::prepared_statement_t(std::shared_ptr<detail::prepared_statement_handle_t>&& handle)
+        : _handle{std::move(handle)}
+    {
+      if (_handle && _handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: constructing prepared_statement, using handle at: " << _handle.get()
+                  << std::endl;
+      }
+    }
 
-	namespace postgresql {
+    void prepared_statement_t::_bind_boolean_parameter(size_t index, const signed char* value, bool is_null)
+    {
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: binding boolean parameter " << (*value ? "true" : "false")
+                  << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
+      }
 
-		// ctor
-		prepared_statement_t::prepared_statement_t(std::shared_ptr<detail::prepared_statement_handle_t> &&handle) : _handle{std::move(handle)} {
-			if (_handle && _handle->debug) {
-				std::cerr << "PostgreSQL debug: constructing prepared_statement, using handle at: " << _handle.get() << std::endl;
-			}
-		}
+      _handle->nullValues[index] = is_null;
+      if (!is_null)
+      {
+        if (*value)
+        {
+          _handle->paramValues[index] = "TRUE";
+        }
+        else
+        {
+          _handle->paramValues[index] = "FALSE";
+        }
+      }
+    }
 
-		void prepared_statement_t::_bind_boolean_parameter(size_t index, const signed char *value, bool is_null) {
-			if (_handle->debug) {
-				std::cerr << "PostgreSQL debug: binding boolean parameter " << (*value ? "true" :  "false") << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
-			}
+    void prepared_statement_t::_bind_floating_point_parameter(size_t index, const double* value, bool is_null)
+    {
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: binding floating_point parameter " << *value << " at index: " << index
+                  << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
+      }
 
-			_handle->nullValues[index] = is_null;
-			if (!is_null) {
-				if (*value) {
-					_handle->paramValues[index] = "TRUE";
-				} else {
-					_handle->paramValues[index] = "FALSE";
-				}
-			}
-		}
+      _handle->nullValues[index] = is_null;
+      if (!is_null)
+      {
+        _handle->paramValues[index] = std::to_string(*value);
+      }
+    }
 
-		void prepared_statement_t::_bind_floating_point_parameter(size_t index, const double *value, bool is_null) {
-			if (_handle->debug) {
-				std::cerr << "PostgreSQL debug: binding floating_point parameter " << *value << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
-			}
+    void prepared_statement_t::_bind_integral_parameter(size_t index, const int64_t* value, bool is_null)
+    {
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: binding integral parameter " << *value << " at index: " << index << ", being "
+                  << (is_null ? "" : "not ") << "null" << std::endl;
+      }
 
-			_handle->nullValues[index] = is_null;
-			if (!is_null) {
-				_handle->paramValues[index] = std::to_string(*value);
-			}
-		}
+      // Assign values
+      _handle->nullValues[index] = is_null;
+      if (!is_null)
+      {
+        _handle->paramValues[index] = std::to_string(*value);
+      }
+    }
 
-		void prepared_statement_t::_bind_integral_parameter(size_t index, const int64_t *value, bool is_null) {
-			if (_handle->debug) {
-				std::cerr << "PostgreSQL debug: binding integral parameter " << *value << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
-			}
+    void prepared_statement_t::_bind_text_parameter(size_t index, const std::string* value, bool is_null)
+    {
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: binding text parameter " << *value << " at index: " << index << ", being "
+                  << (is_null ? "" : "not ") << "null" << std::endl;
+      }
 
-			// Assign values
-			_handle->nullValues[index] = is_null;
-			if (!is_null) {
-				_handle->paramValues[index] = std::to_string(*value);
-			}
-		}
+      // Assign values
+      _handle->nullValues[index] = is_null;
+      if (!is_null)
+      {
+        _handle->paramValues[index] = *value;
+      }
+    }
 
-		void prepared_statement_t::_bind_text_parameter(size_t index, const std::string *value, bool is_null) {
-			if (_handle->debug) {
-				std::cerr << "PostgreSQL debug: binding text parameter " << *value << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
-			}
+    void prepared_statement_t::_bind_date_parameter(size_t index, const::sqlpp::chrono::day_point *value, bool is_null)
+    {
+        if (_handle->debug)
+        {
+          std::cerr << "PostgreSQL debug: binding date parameter at index: " << index << ", being "
+                    << (is_null ? "" : "not ") << "null" << std::endl;
+        }
 
-			// Assign values
-			_handle->nullValues[index] = is_null;
-			if (!is_null) {
-				_handle->paramValues[index] = *value;
-			}
-		}
-	}
+        // Assign values
+        _handle->nullValues[index] = is_null;
+        if (!is_null)
+        {
+            const auto ymd = ::date::year_month_day{*value};
+          _handle->paramValues[index] = std::string(std::to_string(static_cast<int>(ymd.year())) + "-" +
+                                                    std::to_string(static_cast<unsigned>(ymd.month()))+ "-" +
+                                                    std::to_string(static_cast<unsigned>(ymd.day())));
+        }
+    }
+
+    void prepared_statement_t::_bind_date_time_parameter(size_t index, const::sqlpp::chrono::microsecond_point *value, bool is_null)
+    {
+        if (_handle->debug)
+        {
+          std::cerr << "PostgreSQL debug: binding date time parameter at index: " << index << ", being "
+                    << (is_null ? "" : "not ") << "null" << std::endl;
+        }
+
+        // Assign values
+        _handle->nullValues[index] = is_null;
+        if (!is_null)
+        {
+            const auto dp = ::date::floor<::date::days>(*value);
+            const auto time = date::make_time(*value - dp);
+            const auto ymd = ::date::year_month_day{dp};
+          _handle->paramValues[index] = std::string(std::to_string(static_cast<int>(ymd.year())) + "-" +
+                                                    std::to_string(static_cast<unsigned>(ymd.month()))+ "-" +
+                                                    std::to_string(static_cast<unsigned>(ymd.day())) + " "+
+                                                    std::to_string(time.hours().count()) + ":" +
+                                                    std::to_string(time.minutes().count()) + ":" +
+                                                    std::to_string(time.seconds().count()) + "." +
+                                                    std::to_string(time.subseconds().count()));
+        }
+    }
+  }
 }
-

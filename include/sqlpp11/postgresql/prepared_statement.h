@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, Matthijs Möhlmann
+ * Copyright © 2014-2015, Matthijs Möhlmann
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,44 +29,51 @@
 #define SQLPP_POSTGRESQL_PREPARED_STATEMENT_H
 
 #include <memory>
+#include <sqlpp11/chrono.h>
 
-namespace sqlpp {
+namespace sqlpp
+{
+  namespace postgresql
+  {
+    // Forward declaration
+    class connection;
 
-	namespace postgresql {
+    // Detail namespace
+    namespace detail
+    {
+      //                        struct statement_handle_t;
+      struct prepared_statement_handle_t;
+    }
 
-		// Forward declaration
-		class connection;
+    class prepared_statement_t
+    {
+      friend sqlpp::postgresql::connection;
 
-		// Detail namespace
-		namespace detail {
+    private:
+      std::shared_ptr<detail::prepared_statement_handle_t> _handle;
 
-			struct prepared_statement_handle_t;
-		}
+    public:
+      prepared_statement_t() = delete;
+      prepared_statement_t(std::shared_ptr<detail::prepared_statement_handle_t>&& handle);
+      prepared_statement_t(const prepared_statement_t&) = delete;
+      prepared_statement_t(prepared_statement_t&&) = default;
+      prepared_statement_t& operator=(const prepared_statement_t&) = delete;
+      prepared_statement_t& operator=(prepared_statement_t&&) = default;
+      ~prepared_statement_t() = default;
 
-		class __attribute__((__visibility__("default"))) prepared_statement_t {
-			friend sqlpp::postgresql::connection;
-			private:
-				std::shared_ptr<detail::prepared_statement_handle_t> _handle;
+      bool operator==(const prepared_statement_t& rhs)
+      {
+        return (this->_handle == rhs._handle);
+      }
 
-			public:
-				prepared_statement_t() = delete;
-				prepared_statement_t(std::shared_ptr<detail::prepared_statement_handle_t> &&handle);
-				prepared_statement_t(const prepared_statement_t &) = delete;
-				prepared_statement_t(prepared_statement_t &&) = default;
-				prepared_statement_t &operator=(const prepared_statement_t &) = delete;
-				prepared_statement_t &operator=(prepared_statement_t &&) = default;
-				~prepared_statement_t() = default;
-
-				bool operator==(const prepared_statement_t &rhs) {
-					return (this->_handle == rhs._handle);
-				}
-
-				void _bind_boolean_parameter(size_t index, const signed char *value, bool is_null);
-				void _bind_floating_point_parameter(size_t index, const double *value, bool is_null);
-				void _bind_integral_parameter(size_t index, const int64_t *value, bool is_null);
-				void _bind_text_parameter(size_t index, const std::string *value, bool is_null);
-		};
-	}
+      void _bind_boolean_parameter(size_t index, const signed char* value, bool is_null);
+      void _bind_floating_point_parameter(size_t index, const double* value, bool is_null);
+      void _bind_integral_parameter(size_t index, const int64_t* value, bool is_null);
+      void _bind_text_parameter(size_t index, const std::string* value, bool is_null);
+      void _bind_date_parameter(size_t index, const ::sqlpp::chrono::day_point* value, bool is_null);
+      void _bind_date_time_parameter(size_t index, const ::sqlpp::chrono::microsecond_point* value, bool is_null);
+    };
+  }
 }
 
 #endif

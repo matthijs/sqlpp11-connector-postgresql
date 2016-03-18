@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, Matthijs Möhlmann
+ * Copyright © 2014-2015, Matthijs Möhlmann
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,201 +33,317 @@
 #include <sqlpp11/postgresql/connection_config.h>
 #include <sqlpp11/postgresql/bind_result.h>
 #include <sqlpp11/postgresql/prepared_statement.h>
+#include <sqlpp11/postgresql/result.h>
 
 #include <sstream>
 
-namespace sqlpp {
+struct pg_conn;
+typedef struct pg_conn PGconn;
 
-	namespace postgresql {
+namespace sqlpp
+{
+  namespace postgresql
+  {
+    namespace detail
+    {
+      // Forward declaration
+      struct connection_handle;
+    }
 
-		namespace detail {
+    // Forward declaration
+    class connection;
 
-			// Forward declaration
-			struct connection_handle;
-		}
+    // Context
+    struct context_t
+    {
+      context_t(const connection& db) : _db(db)
+      {
+      }
+      context_t(const connection&&) = delete;
 
-		// Forward declaration
-		class connection;
+      template <typename T>
+      std::ostream& operator<<(T t)
+      {
+        return _os << t;
+      }
 
-		// Context
-		struct context_t {
-			context_t(const connection &db) : _db(db) {}
+      std::ostream& operator<<(bool t)
+      {
+        return _os << (t ? "TRUE" : "FALSE");
+      }
 
-			template<typename T>
-				std::ostream &operator<<(T t) {
-					return _os << t;
-				}
+      std::string escape(const std::string& arg);
 
-			std::string escape(const std::string &arg);
+      std::string str() const
+      {
+        return _os.str();
+      }
 
-			std::string str() const {
-				return _os.str();
-			}
+      size_t count() const
+      {
+        return _count;
+      }
 
-			size_t count() const {
-				return _count;
-			}
+      void pop_count()
+      {
+        ++_count;
+      }
 
-			void pop_count() {
-				++_count;
-			}
+      const connection& _db;
+      std::ostringstream _os;
+      size_t _count{1};
+    };
 
-			const connection &_db;
-			std::ostringstream _os;
-			size_t _count {1};
-		};
+    // Connection
+    class DLL_PUBLIC connection : public sqlpp::connection
+    {
+    private:
+      std::unique_ptr<detail::connection_handle> _handle;
+      bool _transaction_active{false};
 
-		// Connection
-		class __attribute__((__visibility__("default"))) connection : public sqlpp::connection {
-			private:
-				std::unique_ptr<detail::connection_handle> _handle;
-				bool _transaction_active {false};
+      // direct execution
+      bind_result_t select_impl(const std::string& stmt);
+      size_t insert_impl(const std::string& stmt);
+      size_t update_impl(const std::string& stmt);
+      size_t remove_impl(const std::string& stmt);
 
-				// direct execution
-				bind_result_t select_impl(const std::string &stmt);
-				size_t insert_impl(const std::string &stmt);
-				size_t update_impl(const std::string &stmt);
-				size_t remove_impl(const std::string &stmt);
+      // prepared execution
+      prepared_statement_t prepare_impl(const std::string& stmt, const size_t& paramCount);
+      bind_result_t run_prepared_select_impl(prepared_statement_t& prep);
+      size_t run_prepared_execute_impl(prepared_statement_t& prep);
+      size_t run_prepared_insert_impl(prepared_statement_t& prep);
+      size_t run_prepared_update_impl(prepared_statement_t& prep);
+      size_t run_prepared_remove_impl(prepared_statement_t& prep);
 
-				// prepared execution
-				prepared_statement_t prepare_impl(const std::string &stmt, const size_t &paramCount);
-				bind_result_t run_prepared_select_impl(prepared_statement_t &prep);
-				size_t run_prepared_insert_impl(prepared_statement_t &prep);
-				size_t run_prepared_update_impl(prepared_statement_t &prep);
-				size_t run_prepared_remove_impl(prepared_statement_t &prep);
+    public:
+      using _prepared_statement_t = prepared_statement_t;
+      using _context_t = context_t;
+      using _serializer_context_t = _context_t;
+      using _interpreter_context_t = _context_t;
 
-			public:
-				using _prepared_statement_t = prepared_statement_t;
-				using _context_t = context_t;
-				using _serializer_context_t = _context_t;
-				using _interpreter_context_t = _context_t;
+      struct _tags
+      {
+        using _null_result_is_trivial_value = std::true_type;
+      };
 
-				// ctor / dtor
-				connection(const std::shared_ptr<connection_config> &config);
-				~connection();
-				connection(const connection &) = delete;
-				connection(connection &&) = delete;
-				connection &operator=(const connection &) = delete;
-				connection &operator=(connection &&) = delete;
+      template <typename T>
+      static _context_t& _serialize_interpretable(const T& t, _context_t& context)
+      {
+        return ::sqlpp::serialize(t, context);
+      }
 
-				// Select stmt (returns a result)
-				template<typename Select>
-					bind_result_t select(const Select &s) {
-						_context_t ctx (*this);
-						serialize(s, ctx);
-						return select_impl(ctx.str());
-					}
+      template <typename T>
+      static _context_t& _interpret_interpretable(const T& t, _context_t& context)
+      {
+        return ::sqlpp::serialize(t, context);
+      }
 
-				// Prepared select
-				template<typename Select>
-					_prepared_statement_t prepare_select(Select &s) {
-						_context_t ctx (*this);
-						serialize(s, ctx);
-						return prepare_impl(ctx.str(), ctx.count() - 1);
-					}
+      // ctor / dtor
+      connection(const std::shared_ptr<connection_config>& config);
+      ~connection();
+      connection(const connection&) = delete;
+      connection(connection&&) = delete;
+      connection& operator=(const connection&) = delete;
+      connection& operator=(connection&&) = delete;
 
-				template<typename PreparedSelect>
-					bind_result_t run_prepared_select(const PreparedSelect &s) {
-						s._bind_params();
-						return run_prepared_select_impl(s._prepared_statement);
-					}
+      // Select stmt (returns a result)
+      template <typename Select>
+      bind_result_t select(const Select& s)
+      {
+        _context_t ctx(*this);
+        serialize(s, ctx);
+        return select_impl(ctx.str());
+      }
 
-				// Insert
-				template<typename Insert>
-					size_t insert(const Insert &i) {
-						_context_t ctx (*this);
-						serialize(i, ctx);
-						return insert_impl(ctx.str());
-					}
+      // Prepared select
+      template <typename Select>
+      _prepared_statement_t prepare_select(Select& s)
+      {
+        _context_t ctx(*this);
+        serialize(s, ctx);
+        return prepare_impl(ctx.str(), ctx.count() - 1);
+      }
 
-				template<typename Insert>
-					prepared_statement_t prepare_insert(Insert &i) {
-						_context_t ctx (*this);
-						serialize(i, ctx);
-						return prepare_impl(ctx.str(), ctx.count() - 1);
-					}
+      template <typename PreparedSelect>
+      bind_result_t run_prepared_select(const PreparedSelect& s)
+      {
+        s._bind_params();
+        return run_prepared_select_impl(s._prepared_statement);
+      }
 
-				template<typename PreparedInsert>
-					size_t run_prepared_insert(const PreparedInsert &i) {
-						i._bind_params();
-						return run_prepared_insert_impl(i._prepared_statement);
-					}
+      // Insert
+      template <typename Insert>
+      size_t insert(const Insert& i)
+      {
+        _context_t ctx(*this);
+        serialize(i, ctx);
+        return insert_impl(ctx.str());
+      }
 
-				// Update
-				template<typename Update>
-					size_t update(const Update &u) {
-						_context_t ctx (*this);
-						serialize(u, ctx);
-						return update_impl(ctx.str());
-					}
+      template <typename Insert>
+      prepared_statement_t prepare_insert(Insert& i)
+      {
+        _context_t ctx(*this);
+        serialize(i, ctx);
+        return prepare_impl(ctx.str(), ctx.count() - 1);
+      }
 
-				template<typename Update>
-					prepared_statement_t prepare_update(Update &u) {
-						_context_t ctx (*this);
-						serialize(u, ctx);
-						return prepare_impl(ctx.str(), ctx.count() - 1);
-					}
+      template <typename PreparedInsert>
+      size_t run_prepared_insert(const PreparedInsert& i)
+      {
+        i._bind_params();
+        return run_prepared_insert_impl(i._prepared_statement);
+      }
 
-				template<typename PreparedUpdate>
-					size_t run_prepared_update(const PreparedUpdate &u) {
-						u._bind_params();
-						return run_prepared_update_impl(u._prepared_statement);
-					}
+      // Update
+      template <typename Update>
+      size_t update(const Update& u)
+      {
+        _context_t ctx(*this);
+        serialize(u, ctx);
+        return update_impl(ctx.str());
+      }
 
-				// Remove
-				template<typename Remove>
-					size_t remove(const Remove &r) {
-						_context_t ctx (*this);
-						serialize(r, ctx);
-						return remove_impl(ctx.str());
-					}
+      template <typename Update>
+      prepared_statement_t prepare_update(Update& u)
+      {
+        _context_t ctx(*this);
+        serialize(u, ctx);
+        return prepare_impl(ctx.str(), ctx.count() - 1);
+      }
 
-				template<typename Remove>
-					prepared_statement_t prepare_remove(Remove &r) {
-						_context_t ctx (*this);
-						serialize(r, ctx);
-						return prepare_impl(ctx.str(), ctx.count() - 1);
-					}
+      template <typename PreparedUpdate>
+      size_t run_prepared_update(const PreparedUpdate& u)
+      {
+        u._bind_params();
+        return run_prepared_update_impl(u._prepared_statement);
+      }
 
-				template<typename PreparedRemove>
-					size_t run_prepared_remove(const PreparedRemove &r) {
-						r._bind_params();
-						return run_prepared_remove_impl(r._prepared_statement);
-					}
+      // Remove
+      template <typename Remove>
+      size_t remove(const Remove& r)
+      {
+        _context_t ctx(*this);
+        serialize(r, ctx);
+        return remove_impl(ctx.str());
+      }
 
-				// escape argument
-				std::string escape(const std::string &s) const;
+      template <typename Remove>
+      prepared_statement_t prepare_remove(Remove& r)
+      {
+        _context_t ctx(*this);
+        serialize(r, ctx);
+        return prepare_impl(ctx.str(), ctx.count() - 1);
+      }
 
-				//! call run on the argument
-				template<typename T>
-					auto run(const T& t) -> decltype(t._run(*this)) {
-						return t._run(*this);
-					}
+      template <typename PreparedRemove>
+      size_t run_prepared_remove(const PreparedRemove& r)
+      {
+        r._bind_params();
+        return run_prepared_remove_impl(r._prepared_statement);
+      }
 
-				//! call prepare on the argument
-				template<typename T>
-					auto prepare(const T &t) -> decltype(t._prepare(*this)) {
-						return t._prepare(*this);
-					}
+      // Execute
+      std::shared_ptr<sqlpp::postgresql::detail::statement_handle_t> execute(const std::string& command);
 
-				//! start transaction
-				void start_transaction();
+      template <
+          typename Execute,
+          typename Enable = typename std::enable_if<not std::is_convertible<Execute, std::string>::value, void>::type>
+      std::shared_ptr<detail::prepared_statement_handle_t> execute(const Execute& x)
+      {
+        _context_t ctx(*this);
+        serialize(x, ctx);
+        return execute(ctx.str());
+      }
 
-				//! commit transaction (or throw transaction if transaction has
-				// finished already)
-				void commit_transaction();
+      template <typename Execute>
+      _prepared_statement_t prepare_execute(Execute& x)
+      {
+        _context_t ctx(*this);
+        serialize(x, ctx);
+        return prepare_impl(ctx.str(), ctx.count() - 1);
+      }
 
-				//! rollback transaction
-				void rollback_transaction(bool report);
+      template <typename PreparedExecute>
+      void run_prepared_execute(const PreparedExecute& x)
+      {
+        x._prepared_statement._reset();
+        x._bind_params();
+        return run_prepared_execute_impl(x._prepared_statement);
+      }
 
-				//! report rollback failure
-				void report_rollback_failure(const std::string &message) noexcept;
-		};
+      // escape argument
+      std::string escape(const std::string& s) const;
 
-		std::string context_t::escape(const std::string &arg) {
-			return _db.escape(arg);
-		}
-	}
+      //! call run on the argument
+      template <typename T>
+      auto _run(const T& t, const std::true_type&) -> decltype(t._run(*this))
+      {
+        return t._run(*this);
+      }
+
+      template <typename T>
+      auto _run(const T& t, const std::false_type&) -> void;
+
+      template <typename T>
+      auto operator()(const T& t)
+          -> decltype(this->_run(t, sqlpp::run_check_t<_serializer_context_t, T>{}))
+      {
+          sqlpp::run_check_t<_serializer_context_t, T>::_();
+          return _run(t, sqlpp::run_check_t<_serializer_context_t, T>{});
+      }
+
+      //! call prepare on the argument
+      template <typename T>
+      auto _prepare(const T& t, const std::true_type&) -> decltype(t._prepare(*this))
+      {
+        return t._prepare(*this);
+      }
+
+      template <typename T>
+      auto _prepare(const T& t, const std::false_type&) -> void;
+
+      template <typename T>
+      auto prepare(const T& t)
+          -> decltype(this->_prepare(t, sqlpp::prepare_check_t<_serializer_context_t, T>{}))
+      {
+        sqlpp::prepare_check_t<_serializer_context_t, T>::_();
+        return _prepare(t, sqlpp::prepare_check_t<_serializer_context_t, T>{});
+      }
+
+      //! start transaction
+      void start_transaction();
+
+      //! create savepoint
+      void savepoint(const std::string& name);
+
+      //! ROLLBACK TO SAVEPOINT
+      void rollback_to_savepoint(const std::string& name);
+
+      //! release_savepoint
+      void release_savepoint(const std::string& name);
+
+      //! commit transaction (or throw transaction if transaction has
+      // finished already)
+      void commit_transaction();
+
+      //! rollback transaction
+      void rollback_transaction(bool report = false);
+
+      //! report rollback failure
+      void report_rollback_failure(const std::string& message) noexcept;
+
+      //! get the last inserted id for a certain table
+      uint64_t last_insert_id(const std::string& table, const std::string& fieldname);
+
+      ::PGconn* native_handle();
+    };
+
+    inline std::string context_t::escape(const std::string& arg)
+    {
+      return _db.escape(arg);
+    }
+  }
 }
 
 #include <sqlpp11/postgresql/serializer.h>

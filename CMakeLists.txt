@@ -1,0 +1,51 @@
+# Copyright © 2015, Matthijs Möhlmann
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#   Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+#
+#   Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
+project(sqlpp11-connector-postgresql VERSION 0.1 LANGUAGES CXX)
+
+# Enable tests
+enable_testing()
+
+# Add source directory as source for modules too.
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
+
+message(STATUS "Using ${CMAKE_CXX_COMPILER} (compiler id: ${CMAKE_CXX_COMPILER_ID})")
+set(CMAKE_CXX_FLAGS "-Wall -std=c++1y ${CMAKE_CXX_FLAGS}")
+
+
+# Find required Sqlpp11 library
+find_package(Sqlpp11 REQUIRED)
+#find_package(PostgreSQL REQUIRED)
+
+set(include_dir "${PROJECT_SOURCE_DIR}/include")
+file(GLOB_RECURSE postgresql_headers ${include_dir}/*.h )
+file(GLOB_RECURSE sqlpp_headers ${postgresql_headers} ${SQLPP11_INCLUDE_DIR}/*.h)
+include_directories(${include_dir} "${SQLPP11_INCLUDE_DIR}")
+
+add_subdirectory(src)
+add_subdirectory(tests)
+
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp11" DESTINATION include)
