@@ -94,13 +94,7 @@ namespace sqlpp
     template <>
     struct dynamic_returning_column_list<void>
     {
-      struct _names_t
-      {
-        static constexpr size_t size()
-        {
-          return 0;
-        }
-      };
+      using _names_t = no_name_t;
       _names_t _dynamic_expression_names;
 
       static constexpr bool empty()

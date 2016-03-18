@@ -41,7 +41,7 @@ void testSelectAll(sql::connection& db, int expectedRowCount)
 {
   std::cerr << "--------------------------------------" << std::endl;
   int i = 0;
-  for (const auto& row : db(sqlpp::select(all_of(tab)).from(tab).where(true)))
+  for (const auto& row : db(sqlpp::select(all_of(tab)).from(tab).unconditionally()))
   {
     ++i;
     std::cerr << ">>> row.alpha: " << row.alpha << ", row.beta: " << row.beta << ", row.gamma: " << row.gamma
@@ -50,7 +50,7 @@ void testSelectAll(sql::connection& db, int expectedRowCount)
   };
   assert(i == expectedRowCount);
 
-  auto preparedSelectAll = db.prepare(sqlpp::select(all_of(tab)).from(tab).where(true));
+  auto preparedSelectAll = db.prepare(sqlpp::select(all_of(tab)).from(tab).unconditionally());
   i = 0;
   for (const auto& row : db(preparedSelectAll))
   {
@@ -106,7 +106,7 @@ int Select(int argc, char **argv)
   for (const auto& row :
        db(select(multi_column(tab.alpha, tab.beta, tab.gamma).as(left), multi_column(all_of(tab)).as(tab))
               .from(tab)
-              .where(true)))
+              .unconditionally()))
   {
     std::cerr << "row.left.alpha: " << row.left.alpha << ", row.left.beta: " << row.left.beta
               << ", row.left.gamma: " << row.left.gamma << std::endl;
@@ -121,11 +121,11 @@ int Select(int argc, char **argv)
   db(select(all_of(tab)).from(tab).where(tab.alpha.in(sqlpp::value_list(std::vector<int>{1, 2, 3, 4}))));
   db(select(all_of(tab)).from(tab).where(tab.alpha.not_in(1, 2, 3)));
   db(select(all_of(tab)).from(tab).where(tab.alpha.not_in(sqlpp::value_list(std::vector<int>{1, 2, 3, 4}))));
-  db(select(count(tab.alpha)).from(tab).where(true));
-  db(select(avg(tab.alpha)).from(tab).where(true));
-  db(select(max(tab.alpha)).from(tab).where(true));
-  db(select(min(tab.alpha)).from(tab).where(true));
-  db(select(exists(select(tab.alpha).from(tab).where(tab.alpha > 7))).from(tab).where(true));
+  db(select(count(tab.alpha)).from(tab).unconditionally());
+  db(select(avg(tab.alpha)).from(tab).unconditionally());
+  db(select(max(tab.alpha)).from(tab).unconditionally());
+  db(select(min(tab.alpha)).from(tab).unconditionally());
+  db(select(exists(select(tab.alpha).from(tab).where(tab.alpha > 7))).from(tab).unconditionally());
   db(select(all_of(tab)).from(tab).where(tab.alpha == any(select(tab.alpha).from(tab).where(tab.alpha < 3))));
   db(select(all_of(tab)).from(tab).where(tab.alpha == some(select(tab.alpha).from(tab).where(tab.alpha < 3))));
   db(select(all_of(tab)).from(tab).where(tab.alpha + tab.alpha > 3));
@@ -149,13 +149,13 @@ int Select(int argc, char **argv)
   // remove
   db(remove_from(tab).where(tab.alpha == tab.alpha + 3));
 
-  auto result = db(select(all_of(tab)).from(tab).where(true));
+  auto result = db(select(all_of(tab)).from(tab).unconditionally());
   std::cerr << "Accessing a field directly from the result (using the current row): " << result.begin()->alpha
             << std::endl;
   std::cerr << "Can do that again, no problem: " << result.begin()->alpha << std::endl;
 
   auto tx = start_transaction(db);
-  if (const auto& row = *db(select(all_of(tab), select(max(tab.alpha)).from(tab)).from(tab).where(true)).begin())
+  if (const auto& row = *db(select(all_of(tab), select(max(tab.alpha)).from(tab)).from(tab).unconditionally()).begin())
   {
     int a = row.alpha;
     int m = row.max;

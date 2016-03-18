@@ -88,7 +88,7 @@ int DateTime(int, char**)
   try
   {
     db(insert_into(tab).default_values());
-    for (const auto& row : db(select(all_of(tab)).from(tab).where(true)))
+    for (const auto& row : db(select(all_of(tab)).from(tab).unconditionally()))
     {
       require_equal(__LINE__, row.c_day.is_null(), true);
       require_equal(__LINE__, row.c_day.value(), ::sqlpp::chrono::day_point{});
@@ -96,17 +96,17 @@ int DateTime(int, char**)
       require_equal(__LINE__, row.c_timepoint.value(), ::sqlpp::chrono::microsecond_point{});
     }
 
-    db(update(tab).set(tab.c_day = today, tab.c_timepoint = now).where(true));
+    db(update(tab).set(tab.c_day = today, tab.c_timepoint = now).unconditionally());
 
-    for (const auto& row : db(select(all_of(tab)).from(tab).where(true)))
+    for (const auto& row : db(select(all_of(tab)).from(tab).unconditionally()))
     {
       require_equal(__LINE__, row.c_day.value(), today);
       require_equal(__LINE__, row.c_timepoint.value(), now);
     }
 
-    db(update(tab).set(tab.c_day = yesterday, tab.c_timepoint = today).where(true));
+    db(update(tab).set(tab.c_day = yesterday, tab.c_timepoint = today).unconditionally());
 
-    for (const auto& row : db(select(all_of(tab)).from(tab).where(true)))
+    for (const auto& row : db(select(all_of(tab)).from(tab).unconditionally()))
     {
       require_equal(__LINE__, row.c_day.value(), yesterday);
       require_equal(__LINE__, row.c_timepoint.value(), today);
@@ -115,13 +115,13 @@ int DateTime(int, char**)
     auto prepared_update = db.prepare(
         update(tab)
             .set(tab.c_day = parameter(tab.c_day), tab.c_timepoint = parameter(tab.c_timepoint))
-            .where(true));
+            .unconditionally());
     prepared_update.params.c_day = today;
     prepared_update.params.c_timepoint = now;
     std::cout << "---- running prepared update ----" << std::endl;
     db(prepared_update);
     std::cout << "---- finished prepared update ----" << std::endl;
-    for (const auto& row : db(select(all_of(tab)).from(tab).where(true)))
+    for (const auto& row : db(select(all_of(tab)).from(tab).unconditionally()))
     {
       require_equal(__LINE__, row.c_day.value(), today);
       require_equal(__LINE__, row.c_timepoint.value(), now);
