@@ -26,7 +26,7 @@
  */
 
 #include <sqlpp11/postgresql/connection.h>
-#include <sqlpp11/postgresql/pgexception.h>
+#include <sqlpp11/postgresql/exception.h>
 
 #include <algorithm>
 #include <iostream>

@@ -41,7 +41,6 @@ namespace sqlpp
     // Detail namespace
     namespace detail
     {
-      //                        struct statement_handle_t;
       struct prepared_statement_handle_t;
     }
 
@@ -54,7 +53,7 @@ namespace sqlpp
 
     public:
       prepared_statement_t() = delete;
-      prepared_statement_t(std::shared_ptr<detail::prepared_statement_handle_t>&& handle);
+      prepared_statement_t(std::shared_ptr<detail::prepared_statement_handle_t> handle);
       prepared_statement_t(const prepared_statement_t&) = delete;
       prepared_statement_t(prepared_statement_t&&) = default;
       prepared_statement_t& operator=(const prepared_statement_t&) = delete;

@@ -127,14 +127,9 @@ int DateTime(int, char**)
       require_equal(__LINE__, row.c_timepoint.value(), now);
     }
   }
-  catch (const sqlpp::postgresql::pg_exception e){
+  catch (const sql::failure &e){
       std::cerr << "Exception: " << e.what() << std::endl;
       return 1;
-  }
-  catch (const std::exception& e)
-  {
-    std::cerr << "Exception: " << e.what() << std::endl;
-    return 1;
   }
 
   return 0;
