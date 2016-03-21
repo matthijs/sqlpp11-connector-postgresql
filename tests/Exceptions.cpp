@@ -1,13 +1,18 @@
-#include <iostream>
-
-#include <sqlpp11/sqlpp11.h>
 #include <sqlpp11/postgresql/postgresql.h>
+
+#include "assertThrow.hpp"
 
 #include "TabFoo.h"
 #include "TabBar.h"
 
 namespace sql = sqlpp::postgresql;
-int Returning(int , char **) {
+int Exceptions(int , char **) {
+    {
+        //broken_connection exception on bad config
+        auto config = std::make_shared<sql::connection_config>();
+        assert_throw(sql::connection db(config), sql::broken_connection );
+    }
+
     model::TabFoo foo;
     model::TabBar bar;
     auto config = std::make_shared<sql::connection_config>();
@@ -17,6 +22,7 @@ int Returning(int , char **) {
     config->host = "localhost";
     config->port = 5432;
     config->debug = true;
+
     try
     {
         sql::connection db(config);
@@ -32,30 +38,20 @@ int Returning(int , char **) {
         db.execute(R"(CREATE TABLE tabfoo
                    (
                    alpha bigserial NOT NULL,
-                   beta smallint,
-                   gamma text,
+                   beta smallint UNIQUE,
+                   gamma text CHECK( length(gamma) < 5 ),
                    c_bool boolean,
                    c_timepoint timestamp with time zone DEFAULT now(),
                    c_day date
                    ))");
 
-
-        std::cout << db(sqlpp::postgresql::insert_into(foo).set(foo.gamma = "dsa")
-                        .returning(foo.c_timepoint)).front().c_timepoint << std::endl;
-
-
-        auto i = sqlpp::postgresql::dynamic_insert_into(db, foo).dynamic_set()
-                        .returning(foo.c_timepoint);
-        i.insert_list.add(foo.gamma = "blah");
-
-        std::cout << db(i).front().c_timepoint << std::endl;
-
-        auto updated = db(sqlpp::postgresql::update(foo).set(foo.beta = 0).unconditionally().returning(foo.gamma, foo.beta));
-        for(const auto &row : updated)
-            std::cout << "Gamma: " << row.gamma << " Beta: " << row.beta << std::endl;
+        assert_throw( db(insert_into(foo).set(foo.beta = std::numeric_limits<int16_t>::max() + 1 ) ), sql::data_exception);
+        assert_throw( db(insert_into(foo).set(foo.gamma = "123456")), sql::check_violation );
+        db(insert_into(foo).set(foo.beta = 5 ) );
+        assert_throw( db(insert_into(foo).set(foo.beta = 5 ) ), sql::integrity_constraint_violation );
     }
-
-    catch(const sql::failure &){
+    catch(const sql::failure &e){
+        std::cout << e.what();
         return 1;
     }
 

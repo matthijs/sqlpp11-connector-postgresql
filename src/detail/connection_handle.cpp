@@ -28,7 +28,7 @@
 #include "connection_handle.h"
 
 #include <sqlpp11/postgresql/connection_config.h>
-#include <sqlpp11/postgresql/pgexception.h>
+#include <sqlpp11/postgresql/exception.h>
 
 #include <iostream>  // DEBUG
 
@@ -156,10 +156,19 @@ namespace sqlpp
         {
           conninfo.append(" service=" + config->service);
         }
+        if(this->postgres)
+            return;
+
         this->postgres = PQconnectdb(conninfo.c_str());
+
+        if (!this->postgres)
+            throw std::bad_alloc();
+
         if (PQstatus(this->postgres) != CONNECTION_OK)
         {
-          throw pg_exception(PQgetResult(this->postgres));
+            const std::string msg(PQerrorMessage(this->postgres));
+            PQfinish(this->postgres);
+            throw broken_connection(msg);
         }
       }
 

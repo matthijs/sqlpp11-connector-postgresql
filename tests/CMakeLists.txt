@@ -30,6 +30,7 @@ target_include_directories(sqlpp11_postgresql_testing INTERFACE ${CMAKE_CURRENT_
 set(test_names
     DateTime
     Select
+    Exceptions
     Returning)
 
 target_compile_features(sqlpp11_postgresql_testing INTERFACE

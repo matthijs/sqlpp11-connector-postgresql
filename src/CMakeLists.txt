@@ -31,6 +31,7 @@ set(LIB_HEADERS
 add_library(sqlpp-postgresql SHARED
 	bind_result.cpp
 	connection.cpp
+        exception.cpp
         prepared_statement.cpp
         detail/connection_handle.cpp
         result.cpp

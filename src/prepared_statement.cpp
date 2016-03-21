@@ -39,8 +39,8 @@ namespace sqlpp
   namespace postgresql
   {
     // ctor
-    prepared_statement_t::prepared_statement_t(std::shared_ptr<detail::prepared_statement_handle_t>&& handle)
-        : _handle{std::move(handle)}
+    prepared_statement_t::prepared_statement_t(std::shared_ptr<detail::prepared_statement_handle_t> handle)
+        : _handle{handle}
     {
       if (_handle && _handle->debug)
       {

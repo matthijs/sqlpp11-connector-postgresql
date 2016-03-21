@@ -14,7 +14,6 @@ namespace sqlpp
     {
     public:
       Result();
-      Result(PGresult* res);
       ~Result();
 
       ExecStatusType status();
@@ -22,26 +21,18 @@ namespace sqlpp
       void clear();
 
       size_t affected_rows();
-
       size_t records_size() const;
-
       size_t field_count() const;
-
       size_t length(size_t record, size_t field) const;
-
       bool isNull(size_t record, size_t field) const;
-
-      PGresult* get();
-
       void operator=(PGresult* res);
-
       operator bool() const;
 
       template <typename T>
       inline T getValue(size_t record, size_t field) const
       {
         static_assert(std::is_arithmetic<T>::value, "Value must be numeric type");
-        checkIndex(record, field);
+        checkIndexAndThrow(record, field);
         T t(0);
         try
         {
@@ -53,11 +44,18 @@ namespace sqlpp
         return t;
       }
 
+      const std::string &query() const { return m_query; }
+      std::string &query() { return m_query; }
     private:
-      bool hasError();
-      void checkIndex(size_t record, size_t field) const throw(std::out_of_range);
+      void CheckStatus() const;
+      void ThrowSQLError( const std::string &Err, const std::string &Query) const;
+      std::string StatusError() const;
+      int errorPosition() const throw ();
+
+      void checkIndexAndThrow(size_t record, size_t field) const throw(std::out_of_range);
 
       PGresult* m_result;
+      std::string m_query;
     };
 
     template <>
@@ -69,7 +67,7 @@ namespace sqlpp
     template <>
     inline bool Result::getValue<bool>(size_t record, size_t field) const
     {
-      checkIndex(record, field);
+      checkIndexAndThrow(record, field);
       auto val = PQgetvalue(m_result, record, field);
       if (*val == 't')
         return true;

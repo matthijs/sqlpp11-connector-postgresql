@@ -182,7 +182,7 @@ namespace sqlpp
       // Data
       using _data_t = returning_column_list_data_t<Database, Columns...>;
 
-      // TODO: Implementation
+      // Implementation
       template <typename Policies>
       struct _impl_t
       {
