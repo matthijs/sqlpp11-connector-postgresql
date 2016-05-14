@@ -23,13 +23,13 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-include("${CMAKE_CURRENT_LIST_DIR}/Sqlpp-postgresqlTargets.cmake")
-
 include(CMakeFindDependencyMacro)
 
 find_dependency(Sqlpp11 REQUIRED)
 find_dependency(PostgreSQL REQUIRED)
 
+include("${CMAKE_CURRENT_LIST_DIR}/Sqlpp-postgresqlTargets.cmake")
+
 set_target_properties(Sqlpp::sqlpp-postgresql PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${PostgreSQL_INCLUDE_DIRS}
+  INTERFACE_INCLUDE_DIRECTORIES "${PostgreSQL_INCLUDE_DIRS};$<TARGET_PROPERTY:INTERFACE_INCLUDE_DIRECTORIES>"
 )

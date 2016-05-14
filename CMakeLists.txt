@@ -1,4 +1,5 @@
 # Copyright (c) 2015, Matthijs Möhlmann
+# Copyright (c) 2016, Christian David
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,11 +34,6 @@ find_package(PostgreSQL REQUIRED)
 
 add_subdirectory(src)
 #add_subdirectory(tests)
-
-configure_file(cmake/Sqlpp-postgresqlConfig.cmake
-  "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlConfig.cmake"
-  COPYONLY
-)
 
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp11" DESTINATION include COMPONENT Devel)
 install(

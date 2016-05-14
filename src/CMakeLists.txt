@@ -35,7 +35,7 @@ target_compile_features(sqlpp-postgresql PRIVATE
 
 target_link_libraries(sqlpp-postgresql PUBLIC sqlpp11 PRIVATE ${PostgreSQL_LIBRARIES})
 
-target_include_directories(sqlpp-postgresql PRIVATE ${PostgreSQL_INCLUDE_DIRS})
+target_include_directories(sqlpp-postgresql PRIVATE ${PostgreSQL_INCLUDE_DIRS} "../include/")
 
 # The include directory should be PUBLIC. However, that would store an absolute path in the package configuration
 # so leave it PRIVATE and correct that in the ...Config.cmake file. This can be changed when the FindPostgreSQL.cmake got updated.
