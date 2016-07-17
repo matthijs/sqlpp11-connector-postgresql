@@ -31,7 +31,7 @@
 #include <memory>
 #include <vector>
 
-#include <postgresql/libpq-fe.h>
+#include <libpq-fe.h>
 
 namespace sqlpp
 {
