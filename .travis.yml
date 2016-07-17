@@ -1,5 +1,7 @@
 language: cpp
 
+sudo: required
+
 compiler:
     #- clang
     - gcc
@@ -28,7 +30,7 @@ install:
     - cd ..
     - git clone --branch develop --depth 1 https://github.com/rbock/sqlpp11.git
     - cd sqlpp11
-    - cmake . -DCMAKE_PREFIX_PATH="../date"
+    - cmake . -DCMAKE_PREFIX_PATH="$PWD/../date"
     - sudo make install
     - cd ..
     - cd sqlpp11-connector-postgresql
@@ -36,7 +38,7 @@ install:
 before_script:
     - mkdir build
     - cd build
-    - cmake .. -DCMAKE_PREFIX_PATH="../date;/usr/local/"
+    - cmake .. -DCMAKE_PREFIX_PATH="$PWD/../date;/usr/local/"
 
 script:
     - cmake --build .
