@@ -13,8 +13,8 @@ notifications:
 
 install:
     # install a newer cmake since at this time Travis only has version 2.8
-    - CMAKE_VERSION_MM=3.2
-    - CMAKE_VERSION_FULL=$CMAKE_VERSION_MM.3
+    - CMAKE_VERSION_MM=3.4
+    - CMAKE_VERSION_FULL=$CMAKE_VERSION_MM.1
     - cd ..
     - git clone --branch v1.0.0 --depth 1 https://github.com/HowardHinnant/date
     - cd sqlpp11-connector-postgresql
