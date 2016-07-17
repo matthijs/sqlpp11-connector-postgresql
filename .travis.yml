@@ -38,7 +38,7 @@ install:
 before_script:
     - mkdir build
     - cd build
-    - cmake .. -DHinnantDate_ROOT_DIR="$PWD/../date"
+    - cmake .. -DHinnantDate_ROOT_DIR="$PWD/../../date"
 
 script:
     - cmake --build .
