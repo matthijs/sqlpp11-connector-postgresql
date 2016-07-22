@@ -40,6 +40,9 @@ add_library(sqlpp-postgresql SHARED
 	${LIB_HEADERS}
 )
 
+# Properties
+set_property(TARGET sqlpp-postgresql PROPERTY CXX_STANDARD 14)
+
 target_compile_features(sqlpp-postgresql PRIVATE
 	cxx_auto_type)
 
