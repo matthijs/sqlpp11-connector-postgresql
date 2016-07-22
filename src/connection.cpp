@@ -34,7 +34,6 @@
 
 #include "detail/prepared_statement_handle.h"
 #include "detail/connection_handle.h"
-#include "detail/make_unique.h"
 
 namespace sqlpp
 {
@@ -51,7 +50,7 @@ namespace sqlpp
           std::cerr << "PostgreSQL debug: preparing: " << stmt << std::endl;
         }
 
-        auto result = make_unique<detail::prepared_statement_handle_t>(handle.postgres, paramCount, handle.config->debug);
+        auto result = std::make_unique<detail::prepared_statement_handle_t>(handle.postgres, paramCount, handle.config->debug);
 
         // Generate a random name for the prepared statement
         while (std::find(handle.prepared_statement_names.begin(), handle.prepared_statement_names.end(), result->name) !=
