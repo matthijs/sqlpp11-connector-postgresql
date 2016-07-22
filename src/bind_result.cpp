@@ -166,7 +166,7 @@ namespace sqlpp
       {
         sscanf(buf, "%4d-%2d-%2d %2d:%2d:%2d.%3d", &y, &mon, &d, &h, &min, &s, &ms);
         *is_null = false;
-        *value = ::date::day_point(::date::year(y) / ::date::month(mon) / ::date::day(d)) + std::chrono::hours(h) +
+        *value = ::sqlpp::chrono::day_point(::date::year(y) / ::date::month(mon) / ::date::day(d)) + std::chrono::hours(h) +
                  std::chrono::minutes(min) + std::chrono::seconds(s) + std::chrono::microseconds(ms * 1000);
       }
     }
