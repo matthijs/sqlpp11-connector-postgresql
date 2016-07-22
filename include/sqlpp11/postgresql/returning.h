@@ -104,21 +104,21 @@ namespace sqlpp
                   typename returning_column_list_t<_database_t, Columns...>::_data_t{columns...}};
         }
 
-//        auto dynamic_returning(Columns... columns) const
-//            -> _new_statement_t<void, returning_column_list_t<_database_t, Columns...>>
-//        {
-//          return {static_cast<const derived_statement_t<Policies>&>(*this),
-//                  typename returning_column_list_t<_database_t, Columns...>::_data_t{columns...}};
-//        }
+        //        auto dynamic_returning(Columns... columns) const
+        //            -> _new_statement_t<void, returning_column_list_t<_database_t, Columns...>>
+        //        {
+        //          return {static_cast<const derived_statement_t<Policies>&>(*this),
+        //                  typename returning_column_list_t<_database_t, Columns...>::_data_t{columns...}};
+        //        }
 
-//        template <typename Database, typename... Columns>
-//        auto dynamic_returning(const Database&, Columns... columns) -> decltype(blank_select_t<Database>().columns(columns...))
-//        {
-//          static_assert(std::is_base_of<connection, Database>::value, "Invalid database parameter");
-//          return {static_cast<const derived_statement_t<Policies>&>(*this),
-//                  typename dynamic_returning_column_list<_database_t, Columns...>::_data_t{columns...}};
-//        }
-
+        //        template <typename Database, typename... Columns>
+        //        auto dynamic_returning(const Database&, Columns... columns) ->
+        //        decltype(blank_select_t<Database>().columns(columns...))
+        //        {
+        //          static_assert(std::is_base_of<connection, Database>::value, "Invalid database parameter");
+        //          return {static_cast<const derived_statement_t<Policies>&>(*this),
+        //                  typename dynamic_returning_column_list<_database_t, Columns...>::_data_t{columns...}};
+        //        }
       };
     };
   }

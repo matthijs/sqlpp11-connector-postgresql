@@ -73,13 +73,20 @@ namespace sqlpp
         return t;
       }
 
-      const std::string &query() const { return m_query; }
-      std::string &query() { return m_query; }
+      const std::string& query() const
+      {
+        return m_query;
+      }
+      std::string& query()
+      {
+        return m_query;
+      }
+
     private:
       void CheckStatus() const;
-      void ThrowSQLError( const std::string &Err, const std::string &Query) const;
+      void ThrowSQLError(const std::string& Err, const std::string& Query) const;
       std::string StatusError() const;
-      int errorPosition() const throw ();
+      int errorPosition() const throw();
 
       void checkIndexAndThrow(size_t record, size_t field) const throw(std::out_of_range);
 

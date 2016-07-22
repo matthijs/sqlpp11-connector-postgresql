@@ -43,19 +43,20 @@ namespace sqlpp
     namespace
     {
       std::unique_ptr<detail::prepared_statement_handle_t> prepare_statement(detail::connection_handle& handle,
-                                                            const std::string& stmt,
-                                                            const size_t& paramCount)
+                                                                             const std::string& stmt,
+                                                                             const size_t& paramCount)
       {
         if (handle.config->debug)
         {
           std::cerr << "PostgreSQL debug: preparing: " << stmt << std::endl;
         }
 
-        auto result = std::make_unique<detail::prepared_statement_handle_t>(handle.postgres, paramCount, handle.config->debug);
+        auto result =
+            std::make_unique<detail::prepared_statement_handle_t>(handle.postgres, paramCount, handle.config->debug);
 
         // Generate a random name for the prepared statement
-        while (std::find(handle.prepared_statement_names.begin(), handle.prepared_statement_names.end(), result->name) !=
-               handle.prepared_statement_names.end())
+        while (std::find(handle.prepared_statement_names.begin(), handle.prepared_statement_names.end(),
+                         result->name) != handle.prepared_statement_names.end())
         {
           std::generate_n(result->name.begin(), 6, []()
                           {

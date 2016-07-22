@@ -53,9 +53,7 @@ namespace sqlpp
         uint32_t fields = {0};
 
         // ctor
-        statement_handle_t(PGconn* _connection, bool _debug) :
-            connection(_connection),
-            debug(_debug)
+        statement_handle_t(PGconn* _connection, bool _debug) : connection(_connection), debug(_debug)
         {
         }
         statement_handle_t(const statement_handle_t&) = delete;
@@ -92,9 +90,7 @@ namespace sqlpp
 
         // ctor
         prepared_statement_handle_t(PGconn* _connection, const size_t& paramCount, bool _debug)
-            : statement_handle_t(_connection, _debug),
-              nullValues(paramCount),
-              paramValues(paramCount)
+            : statement_handle_t(_connection, _debug), nullValues(paramCount), paramValues(paramCount)
         {
         }
         prepared_statement_handle_t(const prepared_statement_handle_t&) = delete;

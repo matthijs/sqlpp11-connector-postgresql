@@ -32,25 +32,26 @@
 
 namespace sqlpp
 {
-namespace postgresql{
-  template <typename Database>
-  using blank_update_t = statement_t<Database, update_t, no_single_table_t, no_update_list_t, no_where_t<true>, no_returning_t>;
-
-  template <typename Table>
-  constexpr auto update(Table table) -> decltype(blank_update_t<void>().single_table(table))
+  namespace postgresql
   {
-    return {blank_update_t<void>().single_table(table)};
-  }
+    template <typename Database>
+    using blank_update_t =
+        statement_t<Database, update_t, no_single_table_t, no_update_list_t, no_where_t<true>, no_returning_t>;
 
-  template <typename Database, typename Table>
-  constexpr auto dynamic_update(const Database&, Table table)
-      -> decltype(blank_update_t<Database>().single_table(table))
-  {
-    static_assert(std::is_base_of<connection, Database>::value, "Invalid database parameter");
-    return {blank_update_t<Database>().single_table(table)};
-  }
+    template <typename Table>
+    constexpr auto update(Table table) -> decltype(blank_update_t<void>().single_table(table))
+    {
+      return {blank_update_t<void>().single_table(table)};
+    }
 
-}
+    template <typename Database, typename Table>
+    constexpr auto dynamic_update(const Database&, Table table)
+        -> decltype(blank_update_t<Database>().single_table(table))
+    {
+      static_assert(std::is_base_of<connection, Database>::value, "Invalid database parameter");
+      return {blank_update_t<Database>().single_table(table)};
+    }
+  }
 }
 
 #endif

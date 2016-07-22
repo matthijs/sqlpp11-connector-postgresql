@@ -134,7 +134,7 @@ namespace sqlpp
       *len = res.length(_handle->count, index);
     }
 
-    void bind_result_t::_bind_date_result(size_t index, ::sqlpp::chrono::day_point *value, bool *is_null)
+    void bind_result_t::_bind_date_result(size_t index, ::sqlpp::chrono::day_point* value, bool* is_null)
     {
       if (_handle->debug)
       {
@@ -142,33 +142,33 @@ namespace sqlpp
       }
 
       const auto& res = _handle->result;
-      int y,m,d;
+      int y, m, d;
       const auto buf = res.getValue<const char*>(_handle->count, index);
-      if( strlen(buf) ){
-        sscanf(buf, "%4d-%2d-%2d", &y,&m,&d );
+      if (strlen(buf))
+      {
+        sscanf(buf, "%4d-%2d-%2d", &y, &m, &d);
         *is_null = false;
         *value = ::date::year(y) / ::date::month(m) / ::date::day(d);
       }
-
     }
 
-    void bind_result_t::_bind_date_time_result(size_t index, ::sqlpp::chrono::microsecond_point *value, bool *is_null)
+    void bind_result_t::_bind_date_time_result(size_t index, ::sqlpp::chrono::microsecond_point* value, bool* is_null)
     {
-        if (_handle->debug)
-        {
-          std::cerr << "PostgreSQL debug: binding date result at index: " << index << std::endl;
-        }
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: binding date result at index: " << index << std::endl;
+      }
 
-        const auto& res = _handle->result;
-        unsigned y,mon,d,h,min,s,ms(0);
-        const auto buf = res.getValue<const char*>(_handle->count, index);
-        if( strlen(buf) ){
-          sscanf(buf, "%4d-%2d-%2d %2d:%2d:%2d.%3d", &y,&mon,&d,&h,&min,&s,&ms );
-          *is_null = false;
-          *value = ::date::day_point( ::date::year(y) / ::date::month(mon) / ::date::day(d) ) +
-                  std::chrono::hours(h) + std::chrono::minutes(min) + std::chrono::seconds(s) +
-                  std::chrono::microseconds(ms*1000);
-        }
+      const auto& res = _handle->result;
+      unsigned y, mon, d, h, min, s, ms(0);
+      const auto buf = res.getValue<const char*>(_handle->count, index);
+      if (strlen(buf))
+      {
+        sscanf(buf, "%4d-%2d-%2d %2d:%2d:%2d.%3d", &y, &mon, &d, &h, &min, &s, &ms);
+        *is_null = false;
+        *value = ::date::day_point(::date::year(y) / ::date::month(mon) / ::date::day(d)) + std::chrono::hours(h) +
+                 std::chrono::minutes(min) + std::chrono::seconds(s) + std::chrono::microseconds(ms * 1000);
+      }
     }
   }
 }
