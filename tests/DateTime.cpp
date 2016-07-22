@@ -26,6 +26,7 @@
 #include "TabFoo.h"
 #include <sqlpp11/sqlpp11.h>
 #include <sqlpp11/postgresql/postgresql.h>
+#include <sqlpp11/postgresql/exception.h>
 
 #include <iostream>
 #include <vector>

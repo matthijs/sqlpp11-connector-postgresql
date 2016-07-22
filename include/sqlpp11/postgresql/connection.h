@@ -66,10 +66,6 @@ namespace sqlpp
       {
         return _os << t;
       }
-      std::ostream& operator<<(bool t)
-      {
-        return _os << (t ? "TRUE" : "FALSE");
-      }
 
       std::ostream& operator<<(bool t)
       {
@@ -253,7 +249,7 @@ namespace sqlpp
       template <
           typename Execute,
           typename Enable = typename std::enable_if<not std::is_convertible<Execute, std::string>::value, void>::type>
-      std::shared_ptr<detail::prepared_statement_handle_t> execute(const Execute& x)
+      std::shared_ptr<detail::statement_handle_t> execute(const Execute& x)
       {
         _context_t ctx(*this);
         serialize(x, ctx);

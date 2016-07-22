@@ -32,16 +32,13 @@ set(LIB_HEADERS
 add_library(sqlpp-postgresql SHARED
 	bind_result.cpp
 	connection.cpp
-        exception.cpp
-        prepared_statement.cpp
-        detail/connection_handle.cpp
-        result.cpp
-        ${postgresql_headers}
-        ${LIB_HEADERS}
+	exception.cpp
+	prepared_statement.cpp
+	detail/connection_handle.cpp
+	result.cpp
+	${postgresql_headers}
+	${LIB_HEADERS}
 )
-
-target_compile_features(sqlpp-postgresql PRIVATE
-	cxx_auto_type)
 
 target_compile_features(sqlpp-postgresql PRIVATE
 	cxx_auto_type)
