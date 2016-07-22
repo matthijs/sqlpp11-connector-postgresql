@@ -31,7 +31,8 @@
 #include <memory>
 #include <vector>
 
-#include <libpq-fe.h>
+#include <postgresql/libpq-fe.h>
+#include <sqlpp11/postgresql/visibility.h>
 
 namespace sqlpp
 {
@@ -42,7 +43,7 @@ namespace sqlpp
 
     namespace detail
     {
-      struct connection_handle
+      struct DLL_LOCAL connection_handle
       {
         const std::shared_ptr<connection_config> config;
         PGconn* postgres{nullptr};

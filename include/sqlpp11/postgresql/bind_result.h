@@ -29,26 +29,29 @@
 #define SQLPP_POSTGRESQL_BIND_RESULT_H
 
 #include <memory>
+#include <sqlpp11/chrono.h>
+#include "visibility.h"
 
 namespace sqlpp
 {
+
   namespace postgresql
   {
     namespace detail
     {
-      struct prepared_statement_handle_t;
+      struct statement_handle_t;
     }
 
-    class bind_result_t
+    class DLL_PUBLIC bind_result_t
     {
     private:
-      std::shared_ptr<detail::prepared_statement_handle_t> _handle;
+      std::shared_ptr<detail::statement_handle_t> _handle;
 
       bool next_impl();
 
     public:
       bind_result_t() = default;
-      bind_result_t(const std::shared_ptr<detail::prepared_statement_handle_t>& handle);
+      bind_result_t(const std::shared_ptr<detail::statement_handle_t>& handle);
       bind_result_t(const bind_result_t&) = delete;
       bind_result_t(bind_result_t&&) = default;
       bind_result_t& operator=(const bind_result_t&) = delete;
@@ -90,6 +93,8 @@ namespace sqlpp
       void _bind_floating_point_result(size_t index, double* value, bool* is_null);
       void _bind_integral_result(size_t index, int64_t* value, bool* is_null);
       void _bind_text_result(size_t index, const char** value, size_t* len);
+      void _bind_date_result(size_t index, ::sqlpp::chrono::day_point* value, bool* is_null);
+      void _bind_date_time_result(size_t index, ::sqlpp::chrono::microsecond_point* value, bool* is_null);
     };
   }
 }

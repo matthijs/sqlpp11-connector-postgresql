@@ -33,6 +33,7 @@
 #include <sqlpp11/postgresql/connection_config.h>
 #include <sqlpp11/postgresql/bind_result.h>
 #include <sqlpp11/postgresql/prepared_statement.h>
+#include <sqlpp11/postgresql/result.h>
 
 #include <sstream>
 
@@ -70,6 +71,11 @@ namespace sqlpp
         return _os << (t ? "TRUE" : "FALSE");
       }
 
+      std::ostream& operator<<(bool t)
+      {
+        return _os << (t ? "TRUE" : "FALSE");
+      }
+
       std::string escape(const std::string& arg);
 
       std::string str() const
@@ -93,7 +99,7 @@ namespace sqlpp
     };
 
     // Connection
-    class connection : public sqlpp::connection
+    class DLL_PUBLIC connection : public sqlpp::connection
     {
     private:
       std::unique_ptr<detail::connection_handle> _handle;
@@ -242,12 +248,12 @@ namespace sqlpp
       }
 
       // Execute
-      size_t execute(const std::string& command);
+      std::shared_ptr<sqlpp::postgresql::detail::statement_handle_t> execute(const std::string& command);
 
       template <
           typename Execute,
           typename Enable = typename std::enable_if<not std::is_convertible<Execute, std::string>::value, void>::type>
-      size_t execute(const Execute& x)
+      std::shared_ptr<detail::prepared_statement_handle_t> execute(const Execute& x)
       {
         _context_t ctx(*this);
         serialize(x, ctx);
@@ -287,8 +293,8 @@ namespace sqlpp
       auto operator()(const T& t)
           -> decltype(this->_run(t, sqlpp::run_check_t<_serializer_context_t, T>{}))
       {
-        sqlpp::run_check_t<_serializer_context_t, T>::_();
-        return _run(t, sqlpp::run_check_t<_serializer_context_t, T>{});
+          sqlpp::run_check_t<_serializer_context_t, T>::_();
+          return _run(t, sqlpp::run_check_t<_serializer_context_t, T>{});
       }
 
       //! call prepare on the argument
@@ -312,12 +318,21 @@ namespace sqlpp
       //! start transaction
       void start_transaction();
 
+      //! create savepoint
+      void savepoint(const std::string& name);
+
+      //! ROLLBACK TO SAVEPOINT
+      void rollback_to_savepoint(const std::string& name);
+
+      //! release_savepoint
+      void release_savepoint(const std::string& name);
+
       //! commit transaction (or throw transaction if transaction has
       // finished already)
       void commit_transaction();
 
       //! rollback transaction
-      void rollback_transaction(bool report);
+      void rollback_transaction(bool report = false);
 
       //! report rollback failure
       void report_rollback_failure(const std::string& message) noexcept;

@@ -32,7 +32,8 @@
 #include <vector>
 #include <string>
 
-#include <libpq-fe.h>
+#include <postgresql/libpq-fe.h>
+#include <sqlpp11/postgresql/result.h>
 
 namespace sqlpp
 {
@@ -40,16 +41,49 @@ namespace sqlpp
   {
     namespace detail
     {
-      struct prepared_statement_handle_t
+      struct statement_handle_t
       {
         PGconn* connection{nullptr};
-        PGresult* result{nullptr};
-        std::string name{"xxxxxx"};
+        Result result;
         bool valid{false};
         bool debug{false};
         uint32_t count{0};
         uint32_t totalCount = {0};
         uint32_t fields = {0};
+
+        // ctor
+        statement_handle_t(PGconn* _connection, bool _debug) :
+            connection(_connection),
+            debug(_debug)
+        {
+        }
+        statement_handle_t(const statement_handle_t&) = delete;
+        statement_handle_t(statement_handle_t&&) = default;
+        statement_handle_t& operator=(const statement_handle_t&) = delete;
+        statement_handle_t& operator=(statement_handle_t&&) = default;
+
+        virtual ~statement_handle_t()
+        {
+          clearResult();
+        }
+
+        bool operator!() const
+        {
+          return !valid;
+        }
+
+        void clearResult()
+        {
+          if (result)
+          {
+            result.clear();
+          }
+        }
+      };
+
+      struct prepared_statement_handle_t : public statement_handle_t
+      {
+        std::string name{"xxxxxx"};
 
         // Store prepared statement arguments
         std::vector<bool> nullValues;
@@ -57,7 +91,9 @@ namespace sqlpp
 
         // ctor
         prepared_statement_handle_t(PGconn* _connection, const size_t& paramCount, bool _debug)
-            : connection(_connection), debug(_debug), nullValues(paramCount), paramValues(paramCount)
+            : statement_handle_t(_connection, _debug),
+              nullValues(paramCount),
+              paramValues(paramCount)
         {
         }
         prepared_statement_handle_t(const prepared_statement_handle_t&) = delete;
@@ -67,11 +103,7 @@ namespace sqlpp
 
         ~prepared_statement_handle_t()
         {
-          // Clear the result
-          if (result)
-          {
-            PQclear(result);
-          }
+          clearResult();
 
           // Execute DEALLOCATE on the connection_handle for this
           // prepared statement.
@@ -84,11 +116,6 @@ namespace sqlpp
 
           // TODO: remove the name from the prepared_statement_names
           // in the connection_handle.
-        }
-
-        bool operator!() const
-        {
-          return !valid;
         }
       };
     }

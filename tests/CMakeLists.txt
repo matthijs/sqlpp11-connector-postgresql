@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Matthijs Möhlmann
+# Copyright © 2015, Matthijs Möhlmann
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -23,11 +23,23 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-macro (build_and_run arg)
-	# Add headers to sources to enable file browsing in IDEs
-	add_executable(Sqlpp11PostgreSQL${arg} ${arg}.cpp ${sqlpp_headers})
-	target_link_libraries(Sqlpp11PostgreSQL${arg} sqlpp-postgresql)
-	add_test(${arg} Sqlpp11PostgreSQL${arg})
-endmacro ()
+add_library(sqlpp11_postgresql_testing INTERFACE)
 
-build_and_run(SelectTest)
+target_include_directories(sqlpp11_postgresql_testing INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+
+set(test_names
+    DateTime
+    Select
+    Exceptions
+    Returning)
+
+target_compile_features(sqlpp11_postgresql_testing INTERFACE
+	cxx_auto_type)
+
+create_test_sourcelist(test_sources test_main.cpp ${test_names})
+add_executable(sqlpp11_postgresql_tests ${test_sources})
+target_link_libraries(sqlpp11_postgresql_tests PRIVATE sqlpp-postgresql sqlpp11_postgresql_testing)
+
+foreach(test IN LISTS test_names)
+	add_test(NAME sqlpp11.tests.${test} COMMAND sqlpp11_postgresql_tests ${test})
+endforeach()

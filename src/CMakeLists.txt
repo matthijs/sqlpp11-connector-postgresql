@@ -24,11 +24,24 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+
+set(LIB_HEADERS
+    detail/prepared_statement_handle.h
+)
+
 add_library(sqlpp-postgresql SHARED
 	bind_result.cpp
 	connection.cpp
-	prepared_statement.cpp
-	detail/connection_handle.cpp)
+        exception.cpp
+        prepared_statement.cpp
+        detail/connection_handle.cpp
+        result.cpp
+        ${postgresql_headers}
+        ${LIB_HEADERS}
+)
+
+target_compile_features(sqlpp-postgresql PRIVATE
+	cxx_auto_type)
 
 target_compile_features(sqlpp-postgresql PRIVATE
 	cxx_auto_type)
