@@ -142,9 +142,9 @@ namespace sqlpp
       connection(const std::shared_ptr<connection_config>& config);
       ~connection();
       connection(const connection&) = delete;
-      connection(connection&&) = delete;
+      connection(connection&&);
       connection& operator=(const connection&) = delete;
-      connection& operator=(connection&&) = delete;
+      connection& operator=(connection&&);
 
       // Select stmt (returns a result)
       template <typename Select>

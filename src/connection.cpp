@@ -132,6 +132,19 @@ namespace sqlpp
     {
     }
 
+    connection::connection(connection&& other)
+    {
+      _handle = std::move(other._handle);
+      _transaction_active = other._transaction_active;
+    }
+
+    connection& connection::operator=(connection&& other)
+    {
+      _handle = std::move(other._handle);
+      _transaction_active = other._transaction_active;
+      return *this;
+    }
+
     // direct execution
     bind_result_t connection::select_impl(const std::string& stmt)
     {
