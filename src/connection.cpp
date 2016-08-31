@@ -74,7 +74,7 @@ namespace sqlpp
         result->result = PQprepare(handle.postgres, result->name.c_str(), stmt.c_str(), 0, nullptr);
 
         result->valid = true;
-        return std::move(result);
+        return result;
       }
 
       void execute_prepared_statement(detail::connection_handle& handle, detail::prepared_statement_handle_t& prepared)
