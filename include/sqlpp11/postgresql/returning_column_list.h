@@ -447,13 +447,13 @@ namespace sqlpp
 
         template <typename... T>
         static constexpr auto _check_args(T... args)
-            -> decltype(_check_tuple(::sqlpp::detail::column_tuple_merge(args...)))
+            -> decltype(_check_tuple(sqlpp::detail::column_tuple_merge(args...)))
         {
-          return _check_tuple(::sqlpp::detail::column_tuple_merge(args...));
+          return _check_tuple(sqlpp::detail::column_tuple_merge(args...));
         }
 
         template <typename Check, typename T>
-        using _new_statement_t = new_statement_t<Check::value, Policies, no_returning_column_list_t, T>;
+        using _new_statement_t = new_statement_t<Check, Policies, no_returning_column_list_t, T>;
 
         using _consistency_check = consistent_t;
 
@@ -465,7 +465,7 @@ namespace sqlpp
           static_assert(decltype(_check_args(args...))::value,
                         "at least one argument is not a selectable expression in returning()");
 
-          return _returning_impl<void>(_check_args(args...), ::sqlpp::detail::column_tuple_merge(args...));
+          return _returning_impl<void>(decltype(_check_args(args...)){}, ::sqlpp::detail::column_tuple_merge(args...));
         }
 
         template <typename... Args>
@@ -478,16 +478,17 @@ namespace sqlpp
           static_assert(decltype(_check_args(args...))::value,
                         "at least one argument is not a selectable expression in returning()");
 
-          return _returning_impl<_database_t>(_check_args(args...), ::sqlpp::detail::column_tuple_merge(args...));
+          return _returning_impl<_database_t>(decltype(_check_args(args...)){},
+                                              ::sqlpp::detail::column_tuple_merge(args...));
         }
 
       private:
-        template <typename Database, typename... Args>
-        auto _returning_impl(const std::false_type&, std::tuple<Args...> args) const -> bad_statement;
+        template <typename Database, typename Check, typename... Args>
+        auto _returning_impl(const std::false_type&, std::tuple<Args...> args) const -> inconsistent<Check>;
 
         template <typename Database, typename... Args>
-        auto _returning_impl(const std::true_type&, std::tuple<Args...> args) const
-            -> _new_statement_t<_check<Args...>, returning_column_list_t<Database, Args...>>
+        auto _returning_impl(consistent_t, std::tuple<Args...> args) const
+            -> _new_statement_t<consistent_t, returning_column_list_t<Database, Args...>>
         {
           static_assert(not::sqlpp::detail::has_duplicates<Args...>::value, "at least one duplicate argument detected");
           static_assert(not::sqlpp::detail::has_duplicates<typename Args::_alias_t...>::value,
