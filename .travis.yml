@@ -20,6 +20,8 @@ addons:
   apt:
     packages:
     - libboost-dev
+    - libpq-dev
+    - postgresql-server-dev-all
 
 services:
   - postgresql
@@ -45,7 +47,6 @@ install:
       && ((brew list -1 | grep -q "^$cmake\$") || brew install cmake)
       && (brew outdated cmake || brew upgrade cmake)
       && cmake --version
-      && brew install postgresql
       && brew services start postgresql
       ;
     fi
