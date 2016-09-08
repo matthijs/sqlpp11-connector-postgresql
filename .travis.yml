@@ -40,6 +40,7 @@ install:
   - git clone --branch develop --depth 1 https://github.com/rbock/sqlpp11.git
   - cd sqlpp11
   - mkdir build
+  - cd build
   - cmake .. -DHinnantDate_ROOT_DIR="$PROJECT_DIR/../date" -DCMAKE_BUILD_TYPE=$CONFIG
   - sudo make install
   - cd ../..
