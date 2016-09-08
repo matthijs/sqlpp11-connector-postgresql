@@ -17,12 +17,7 @@ int Exceptions(int, char**)
   model::TabFoo foo;
   model::TabBar bar;
   auto config = std::make_shared<sql::connection_config>();
-  config->user = "postgres";
-  config->password = "postgres";
-  config->dbname = "test";
-  config->host = "localhost";
-  config->port = 5432;
-  config->debug = true;
+  config->dbname = "sqlpp11_tests";
 
   try
   {
