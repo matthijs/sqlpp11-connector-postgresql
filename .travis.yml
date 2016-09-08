@@ -47,11 +47,8 @@ install:
       && ((brew list -1 | grep -q "^$cmake\$") || brew install cmake)
       && (brew outdated cmake || brew upgrade cmake)
       && cmake --version
-      && brew install postgresql
-      && brew services start postgresql
       ;
     fi
-  - (while ! psql -c 'SELECT version();' postgres; do sleep 1; done) # wait for postgres to start
   - psql -c 'CREATE DATABASE sqlpp11_tests;' postgres
   - cd $PROJECT_DIR
 
