@@ -36,14 +36,6 @@ install:
   - CMAKE_VERSION_MM=3.4
   - CMAKE_VERSION_FULL=$CMAKE_VERSION_MM.1
   - cd ..
-  - git clone --branch v1.0.0 --depth 1 https://github.com/HowardHinnant/date
-  - git clone --branch develop --depth 1 https://github.com/rbock/sqlpp11.git
-  - cd sqlpp11
-  - mkdir build
-  - cd build
-  - cmake .. -DHinnantDate_ROOT_DIR="$PROJECT_DIR/../date" -DCMAKE_BUILD_TYPE=$CONFIG
-  - sudo make install
-  - cd ../..
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
       wget --no-check-certificate http://www.cmake.org/files/v${CMAKE_VERSION_MM}/cmake-${CMAKE_VERSION_FULL}-Linux-x86_64.sh
       && sudo sh cmake-${CMAKE_VERSION_FULL}-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir;
@@ -57,6 +49,14 @@ install:
       && brew services start postgresql
       ;
     fi
+  - git clone --branch v1.0.0 --depth 1 https://github.com/HowardHinnant/date
+  - git clone --branch develop --depth 1 https://github.com/rbock/sqlpp11.git
+  - cd sqlpp11
+  - mkdir build
+  - cd build
+  - cmake .. -DHinnantDate_ROOT_DIR="$PROJECT_DIR/../date" -DCMAKE_BUILD_TYPE=$CONFIG
+  - sudo make install
+  - cd ../..
   - psql -c 'CREATE DATABASE sqlpp11_tests;' postgres
   - cd $PROJECT_DIR
 
