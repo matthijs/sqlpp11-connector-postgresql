@@ -47,6 +47,7 @@ install:
       && ((brew list -1 | grep -q "^$cmake\$") || brew install cmake)
       && (brew outdated cmake || brew upgrade cmake)
       && cmake --version
+      && (brew outdated postgresql || brew upgrade postgresql)
       && brew services start postgresql
       ;
     fi
