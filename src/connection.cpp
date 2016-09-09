@@ -33,6 +33,10 @@
 #include <iostream>
 #include <random>
 
+#if __cplusplus == 201103L
+#include "make_unique.h"
+#endif
+
 #include "detail/prepared_statement_handle.h"
 #include "detail/connection_handle.h"
 

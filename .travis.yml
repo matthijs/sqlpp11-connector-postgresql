@@ -19,6 +19,8 @@ dist: trusty
 addons:
   apt:
     packages:
+    - libc++-dev
+    - libc++abi-dev
     - libboost-dev
     - libpq-dev
     - postgresql-server-dev-all
