@@ -23,10 +23,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-	add_definitions( -stdlib=libc++ )
-endif()
-
 add_library(sqlpp11_postgresql_testing INTERFACE)
 
 target_include_directories(sqlpp11_postgresql_testing INTERFACE ${PostgreSQL_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/../include/")
