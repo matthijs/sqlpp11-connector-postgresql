@@ -26,12 +26,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sqlpp11/postgresql/bind_result.h>
 #include <sqlpp11/exception.h>
+#include <sqlpp11/postgresql/bind_result.h>
 
+#include <date.h>
 #include <iostream>
 #include <sstream>
-#include <date.h>
 
 #include "detail/prepared_statement_handle.h"
 
@@ -93,9 +93,10 @@ namespace sqlpp
       }
 
       // Assign value
+      const auto iindex = static_cast<int>(index);
       const auto& res = _handle->result;
-      *value = res.getValue<bool>(_handle->count, index);
-      *is_null = res.isNull(_handle->count, index);
+      *value = res.getValue<bool>(_handle->count, iindex);
+      *is_null = res.isNull(_handle->count, iindex);
     }
 
     void bind_result_t::_bind_floating_point_result(size_t index, double* value, bool* is_null)
@@ -105,9 +106,10 @@ namespace sqlpp
         std::cerr << "PostgreSQL debug: binding floating_point result at index: " << index << std::endl;
       }
 
+      const auto iindex = static_cast<int>(index);
       const auto& res = _handle->result;
-      *value = res.getValue<double>(_handle->count, index);
-      *is_null = res.isNull(_handle->count, index);
+      *value = res.getValue<double>(_handle->count, iindex);
+      *is_null = res.isNull(_handle->count, iindex);
     }
 
     void bind_result_t::_bind_integral_result(size_t index, int64_t* value, bool* is_null)
@@ -117,9 +119,10 @@ namespace sqlpp
         std::cerr << "PostgreSQL debug: binding integral result at index: " << index << std::endl;
       }
 
+      const auto iindex = static_cast<int>(index);
       const auto& res = _handle->result;
-      *value = res.getValue<int64_t>(_handle->count, index);
-      *is_null = res.isNull(_handle->count, index);
+      *value = res.getValue<int64_t>(_handle->count, iindex);
+      *is_null = res.isNull(_handle->count, iindex);
     }
 
     void bind_result_t::_bind_text_result(size_t index, const char** value, size_t* len)
@@ -129,9 +132,10 @@ namespace sqlpp
         std::cerr << "PostgreSQL debug: binding text result at index: " << index << std::endl;
       }
 
+      const auto iindex = static_cast<int>(index);
       const auto& res = _handle->result;
-      *value = res.getValue<const char*>(_handle->count, index);
-      *len = res.length(_handle->count, index);
+      *value = res.getValue<const char*>(_handle->count, iindex);
+      *len = res.length(_handle->count, iindex);
     }
 
     void bind_result_t::_bind_date_result(size_t index, ::sqlpp::chrono::day_point* value, bool* is_null)
@@ -143,7 +147,7 @@ namespace sqlpp
 
       const auto& res = _handle->result;
       int y, m, d;
-      const auto buf = res.getValue<const char*>(_handle->count, index);
+      const auto buf = res.getValue<const char*>(_handle->count, static_cast<int>(index));
       if (strlen(buf))
       {
         sscanf(buf, "%4d-%2d-%2d", &y, &m, &d);
@@ -154,6 +158,7 @@ namespace sqlpp
 
     void bind_result_t::_bind_date_time_result(size_t index, ::sqlpp::chrono::microsecond_point* value, bool* is_null)
     {
+      using namespace std::chrono;
       if (_handle->debug)
       {
         std::cerr << "PostgreSQL debug: binding date result at index: " << index << std::endl;
@@ -161,13 +166,13 @@ namespace sqlpp
 
       const auto& res = _handle->result;
       unsigned y, mon, d, h, min, s, ms(0);
-      const auto buf = res.getValue<const char*>(_handle->count, index);
+      const auto buf = res.getValue<const char*>(_handle->count, static_cast<int>(index));
       if (strlen(buf))
       {
         sscanf(buf, "%4d-%2d-%2d %2d:%2d:%2d.%3d", &y, &mon, &d, &h, &min, &s, &ms);
         *is_null = false;
-        *value = ::sqlpp::chrono::day_point(::date::year(y) / ::date::month(mon) / ::date::day(d)) + std::chrono::hours(h) +
-                 std::chrono::minutes(min) + std::chrono::seconds(s) + std::chrono::microseconds(ms * 1000);
+        *value = ::sqlpp::chrono::day_point(::date::year(y) / ::date::month(mon) / ::date::day(d)) +  //
+                 hours(h) + minutes(min) + seconds(s) + microseconds(ms * 1000);
       }
     }
   }

@@ -37,8 +37,8 @@
 #include "make_unique.h"
 #endif
 
-#include "detail/prepared_statement_handle.h"
 #include "detail/connection_handle.h"
+#include "detail/prepared_statement_handle.h"
 
 namespace sqlpp
 {
@@ -62,15 +62,14 @@ namespace sqlpp
         while (std::find(handle.prepared_statement_names.begin(), handle.prepared_statement_names.end(),
                          result->name) != handle.prepared_statement_names.end())
         {
-          std::generate_n(result->name.begin(), 6, []()
-                          {
-                            const char charset[] = "0123456789"
-                                                   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                                   "abcdefghijklmnopqrstuvwxyz";
-                            constexpr size_t max = (sizeof(charset) - 1);
-                            std::random_device rd;
-                            return charset[rd() % max];
-                          });
+          std::generate_n(result->name.begin(), 6, []() {
+            constexpr static auto charset = "0123456789"
+                                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                            "abcdefghijklmnopqrstuvwxyz";
+            constexpr size_t max = (sizeof(charset) - 1);
+            std::random_device rd;
+            return charset[rd() % max];
+          });
         }
         handle.prepared_statement_names.push_back(result->name);
 
@@ -83,31 +82,20 @@ namespace sqlpp
 
       void execute_prepared_statement(detail::connection_handle& handle, detail::prepared_statement_handle_t& prepared)
       {
+        int size = static_cast<int>(prepared.paramValues.size());
         // Execute a prepared statement
-        char* paramValues[prepared.paramValues.size()];
+        std::vector<char*> paramValues(size);
         // int paramLengths[prepared.paramValues.size()];
-        for (uint32_t i = 0; i < prepared.paramValues.size(); i++)
-        {
-          if (!prepared.nullValues[i])
-          {
-            paramValues[i] = const_cast<char*>(prepared.paramValues[i].c_str());
-            // paramLengths[i] = prepared.paramValues[i].size();
-          }
-          else
-          {
-            paramValues[i] = nullptr;
-            // paramLengths[i] = 0;
-          }
-        }
+        for (int i = 0; i < size; i++)
+          paramValues[i] = prepared.nullValues[i] ? nullptr : const_cast<char*>(prepared.paramValues[i].c_str());
 
         // Execute prepared statement with the parameters.
-
         prepared.clearResult();
         prepared.valid = false;
         prepared.count = 0;
         prepared.totalCount = 0;
-        prepared.result = PQexecPrepared(handle.postgres, prepared.name.c_str(), prepared.paramValues.size(),
-                                         paramValues, nullptr, nullptr, 0);
+        prepared.result =
+            PQexecPrepared(handle.postgres, prepared.name.c_str(), size, paramValues.data(), nullptr, nullptr, 0);
 
         prepared.valid = true;
       }
@@ -128,7 +116,7 @@ namespace sqlpp
     }
 
     connection::connection(const std::shared_ptr<connection_config>& config)
-        : _handle(new detail::connection_handle(config))
+        : _handle(std::make_unique<detail::connection_handle>(config))
     {
     }
 

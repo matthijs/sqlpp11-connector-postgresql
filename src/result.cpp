@@ -25,10 +25,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sqlpp11/postgresql/result.h>
-#include <sqlpp11/postgresql/exception.h>
-#include <string>
 #include <libpq-fe.h>
+#include <sqlpp11/postgresql/exception.h>
+#include <sqlpp11/postgresql/result.h>
+#include <string>
 
 namespace sqlpp
 {
@@ -38,7 +38,7 @@ namespace sqlpp
     {
     }
 
-    void Result::checkIndexAndThrow(size_t record, size_t field) const noexcept(false)
+    void Result::checkIndexAndThrow(int record, int field) const noexcept(false)
     {
       if (record > records_size() || field > field_count())
         throw std::out_of_range("libpq error: index out of range");
@@ -57,7 +57,7 @@ namespace sqlpp
         ThrowSQLError(Err, query());
     }
 
-    void Result::ThrowSQLError(const std::string& Err, const std::string& Query) const
+    [[noreturn]] void Result::ThrowSQLError(const std::string& Err, const std::string& Query) const
     {
       // Try to establish more precise error type, and throw corresponding exception
       const char* const code = PQresultErrorField(m_result, PG_DIAG_SQLSTATE);
@@ -168,8 +168,8 @@ namespace sqlpp
         case PGRES_FATAL_ERROR:
           Err = PQresultErrorMessage(m_result);
           break;
-
-        default:
+        case PGRES_COPY_BOTH:
+        case PGRES_SINGLE_TUPLE:
           throw sqlpp::exception("pqxx::result: Unrecognized response code " +
                                  std::to_string(PQresultStatus(m_result)));
       }
@@ -200,28 +200,28 @@ namespace sqlpp
       m_result = nullptr;
     }
 
-    size_t Result::affected_rows()
+    int Result::affected_rows()
     {
       const char* const RowsStr = PQcmdTuples(m_result);
-      return RowsStr[0] ? boost::lexical_cast<size_t>(RowsStr) : 0;
+      return RowsStr[0] ? boost::lexical_cast<int>(RowsStr) : 0;
     }
 
-    size_t Result::records_size() const
+    int Result::records_size() const
     {
       return m_result ? PQntuples(m_result) : 0;
     }
 
-    size_t Result::field_count() const
+    int Result::field_count() const
     {
       return m_result ? PQnfields(m_result) : 0;
     }
 
-    bool Result::isNull(size_t record, size_t field) const
+    bool Result::isNull(int record, int field) const
     {
       return PQgetisnull(m_result, record, field);
     }
 
-    size_t Result::length(size_t record, size_t field) const
+    int Result::length(int record, int field) const
     {
       return PQgetlength(m_result, record, field);
     }

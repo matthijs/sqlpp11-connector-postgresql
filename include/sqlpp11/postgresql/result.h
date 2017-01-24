@@ -34,13 +34,15 @@
 
 #include <libpq-fe.h>
 
+#include <sqlpp11/postgresql/visibility.h>
+
 #include <boost/lexical_cast.hpp>
 
 namespace sqlpp
 {
   namespace postgresql
   {
-    class __attribute__((__visibility__("default"))) Result
+    class DLL_PUBLIC Result
     {
     public:
       Result();
@@ -50,16 +52,16 @@ namespace sqlpp
 
       void clear();
 
-      size_t affected_rows();
-      size_t records_size() const;
-      size_t field_count() const;
-      size_t length(size_t record, size_t field) const;
-      bool isNull(size_t record, size_t field) const;
+      int affected_rows();
+      int records_size() const;
+      int field_count() const;
+      int length(int record, int field) const;
+      bool isNull(int record, int field) const;
       void operator=(PGresult* res);
       operator bool() const;
 
       template <typename T>
-      inline T getValue(size_t record, size_t field) const
+      inline T getValue(int record, int field) const
       {
         static_assert(std::is_arithmetic<T>::value, "Value must be numeric type");
         checkIndexAndThrow(record, field);
@@ -85,24 +87,24 @@ namespace sqlpp
 
     private:
       void CheckStatus() const;
-      void ThrowSQLError(const std::string& Err, const std::string& Query) const;
+      [[noreturn]] void ThrowSQLError(const std::string& Err, const std::string& Query) const;
       std::string StatusError() const;
       int errorPosition() const noexcept;
 
-      void checkIndexAndThrow(size_t record, size_t field) const noexcept(false);
+      void checkIndexAndThrow(int record, int field) const noexcept(false);
 
       PGresult* m_result;
       std::string m_query;
     };
 
     template <>
-    inline const char* Result::getValue<const char*>(size_t record, size_t field) const
+    inline const char* Result::getValue<const char*>(int record, int field) const
     {
       return const_cast<const char*>(PQgetvalue(m_result, record, field));
     }
 
     template <>
-    inline bool Result::getValue<bool>(size_t record, size_t field) const
+    inline bool Result::getValue<bool>(int record, int field) const
     {
       checkIndexAndThrow(record, field);
       auto val = PQgetvalue(m_result, record, field);

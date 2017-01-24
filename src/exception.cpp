@@ -53,11 +53,11 @@ sql_error::sql_error(const std::string& whatarg, const std::string& Q) : failure
 {
 }
 
-sql_error::~sql_error() throw()
+sql_error::~sql_error() noexcept
 {
 }
 
-const std::string& sql_error::query() const throw()
+const std::string& sql_error::query() const noexcept
 {
   return m_Q;
 }
