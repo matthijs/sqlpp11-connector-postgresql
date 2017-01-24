@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2013-2016, Roland Bock
  * All rights reserved.
  *
@@ -24,7 +24,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef SQLPP_POSTGRESQL_INSERT_H
+#define SQLPP_POSTGRESQL_INSERT_H
 
 #include <sqlpp11/insert.h>
 #include <sqlpp11/postgresql/returning.h>
@@ -63,3 +64,4 @@ namespace sqlpp
   }
 }
 
+#endif

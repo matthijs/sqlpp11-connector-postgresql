@@ -156,19 +156,19 @@ namespace sqlpp
         {
           conninfo.append(" service=" + config->service);
         }
-        if(this->postgres)
-            return;
+        if (this->postgres)
+          return;
 
         this->postgres = PQconnectdb(conninfo.c_str());
 
         if (!this->postgres)
-            throw std::bad_alloc();
+          throw std::bad_alloc();
 
         if (PQstatus(this->postgres) != CONNECTION_OK)
         {
-            const std::string msg(PQerrorMessage(this->postgres));
-            PQfinish(this->postgres);
-            throw broken_connection(msg);
+          const std::string msg(PQerrorMessage(this->postgres));
+          PQfinish(this->postgres);
+          throw broken_connection(msg);
         }
       }
 

@@ -34,7 +34,6 @@
 
 namespace sqlpp
 {
-
   namespace postgresql
   {
     namespace detail

@@ -29,11 +29,11 @@
 #define SQLPP_POSTGRESQL_CONNECTION_H
 
 #include <sqlpp11/connection.h>
-#include <sqlpp11/serialize.h>
-#include <sqlpp11/postgresql/connection_config.h>
 #include <sqlpp11/postgresql/bind_result.h>
+#include <sqlpp11/postgresql/connection_config.h>
 #include <sqlpp11/postgresql/prepared_statement.h>
 #include <sqlpp11/postgresql/result.h>
+#include <sqlpp11/serialize.h>
 
 #include <sstream>
 
@@ -142,9 +142,9 @@ namespace sqlpp
       connection(const std::shared_ptr<connection_config>& config);
       ~connection();
       connection(const connection&) = delete;
-      connection(connection&&) = delete;
+      connection(connection&&);
       connection& operator=(const connection&) = delete;
-      connection& operator=(connection&&) = delete;
+      connection& operator=(connection&&);
 
       // Select stmt (returns a result)
       template <typename Select>
@@ -249,7 +249,7 @@ namespace sqlpp
       template <
           typename Execute,
           typename Enable = typename std::enable_if<not std::is_convertible<Execute, std::string>::value, void>::type>
-      std::shared_ptr<detail::prepared_statement_handle_t> execute(const Execute& x)
+      std::shared_ptr<detail::statement_handle_t> execute(const Execute& x)
       {
         _context_t ctx(*this);
         serialize(x, ctx);
@@ -277,20 +277,18 @@ namespace sqlpp
 
       //! call run on the argument
       template <typename T>
-      auto _run(const T& t, const std::true_type&) -> decltype(t._run(*this))
+      auto _run(const T& t, sqlpp::consistent_t) -> decltype(t._run(*this))
       {
         return t._run(*this);
       }
 
-      template <typename T>
-      auto _run(const T& t, const std::false_type&) -> void;
+      template <typename Check, typename T>
+      auto _run(const T& t, Check) -> Check;
 
       template <typename T>
-      auto operator()(const T& t)
-          -> decltype(this->_run(t, sqlpp::run_check_t<_serializer_context_t, T>{}))
+      auto operator()(const T& t) -> decltype(this->_run(t, sqlpp::run_check_t<_serializer_context_t, T>{}))
       {
-          sqlpp::run_check_t<_serializer_context_t, T>::_();
-          return _run(t, sqlpp::run_check_t<_serializer_context_t, T>{});
+        return _run(t, sqlpp::run_check_t<_serializer_context_t, T>{});
       }
 
       //! call prepare on the argument
@@ -304,8 +302,7 @@ namespace sqlpp
       auto _prepare(const T& t, const std::false_type&) -> void;
 
       template <typename T>
-      auto prepare(const T& t)
-          -> decltype(this->_prepare(t, sqlpp::prepare_check_t<_serializer_context_t, T>{}))
+      auto prepare(const T& t) -> decltype(this->_prepare(t, sqlpp::prepare_check_t<_serializer_context_t, T>{}))
       {
         sqlpp::prepare_check_t<_serializer_context_t, T>::_();
         return _prepare(t, sqlpp::prepare_check_t<_serializer_context_t, T>{});

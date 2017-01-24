@@ -63,15 +63,10 @@ void testSelectAll(sql::connection& db, int expectedRowCount)
   std::cerr << "--------------------------------------" << std::endl;
 }
 
-int Select(int argc, char **argv)
+int Select(int argc, char** argv)
 {
   auto config = std::make_shared<sql::connection_config>();
-  config->user = "postgres";
-  config->password="postgres";
-  config->dbname = "test";
-  config->host = "localhost";
-  config->port = 5432;
-  config->debug = true;
+  config->dbname = "sqlpp11_tests";
   try
   {
     sql::connection db(config);
@@ -110,8 +105,8 @@ int Select(int argc, char **argv)
   {
     std::cerr << "row.left.alpha: " << row.left.alpha << ", row.left.beta: " << row.left.beta
               << ", row.left.gamma: " << row.left.gamma << std::endl;
-//    std::cerr << "row.tabSample.alpha: " << row.tabfoo.alpha << ", row.tabSample.beta: " << row.tabSample.beta
-//              << ", row.tabSample.gamma: " << row.tabfoo.gamma << std::endl;
+    //    std::cerr << "row.tabSample.alpha: " << row.tabfoo.alpha << ", row.tabSample.beta: " << row.tabSample.beta
+    //              << ", row.tabSample.gamma: " << row.tabfoo.gamma << std::endl;
   };
 
   // test functions and operators
@@ -133,12 +128,12 @@ int Select(int argc, char **argv)
   db(select(all_of(tab)).from(tab).where((tab.gamma + tab.gamma).like("%'\"%")));
 
   // test boolean value
-  db(insert_into(tab).set(tab.c_bool = true, tab.gamma="asdf"));
-  db(insert_into(tab).set(tab.c_bool = false, tab.gamma="asdfg"));
+  db(insert_into(tab).set(tab.c_bool = true, tab.gamma = "asdf"));
+  db(insert_into(tab).set(tab.c_bool = false, tab.gamma = "asdfg"));
 
-  assert(     db(select(tab.c_bool).from(tab).where(tab.gamma == "asdf")).front().c_bool );
-  assert( not db(select(tab.c_bool).from(tab).where(tab.gamma == "asdfg")).front().c_bool );
-  assert( not db(select(tab.c_bool).from(tab).where(tab.alpha == 1)).front().c_bool );
+  assert(db(select(tab.c_bool).from(tab).where(tab.gamma == "asdf")).front().c_bool);
+  assert(not db(select(tab.c_bool).from(tab).where(tab.gamma == "asdfg")).front().c_bool);
+  assert(not db(select(tab.c_bool).from(tab).where(tab.alpha == 1)).front().c_bool);
 
   // test
 

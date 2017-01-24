@@ -1,4 +1,4 @@
-# Copyright © 2015, Matthijs Möhlmann
+# Copyright (c) 2016, Christian David
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -23,23 +23,13 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-add_library(sqlpp11_postgresql_testing INTERFACE)
+include(CMakeFindDependencyMacro)
 
-target_include_directories(sqlpp11_postgresql_testing INTERFACE ${PostgreSQL_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/../include/")
+find_dependency(Sqlpp11 REQUIRED)
+find_dependency(PostgreSQL REQUIRED)
 
-set(test_names
-    DateTime
-    Select
-    Exceptions
-    Returning)
+include("${CMAKE_CURRENT_LIST_DIR}/Sqlpp-postgresqlTargets.cmake")
 
-target_compile_features(sqlpp11_postgresql_testing INTERFACE
-	cxx_auto_type)
-
-create_test_sourcelist(test_sources test_main.cpp ${test_names})
-add_executable(sqlpp11_postgresql_tests ${test_sources})
-target_link_libraries(sqlpp11_postgresql_tests PRIVATE sqlpp-postgresql sqlpp11_postgresql_testing ${PostgreSQL_LIBRARIES})
-
-foreach(test IN LISTS test_names)
-	add_test(NAME sqlpp11.tests.${test} COMMAND sqlpp11_postgresql_tests ${test})
-endforeach()
+set_target_properties(Sqlpp::sqlpp-postgresql PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${PostgreSQL_INCLUDE_DIRS};$<TARGET_PROPERTY:INTERFACE_INCLUDE_DIRECTORIES>"
+)

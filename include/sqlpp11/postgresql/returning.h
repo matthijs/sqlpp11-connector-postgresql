@@ -30,6 +30,7 @@
 
 #include <sqlpp11/statement.h>
 #include <sqlpp11/postgresql/returning_column_list.h>
+#include <sqlpp11/select_column_list.h>
 
 namespace sqlpp
 {
@@ -91,34 +92,47 @@ namespace sqlpp
 
         using _database_t = typename Policies::_database_t;
 
+        template <typename... T>
+        static constexpr auto _check_tuple(std::tuple<T...>) -> check_selected_columns_t<T...>
+        {
+          return {};
+        }
+
+        template <typename... T>
+        static constexpr auto _check_args(T... args)
+            -> decltype(_check_tuple(sqlpp::detail::column_tuple_merge(args...)))
+        {
+          return {};
+        }
+
         template <typename Check, typename T>
-        using _new_statement_t = new_statement_t<true, Policies, no_returning_t, T>;
+        using _new_statement_t = new_statement_t<Check, Policies, no_returning_t, T>;
 
         using _consistency_check = consistent_t;
 
         template <typename... Columns>
         auto returning(Columns... columns) const
-            -> _new_statement_t<void, returning_column_list_t<_database_t, Columns...>>
+            -> _new_statement_t<decltype(_check_args(columns...)), returning_column_list_t<_database_t, Columns...>>
         {
           return {static_cast<const derived_statement_t<Policies>&>(*this),
                   typename returning_column_list_t<_database_t, Columns...>::_data_t{columns...}};
         }
 
-//        auto dynamic_returning(Columns... columns) const
-//            -> _new_statement_t<void, returning_column_list_t<_database_t, Columns...>>
-//        {
-//          return {static_cast<const derived_statement_t<Policies>&>(*this),
-//                  typename returning_column_list_t<_database_t, Columns...>::_data_t{columns...}};
-//        }
+        //        auto dynamic_returning(Columns... columns) const
+        //            -> _new_statement_t<void, returning_column_list_t<_database_t, Columns...>>
+        //        {
+        //          return {static_cast<const derived_statement_t<Policies>&>(*this),
+        //                  typename returning_column_list_t<_database_t, Columns...>::_data_t{columns...}};
+        //        }
 
-//        template <typename Database, typename... Columns>
-//        auto dynamic_returning(const Database&, Columns... columns) -> decltype(blank_select_t<Database>().columns(columns...))
-//        {
-//          static_assert(std::is_base_of<connection, Database>::value, "Invalid database parameter");
-//          return {static_cast<const derived_statement_t<Policies>&>(*this),
-//                  typename dynamic_returning_column_list<_database_t, Columns...>::_data_t{columns...}};
-//        }
-
+        //        template <typename Database, typename... Columns>
+        //        auto dynamic_returning(const Database&, Columns... columns) ->
+        //        decltype(blank_select_t<Database>().columns(columns...))
+        //        {
+        //          static_assert(std::is_base_of<connection, Database>::value, "Invalid database parameter");
+        //          return {static_cast<const derived_statement_t<Policies>&>(*this),
+        //                  typename dynamic_returning_column_list<_database_t, Columns...>::_data_t{columns...}};
+        //        }
       };
     };
   }

@@ -26,6 +26,7 @@
 #include "TabFoo.h"
 #include <sqlpp11/sqlpp11.h>
 #include <sqlpp11/postgresql/postgresql.h>
+#include <sqlpp11/postgresql/exception.h>
 
 #include <iostream>
 #include <vector>
@@ -54,26 +55,21 @@ namespace
 namespace sql = sqlpp::postgresql;
 int DateTime(int, char**)
 {
-    auto config = std::make_shared<sql::connection_config>();
-    config->user = "postgres";
-    config->password="postgres";
-    config->dbname = "test";
-    config->host = "localhost";
-    config->port = 5432;
-    config->debug = true;
-    try
-    {
-      sql::connection db(config);
-    }
-    catch (const sqlpp::exception&)
-    {
-      std::cerr << "For testing, you'll need to create a database sqlpp_postgresql" << std::endl;
-      throw;
-    }
+  auto config = std::make_shared<sql::connection_config>();
+  config->dbname = "sqlpp11_tests";
+  try
+  {
     sql::connection db(config);
+  }
+  catch (const sqlpp::exception&)
+  {
+    std::cerr << "For testing, you'll need to create a database sqlpp_postgresql" << std::endl;
+    throw;
+  }
+  sql::connection db(config);
 
-    db.execute(R"(DROP TABLE IF EXISTS tabfoo;)");
-    db.execute(R"(CREATE TABLE tabfoo
+  db.execute(R"(DROP TABLE IF EXISTS tabfoo;)");
+  db.execute(R"(CREATE TABLE tabfoo
                (
                  alpha bigserial NOT NULL,
                  beta smallint,
@@ -82,7 +78,6 @@ int DateTime(int, char**)
                  c_timepoint timestamp with time zone,
                  c_day date
                ))");
-
 
   model::TabFoo tab;
   try
@@ -112,10 +107,10 @@ int DateTime(int, char**)
       require_equal(__LINE__, row.c_timepoint.value(), today);
     }
 
-    auto prepared_update = db.prepare(
-        update(tab)
-            .set(tab.c_day = parameter(tab.c_day), tab.c_timepoint = parameter(tab.c_timepoint))
-            .unconditionally());
+    auto prepared_update =
+        db.prepare(update(tab)
+                       .set(tab.c_day = parameter(tab.c_day), tab.c_timepoint = parameter(tab.c_timepoint))
+                       .unconditionally());
     prepared_update.params.c_day = today;
     prepared_update.params.c_timepoint = now;
     std::cout << "---- running prepared update ----" << std::endl;
@@ -127,9 +122,10 @@ int DateTime(int, char**)
       require_equal(__LINE__, row.c_timepoint.value(), now);
     }
   }
-  catch (const sql::failure &e){
-      std::cerr << "Exception: " << e.what() << std::endl;
-      return 1;
+  catch (const sql::failure& e)
+  {
+    std::cerr << "Exception: " << e.what() << std::endl;
+    return 1;
   }
 
   return 0;

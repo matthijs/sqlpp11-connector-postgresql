@@ -1,5 +1,6 @@
 /**
  * Copyright © 2014-2015, Matthijs Möhlmann
+ * Copyright © 2015-2016, Bartosz Wieczorek
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +33,7 @@
 #include <vector>
 #include <string>
 
-#include <pgsql/libpq-fe.h>
+#include <libpq-fe.h>
 #include <sqlpp11/postgresql/result.h>
 
 namespace sqlpp
@@ -52,9 +53,7 @@ namespace sqlpp
         uint32_t fields = {0};
 
         // ctor
-        statement_handle_t(PGconn* _connection, bool _debug) :
-            connection(_connection),
-            debug(_debug)
+        statement_handle_t(PGconn* _connection, bool _debug) : connection(_connection), debug(_debug)
         {
         }
         statement_handle_t(const statement_handle_t&) = delete;
@@ -91,9 +90,7 @@ namespace sqlpp
 
         // ctor
         prepared_statement_handle_t(PGconn* _connection, const size_t& paramCount, bool _debug)
-            : statement_handle_t(_connection, _debug),
-              nullValues(paramCount),
-              paramValues(paramCount)
+            : statement_handle_t(_connection, _debug), nullValues(paramCount), paramValues(paramCount)
         {
         }
         prepared_statement_handle_t(const prepared_statement_handle_t&) = delete;
@@ -101,7 +98,7 @@ namespace sqlpp
         prepared_statement_handle_t& operator=(const prepared_statement_handle_t&) = delete;
         prepared_statement_handle_t& operator=(prepared_statement_handle_t&&) = default;
 
-        ~prepared_statement_handle_t()
+        virtual ~prepared_statement_handle_t()
         {
           clearResult();
 

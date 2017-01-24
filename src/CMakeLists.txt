@@ -1,4 +1,5 @@
-# Copyright © 2015, Matthijs Möhlmann
+# Copyright (c) 2015, Matthijs Möhlmann
+# Copyright (c) 2016, Christian Dávid
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -23,7 +24,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-
 set(LIB_HEADERS
     detail/prepared_statement_handle.h
 )
@@ -31,29 +31,61 @@ set(LIB_HEADERS
 add_library(sqlpp-postgresql SHARED
 	bind_result.cpp
 	connection.cpp
-        exception.cpp
-        prepared_statement.cpp
-        detail/connection_handle.cpp
-        result.cpp
-        ${postgresql_headers}
-        ${LIB_HEADERS}
+	exception.cpp
+	prepared_statement.cpp
+	detail/connection_handle.cpp
+	result.cpp
+	${postgresql_headers}
+	${LIB_HEADERS}
 )
 
-target_compile_features(sqlpp-postgresql PRIVATE
-	cxx_auto_type)
+# Properties
+set_property(TARGET sqlpp-postgresql PROPERTY CXX_STANDARD 11)
 
 target_compile_features(sqlpp-postgresql PRIVATE
 	cxx_auto_type)
+
+target_link_libraries(sqlpp-postgresql PUBLIC sqlpp11 PRIVATE ${PostgreSQL_LIBRARIES})
+
+target_include_directories(sqlpp-postgresql PRIVATE ${PostgreSQL_INCLUDE_DIRS} "../include/")
+
+# The include directory should be PUBLIC. However, that would store an absolute path in the package configuration
+# so leave it PRIVATE and correct that in the ...Config.cmake file. This can be changed when the FindPostgreSQL.cmake got updated.
+#target_include_directories(sqlpp-postgresql PUBLIC ${PostgreSQL_INCLUDE_DIRS})
 
 # Keep this in sync with the releases in sqlpp11
 set(sqlpp-postgresql_VERSION_MAJOR 0)
 set(sqlpp-postgresql_VERSION_MINOR 35)
 set(sqlpp-postgresql_VERSION_PATCH 0)
-set(sqlpp-postgresql_VERSION_STRING ${cwf_VERSION_MAJOR}.${cwf_VERSION_MINOR}.${cwf_VERSION_PATCH})
-
-target_link_libraries(sqlpp-postgresql pq)
-
+set(sqlpp-postgresql_VERSION_STRING ${sqlpp-postgresql_VERSION_MAJOR}.${sqlpp-postgresql_VERSION_MINOR}.${sqlpp-postgresql_VERSION_PATCH})
 set_target_properties(sqlpp-postgresql PROPERTIES VERSION ${sqlpp-postgresql_VERSION_STRING}
 	        SOVERSION ${sqlpp-postgresql_VERSION_MAJOR})
 
-install(TARGETS sqlpp-postgresql DESTINATION lib)
+install(TARGETS sqlpp-postgresql
+        EXPORT postgresqlTargets
+        DESTINATION lib
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlConfigVersion.cmake"
+  VERSION ${Upstream_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
+export(EXPORT postgresqlTargets
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlTargets.cmake"
+  NAMESPACE Sqlpp::
+)
+
+install(EXPORT postgresqlTargets
+  FILE Sqlpp-postgresqlTargets.cmake
+  NAMESPACE Sqlpp::
+  DESTINATION ${ConfigPackageLocation}
+)
+
+install(
+  FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlConfigVersion.cmake"
+  DESTINATION ${ConfigPackageLocation}
+  COMPONENT Devel
+)

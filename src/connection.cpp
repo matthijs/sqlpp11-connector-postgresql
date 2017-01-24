@@ -1,5 +1,6 @@
 /**
- * Copyright © 2014-2015, Matthijs Möhlmann
+ * Copyright © 2014-2016, Matthijs Möhlmann
+ * Copyright © 2015-2016, Bartosz Wieczorek
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,9 +33,12 @@
 #include <iostream>
 #include <random>
 
+#if __cplusplus == 201103L
+#include "make_unique.h"
+#endif
+
 #include "detail/prepared_statement_handle.h"
 #include "detail/connection_handle.h"
-#include "detail/make_unique.h"
 
 namespace sqlpp
 {
@@ -43,19 +47,20 @@ namespace sqlpp
     namespace
     {
       std::unique_ptr<detail::prepared_statement_handle_t> prepare_statement(detail::connection_handle& handle,
-                                                            const std::string& stmt,
-                                                            const size_t& paramCount)
+                                                                             const std::string& stmt,
+                                                                             const size_t& paramCount)
       {
         if (handle.config->debug)
         {
           std::cerr << "PostgreSQL debug: preparing: " << stmt << std::endl;
         }
 
-        auto result = make_unique<detail::prepared_statement_handle_t>(handle.postgres, paramCount, handle.config->debug);
+        auto result =
+            std::make_unique<detail::prepared_statement_handle_t>(handle.postgres, paramCount, handle.config->debug);
 
         // Generate a random name for the prepared statement
-        while (std::find(handle.prepared_statement_names.begin(), handle.prepared_statement_names.end(), result->name) !=
-               handle.prepared_statement_names.end())
+        while (std::find(handle.prepared_statement_names.begin(), handle.prepared_statement_names.end(),
+                         result->name) != handle.prepared_statement_names.end())
         {
           std::generate_n(result->name.begin(), 6, []()
                           {
@@ -73,7 +78,7 @@ namespace sqlpp
         result->result = PQprepare(handle.postgres, result->name.c_str(), stmt.c_str(), 0, nullptr);
 
         result->valid = true;
-        return std::move(result);
+        return result;
       }
 
       void execute_prepared_statement(detail::connection_handle& handle, detail::prepared_statement_handle_t& prepared)
@@ -129,6 +134,19 @@ namespace sqlpp
 
     connection::~connection()
     {
+    }
+
+    connection::connection(connection&& other)
+    {
+      _handle = std::move(other._handle);
+      _transaction_active = other._transaction_active;
+    }
+
+    connection& connection::operator=(connection&& other)
+    {
+      _handle = std::move(other._handle);
+      _transaction_active = other._transaction_active;
+      return *this;
     }
 
     // direct execution

@@ -1,43 +1,73 @@
 language: cpp
 
+os:
+  - linux
+  - osx
+
+osx_image: xcode7
+
 compiler:
-    #- clang
-    - gcc
+  - clang
+  - gcc
+
+env:
+  - CONFIG=Release
+  - CONFIG=Debug
+
+sudo: required
+dist: trusty
+addons:
+  apt:
+    packages:
+    - libc++-dev
+    - libc++abi-dev
+    - libboost-dev
+    - libpq-dev
+    - postgresql-server-dev-all
+
+services:
+  - postgresql
 
 notifications:
-    email:
-        on_success: change
-        on_failure: always
+  email:
+    on_success: change
+    on_failure: always
 
 install:
-    # install a newer cmake since at this time Travis only has version 2.8
-    - CMAKE_VERSION_MM=3.2
-    - CMAKE_VERSION_FULL=$CMAKE_VERSION_MM.3
-    - cd ..
-    - git clone https://github.com/HowardHinnant/date
-    - cd sqlpp11-connector-postgresql
-    - wget --no-check-certificate http://www.cmake.org/files/v${CMAKE_VERSION_MM}/cmake-${CMAKE_VERSION_FULL}-Linux-x86_64.sh
-    - sudo sh cmake-${CMAKE_VERSION_FULL}-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir
-    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-    - sudo add-apt-repository -y ppa:apokluda/boost1.53
-    - sudo apt-get update -qq
-    - sudo apt-get install g++-4.9 libboost1.53-dev --no-install-recommends
-    - sudo update-alternatives --quiet --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.6 --slave /usr/bin/gcov gcov /usr/bin/gcov-4.6
-    - sudo update-alternatives --quiet --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9 --slave /usr/bin/gcov gcov /usr/bin/gcov-4.9
-    - sudo update-alternatives --quiet --set gcc /usr/bin/gcc-4.9
-    - cd ..
-    - git clone https://github.com/rbock/sqlpp11.git
-    - cd sqlpp11
-    - cmake . -DCMAKE_INCLUDE_DIR=$PWD/../date
-    - sudo make install
-    - cd ..
-    - cd sqlpp11-connector-postgresql
+  # install a newer cmake since at this time Travis only has version 2.8
+  - pwd
+  - PROJECT_DIR=$PWD
+  - CMAKE_VERSION_MM=3.4
+  - CMAKE_VERSION_FULL=$CMAKE_VERSION_MM.1
+  - cd ..
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+      wget --no-check-certificate http://www.cmake.org/files/v${CMAKE_VERSION_MM}/cmake-${CMAKE_VERSION_FULL}-Linux-x86_64.sh
+      && sudo sh cmake-${CMAKE_VERSION_FULL}-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir;
+    fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+      brew update
+      && ((brew list -1 | grep -q "^$cmake\$") || brew install cmake)
+      && (brew outdated cmake || brew upgrade cmake)
+      && cmake --version
+      ;
+    fi
+  - git clone --branch v1.0.0 --depth 1 https://github.com/HowardHinnant/date
+  - git clone --branch develop --depth 1 https://github.com/rbock/sqlpp11.git
+  - cd sqlpp11
+  - mkdir build
+  - cd build
+  - cmake .. -DHinnantDate_ROOT_DIR="$PROJECT_DIR/../date" -DCMAKE_BUILD_TYPE=$CONFIG
+  - sudo make install
+  - cd ../..
+  - psql -c 'CREATE DATABASE sqlpp11_tests;' postgres
+  - cd $PROJECT_DIR
 
 before_script:
-    - mkdir build
-    - cd build
-    - cmake .. -DCMAKE_INCLUDE_DIR=$PWD/../../date
+  - mkdir build
+  - cd build
+  - cmake .. -DHinnantDate_ROOT_DIR="$PWD/../../date" -DCMAKE_BUILD_TYPE=$CONFIG
 
 script:
-    - cmake --build .
-
+  - make VERBOSE=1
+  - cmake --build . --config $CONFIG
+  - ctest --output-on-failure

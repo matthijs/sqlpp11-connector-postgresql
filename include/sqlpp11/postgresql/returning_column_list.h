@@ -204,12 +204,12 @@ namespace sqlpp
           using named_expression = auto_alias_t<NamedExpression>;
           static_assert(_is_dynamic::value, "selected_columns::add() can only be called for dynamic_column");
           static_assert(is_selectable_t<named_expression>::value,
-                          "invalid named expression argument in selected_columns::add()");
+                        "invalid named expression argument in selected_columns::add()");
           static_assert(TableCheckRequired::value or Policies::template _no_unknown_tables<named_expression>::value,
-                          "named expression uses tables unknown to this statement in selected_columns::add()");
+                        "named expression uses tables unknown to this statement in selected_columns::add()");
           using column_names = ::sqlpp::detail::make_type_set_t<typename Columns::_alias_t...>;
-          static_assert(not ::sqlpp::detail::is_element_of<typename named_expression::_alias_t, column_names>::value,
-                          "a column of this name is present in the select already");
+          static_assert(not::sqlpp::detail::is_element_of<typename named_expression::_alias_t, column_names>::value,
+                        "a column of this name is present in the select already");
           using _serialize_check = sqlpp::serialize_check_t<typename Database::_serializer_context_t, named_expression>;
           _serialize_check::_();
 
@@ -446,13 +446,14 @@ namespace sqlpp
         }
 
         template <typename... T>
-        static constexpr auto _check_args(T... args) -> decltype(_check_tuple(::sqlpp::detail::column_tuple_merge(args...)))
+        static constexpr auto _check_args(T... args)
+            -> decltype(_check_tuple(sqlpp::detail::column_tuple_merge(args...)))
         {
-          return _check_tuple(::sqlpp::detail::column_tuple_merge(args...));
+          return _check_tuple(sqlpp::detail::column_tuple_merge(args...));
         }
 
         template <typename Check, typename T>
-        using _new_statement_t = new_statement_t<Check::value, Policies, no_returning_column_list_t, T>;
+        using _new_statement_t = new_statement_t<Check, Policies, no_returning_column_list_t, T>;
 
         using _consistency_check = consistent_t;
 
@@ -464,37 +465,38 @@ namespace sqlpp
           static_assert(decltype(_check_args(args...))::value,
                         "at least one argument is not a selectable expression in returning()");
 
-          return _returning_impl<void>(_check_args(args...), ::sqlpp::detail::column_tuple_merge(args...));
+          return _returning_impl<void>(decltype(_check_args(args...)){}, ::sqlpp::detail::column_tuple_merge(args...));
         }
 
         template <typename... Args>
         auto dynamic_returning(Args... args) const
-            -> _new_statement_t<decltype(_check_args(args...)), detail::make_returning_column_list_t<_database_t, Args...>>
+            -> _new_statement_t<decltype(_check_args(args...)),
+                                detail::make_returning_column_list_t<_database_t, Args...>>
         {
           static_assert(not std::is_same<_database_t, void>::value,
                         "dynamic_columns must not be called in a static statement");
           static_assert(decltype(_check_args(args...))::value,
                         "at least one argument is not a selectable expression in returning()");
 
-          return _returning_impl<_database_t>(_check_args(args...), ::sqlpp::detail::column_tuple_merge(args...));
+          return _returning_impl<_database_t>(decltype(_check_args(args...)){},
+                                              ::sqlpp::detail::column_tuple_merge(args...));
         }
 
       private:
-        template <typename Database, typename... Args>
-        auto _returning_impl(const std::false_type&, std::tuple<Args...> args) const -> bad_statement;
+        template <typename Database, typename Check, typename... Args>
+        auto _returning_impl(const std::false_type&, std::tuple<Args...> args) const -> inconsistent<Check>;
 
         template <typename Database, typename... Args>
-        auto _returning_impl(const std::true_type&, std::tuple<Args...> args) const
-            -> _new_statement_t<_check<Args...>, returning_column_list_t<Database, Args...>>
+        auto _returning_impl(consistent_t, std::tuple<Args...> args) const
+            -> _new_statement_t<consistent_t, returning_column_list_t<Database, Args...>>
         {
-          static_assert(not ::sqlpp::detail::has_duplicates<Args...>::value, "at least one duplicate argument detected");
-          static_assert(not ::sqlpp::detail::has_duplicates<typename Args::_alias_t...>::value,
+          static_assert(not::sqlpp::detail::has_duplicates<Args...>::value, "at least one duplicate argument detected");
+          static_assert(not::sqlpp::detail::has_duplicates<typename Args::_alias_t...>::value,
                         "at least one duplicate name detected");
 
           return {static_cast<const derived_statement_t<Policies>&>(*this),
                   typename returning_column_list_t<Database, Args...>::_data_t{args}};
         }
-
       };
     };
   }
@@ -516,15 +518,15 @@ namespace sqlpp
       return context;
     }
   };
-//    namespace postgresql
-//    {
-//      template <typename... T>
-//      auto returning_columns(T&&... t)
-//          -> decltype(statement_t<void, no_returning_column_list_t>().returning(std::forward<T>(t)...))
-//      {
-//        return statement_t<void, no_returning_column_list_t>().returning(std::forward<T>(t)...);
-//      }
-//    }
+  //    namespace postgresql
+  //    {
+  //      template <typename... T>
+  //      auto returning_columns(T&&... t)
+  //          -> decltype(statement_t<void, no_returning_column_list_t>().returning(std::forward<T>(t)...))
+  //      {
+  //        return statement_t<void, no_returning_column_list_t>().returning(std::forward<T>(t)...);
+  //      }
+  //    }
 }
 
 #endif
