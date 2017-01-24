@@ -31,211 +31,238 @@
 #include <algorithm>
 #include <iostream>
 
-#include "detail/prepared_statement_handle.h"
 #include "detail/connection_handle.h"
+#include "detail/prepared_statement_handle.h"
 
-namespace sqlpp {
-
-	namespace postgresql {
-
-		namespace {
-			detail::prepared_statement_handle_t prepare_statement(detail::connection_handle &handle, const std::string &stmt, const size_t &paramCount) {
-				if (handle.config->debug) {
-					std::cerr << "PostgreSQL debug: preparing: " << stmt << std::endl;
-				}
-
-				detail::prepared_statement_handle_t result(handle.postgres, paramCount, handle.config->debug);
-
-				// Generate a random name for the prepared statement
-				while(std::find(handle.prepared_statement_names.begin(), handle.prepared_statement_names.end(), result.name) != handle.prepared_statement_names.end()) {
-					std::generate_n(result.name.begin(), 6, []() {
-							const char charset[] =
-								"0123456789"
-								"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-								"abcdefghijklmnopqrstuvwxyz";
-							constexpr size_t max = (sizeof(charset) - 1);
-							std::random_device rd;
-							return charset[rd() % max];
-						});
-				}
-				handle.prepared_statement_names.push_back(result.name);
-
-				// Create the prepared statement
-                result.result = PQprepare(handle.postgres,
-						result.name.c_str(),
-						stmt.c_str(),
-						0,
-						nullptr);
-
-                result.valid = true;
-				return result;
-			}
-
-            void execute_prepared_statement(detail::connection_handle &handle, detail::prepared_statement_handle_t &prepared) {
-
-				// Execute a prepared statement
-				char *paramValues[prepared.paramValues.size()];
-				//int paramLengths[prepared.paramValues.size()];
-				for (uint32_t i = 0; i < prepared.paramValues.size(); i++) {
-					if (!prepared.nullValues[i]) {
-						paramValues[i] = const_cast<char *>(prepared.paramValues[i].c_str());
-						//paramLengths[i] = prepared.paramValues[i].size();
-					} else {
-						paramValues[i] = nullptr;
-						//paramLengths[i] = 0;
-					}
-				}
-
-				// Execute prepared statement with the parameters.
-
-                prepared.clearResult();
-                prepared.valid = false;
-				prepared.count = 0;
-				prepared.totalCount = 0;
-				prepared.result = PQexecPrepared(handle.postgres,
-						prepared.name.c_str(),
-						prepared.paramValues.size(),
-						paramValues,
-						nullptr,
-						nullptr,
-						0);
-
-                prepared.valid = true;
-			}
-		}
-
-        std::shared_ptr<detail::statement_handle_t> connection::execute(const std::string &stmt){
-            if (_handle->config->debug) {
-                std::cerr << "PostgreSQL debug: executing: " << stmt << std::endl;
-            }
-
-            auto result = std::make_shared<detail::statement_handle_t>(native_handle(), _handle->config->debug);
-            result->result = PQexec(native_handle(), stmt.c_str());
-            result->valid = true;
-
-            return result;
+namespace sqlpp
+{
+  namespace postgresql
+  {
+    namespace
+    {
+      detail::prepared_statement_handle_t prepare_statement(detail::connection_handle& handle,
+                                                            const std::string& stmt,
+                                                            const size_t& paramCount)
+      {
+        if (handle.config->debug)
+        {
+          std::cerr << "PostgreSQL debug: preparing: " << stmt << std::endl;
         }
 
-		connection::connection(const std::shared_ptr<connection_config> &config) : _handle(new detail::connection_handle(config)) {
-		}
+        detail::prepared_statement_handle_t result(handle.postgres, paramCount, handle.config->debug);
 
-		connection::~connection() {
-		}
+        // Generate a random name for the prepared statement
+        while (std::find(handle.prepared_statement_names.begin(), handle.prepared_statement_names.end(), result.name) !=
+               handle.prepared_statement_names.end())
+        {
+          std::generate_n(result.name.begin(), 6, []() {
+            const char charset[] = "0123456789"
+                                   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                   "abcdefghijklmnopqrstuvwxyz";
+            constexpr size_t max = (sizeof(charset) - 1);
+            std::random_device rd;
+            return charset[rd() % max];
+          });
+        }
+        handle.prepared_statement_names.push_back(result.name);
 
-		// direct execution
-        bind_result_t connection::select_impl(const std::string &stmt) {
-            return execute(stmt);
-		}
+        // Create the prepared statement
+        result.result = PQprepare(handle.postgres, result.name.c_str(), stmt.c_str(), 0, nullptr);
 
-		size_t connection::insert_impl(const std::string &stmt) {
-            return execute(stmt)->result.affected_rows();
-		}
+        result.valid = true;
+        return result;
+      }
 
-		size_t connection::update_impl(const std::string &stmt) {
-            return execute(stmt)->result.affected_rows();
-		}
-
-		size_t connection::remove_impl(const std::string &stmt) {
-            return execute(stmt)->result.affected_rows();
-		}
-
-		// prepared execution
-		prepared_statement_t connection::prepare_impl(const std::string &stmt, const size_t &paramCount) {
-			return { std::unique_ptr<detail::prepared_statement_handle_t>(new detail::prepared_statement_handle_t(prepare_statement(*_handle, stmt, paramCount))) };
-		}
-
-        bind_result_t connection::run_prepared_select_impl(prepared_statement_t &prep) {
-            execute_prepared_statement(*_handle, *prep._handle.get());
-			return { prep._handle };
-		}
-
-		size_t connection::run_prepared_execute_impl(prepared_statement_t &prep) {
-            execute_prepared_statement(*_handle, *prep._handle.get());
-            return prep._handle->result.affected_rows();
-		}
-
-		size_t connection::run_prepared_insert_impl(prepared_statement_t &prep) {
-            execute_prepared_statement(*_handle, *prep._handle.get());
-            return prep._handle->result.affected_rows();
-		}
-
-		size_t connection::run_prepared_update_impl(prepared_statement_t &prep) {
-            execute_prepared_statement(*_handle, *prep._handle.get());
-            return prep._handle->result.affected_rows();
-		}
-
-		size_t connection::run_prepared_remove_impl(prepared_statement_t &prep) {
-            execute_prepared_statement(*_handle, *prep._handle.get());
-            return prep._handle->result.affected_rows();
-		}
-
-		std::string connection::escape(const std::string &s) const {
-			// Escape strings
-            std::string result;
-            result.resize((s.size() * 2) + 1);
-
-			int err;
-            size_t length = PQescapeStringConn(_handle->postgres, &result[0], s.c_str(), s.size(), &err);
-            result.resize(length);
-            return std::move(result);
-		}
-
-		//! start transaction
-		void connection::start_transaction() {
-            execute("BEGIN");
-		}
-
-        //! create savepoint
-        void connection::savepoint( const std::string &name ){
-            ///NOTE prevent from sql injection?
-            execute("SAVEPOINT " + name );
+      void execute_prepared_statement(detail::connection_handle& handle, detail::prepared_statement_handle_t& prepared)
+      {
+        // Execute a prepared statement
+        char* paramValues[prepared.paramValues.size()];
+        // int paramLengths[prepared.paramValues.size()];
+        for (uint32_t i = 0; i < prepared.paramValues.size(); i++)
+        {
+          if (!prepared.nullValues[i])
+          {
+            paramValues[i] = const_cast<char*>(prepared.paramValues[i].c_str());
+            // paramLengths[i] = prepared.paramValues[i].size();
+          }
+          else
+          {
+            paramValues[i] = nullptr;
+            // paramLengths[i] = 0;
+          }
         }
 
-        //! ROLLBACK TO SAVEPOINT
-        void connection::rollback_to_savepoint( const std::string &name ){
-            ///NOTE prevent from sql injection?
-            execute("ROLLBACK TO SAVEPOINT " + name );
-        }
+        // Execute prepared statement with the parameters.
 
-        //! release_savepoint
-        void connection::release_savepoint( const std::string &name ){
-            ///NOTE prevent from sql injection?
-            execute("RELEASE SAVEPOINT " + name );
-        }
+        prepared.clearResult();
+        prepared.valid = false;
+        prepared.count = 0;
+        prepared.totalCount = 0;
+        prepared.result = PQexecPrepared(handle.postgres, prepared.name.c_str(), prepared.paramValues.size(),
+                                         paramValues, nullptr, nullptr, 0);
 
-        //! commit transaction
-		void connection::commit_transaction() {
-            execute("COMMIT");
-		}
+        prepared.valid = true;
+      }
+    }
 
-		//! rollback transaction
-		void connection::rollback_transaction(bool report) {
-            execute("ROLLBACK");
-            if (report) {
-				std::cerr << "PostgreSQL warning: rolling back unfinished transaction" << std::endl;
-			}
-		}
+    std::shared_ptr<detail::statement_handle_t> connection::execute(const std::string& stmt)
+    {
+      if (_handle->config->debug)
+      {
+        std::cerr << "PostgreSQL debug: executing: " << stmt << std::endl;
+      }
 
-		//! report rollback failure
-		void connection::report_rollback_failure(const std::string &message) noexcept {
-			std::cerr << "PostgreSQL error: " << message << std::endl;
-		}
+      auto result = std::make_shared<detail::statement_handle_t>(native_handle(), _handle->config->debug);
+      result->result = PQexec(native_handle(), stmt.c_str());
+      result->valid = true;
 
-		uint64_t connection::last_insert_id(const std::string &table, const std::string &fieldname) {
-			std::string sql = "SELECT currval('" + table + "_" + fieldname + "_seq')";
-			PGresult *res = PQexec(_handle->postgres, sql.c_str());
+      return result;
+    }
 
-			// Parse the number and return.
-            ///NOTE: A copy is happening here, how to prevent that?
-            /// It's only a number( length < 5? ), how slow can it be?
-			std::string in {PQgetvalue(res, 0, 0)};
-			PQclear(res);
-			return std::stoi(in);
-		}
+    connection::connection(const std::shared_ptr<connection_config>& config)
+        : _handle(new detail::connection_handle(config))
+    {
+    }
 
-		::PGconn* connection::native_handle() {
-			return _handle->postgres;
-		}
-	}
+    connection::~connection()
+    {
+    }
+
+    // direct execution
+    bind_result_t connection::select_impl(const std::string& stmt)
+    {
+      return execute(stmt);
+    }
+
+    size_t connection::insert_impl(const std::string& stmt)
+    {
+      return execute(stmt)->result.affected_rows();
+    }
+
+    size_t connection::update_impl(const std::string& stmt)
+    {
+      return execute(stmt)->result.affected_rows();
+    }
+
+    size_t connection::remove_impl(const std::string& stmt)
+    {
+      return execute(stmt)->result.affected_rows();
+    }
+
+    // prepared execution
+    prepared_statement_t connection::prepare_impl(const std::string& stmt, const size_t& paramCount)
+    {
+      return {std::unique_ptr<detail::prepared_statement_handle_t>(
+          new detail::prepared_statement_handle_t(prepare_statement(*_handle, stmt, paramCount)))};
+    }
+
+    bind_result_t connection::run_prepared_select_impl(prepared_statement_t& prep)
+    {
+      execute_prepared_statement(*_handle, *prep._handle.get());
+      return {prep._handle};
+    }
+
+    size_t connection::run_prepared_execute_impl(prepared_statement_t& prep)
+    {
+      execute_prepared_statement(*_handle, *prep._handle.get());
+      return prep._handle->result.affected_rows();
+    }
+
+    size_t connection::run_prepared_insert_impl(prepared_statement_t& prep)
+    {
+      execute_prepared_statement(*_handle, *prep._handle.get());
+      return prep._handle->result.affected_rows();
+    }
+
+    size_t connection::run_prepared_update_impl(prepared_statement_t& prep)
+    {
+      execute_prepared_statement(*_handle, *prep._handle.get());
+      return prep._handle->result.affected_rows();
+    }
+
+    size_t connection::run_prepared_remove_impl(prepared_statement_t& prep)
+    {
+      execute_prepared_statement(*_handle, *prep._handle.get());
+      return prep._handle->result.affected_rows();
+    }
+
+    std::string connection::escape(const std::string& s) const
+    {
+      // Escape strings
+      std::string result;
+      result.resize((s.size() * 2) + 1);
+
+      int err;
+      size_t length = PQescapeStringConn(_handle->postgres, &result[0], s.c_str(), s.size(), &err);
+      result.resize(length);
+      return std::move(result);
+    }
+
+    //! start transaction
+    void connection::start_transaction()
+    {
+      execute("BEGIN");
+    }
+
+    //! create savepoint
+    void connection::savepoint(const std::string& name)
+    {
+      /// NOTE prevent from sql injection?
+      execute("SAVEPOINT " + name);
+    }
+
+    //! ROLLBACK TO SAVEPOINT
+    void connection::rollback_to_savepoint(const std::string& name)
+    {
+      /// NOTE prevent from sql injection?
+      execute("ROLLBACK TO SAVEPOINT " + name);
+    }
+
+    //! release_savepoint
+    void connection::release_savepoint(const std::string& name)
+    {
+      /// NOTE prevent from sql injection?
+      execute("RELEASE SAVEPOINT " + name);
+    }
+
+    //! commit transaction
+    void connection::commit_transaction()
+    {
+      execute("COMMIT");
+    }
+
+    //! rollback transaction
+    void connection::rollback_transaction(bool report)
+    {
+      execute("ROLLBACK");
+      if (report)
+      {
+        std::cerr << "PostgreSQL warning: rolling back unfinished transaction" << std::endl;
+      }
+    }
+
+    //! report rollback failure
+    void connection::report_rollback_failure(const std::string& message) noexcept
+    {
+      std::cerr << "PostgreSQL error: " << message << std::endl;
+    }
+
+    uint64_t connection::last_insert_id(const std::string& table, const std::string& fieldname)
+    {
+      std::string sql = "SELECT currval('" + table + "_" + fieldname + "_seq')";
+      PGresult* res = PQexec(_handle->postgres, sql.c_str());
+
+      // Parse the number and return.
+      /// NOTE: A copy is happening here, how to prevent that?
+      /// It's only a number( length < 5? ), how slow can it be?
+      std::string in{PQgetvalue(res, 0, 0)};
+      PQclear(res);
+      return std::stoi(in);
+    }
+
+    ::PGconn* connection::native_handle()
+    {
+      return _handle->postgres;
+    }
+  }
 }
-
