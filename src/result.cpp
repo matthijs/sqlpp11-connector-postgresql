@@ -38,7 +38,7 @@ namespace sqlpp
     {
     }
 
-    void Result::checkIndexAndThrow(size_t record, size_t field) const throw(std::out_of_range)
+    void Result::checkIndexAndThrow(size_t record, size_t field) const noexcept(false)
     {
       if (record > records_size() || field > field_count())
         throw std::out_of_range("libpq error: index out of range");
@@ -176,7 +176,7 @@ namespace sqlpp
       return Err;
     }
 
-    int Result::errorPosition() const throw()
+    int Result::errorPosition() const noexcept
     {
       int pos = -1;
       if (m_result)

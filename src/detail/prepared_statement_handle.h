@@ -98,7 +98,7 @@ namespace sqlpp
         prepared_statement_handle_t& operator=(const prepared_statement_handle_t&) = delete;
         prepared_statement_handle_t& operator=(prepared_statement_handle_t&&) = default;
 
-        ~prepared_statement_handle_t()
+        virtual ~prepared_statement_handle_t()
         {
           clearResult();
 

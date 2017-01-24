@@ -29,11 +29,11 @@
 #define SQLPP_POSTGRESQL_CONNECTION_H
 
 #include <sqlpp11/connection.h>
-#include <sqlpp11/serialize.h>
-#include <sqlpp11/postgresql/connection_config.h>
 #include <sqlpp11/postgresql/bind_result.h>
+#include <sqlpp11/postgresql/connection_config.h>
 #include <sqlpp11/postgresql/prepared_statement.h>
 #include <sqlpp11/postgresql/result.h>
+#include <sqlpp11/serialize.h>
 
 #include <sstream>
 

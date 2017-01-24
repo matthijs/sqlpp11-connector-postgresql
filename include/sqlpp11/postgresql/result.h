@@ -28,10 +28,11 @@
 #ifndef SQLPP_POSTGRESQL_RESULT_H
 #define SQLPP_POSTGRESQL_RESULT_H
 
-#include <libpq-fe.h>
+#include <iostream>
 #include <sstream>
 #include <string>
-#include <iostream>
+
+#include <libpq-fe.h>
 
 #include <boost/lexical_cast.hpp>
 
@@ -86,9 +87,9 @@ namespace sqlpp
       void CheckStatus() const;
       void ThrowSQLError(const std::string& Err, const std::string& Query) const;
       std::string StatusError() const;
-      int errorPosition() const throw();
+      int errorPosition() const noexcept;
 
-      void checkIndexAndThrow(size_t record, size_t field) const throw(std::out_of_range);
+      void checkIndexAndThrow(size_t record, size_t field) const noexcept(false);
 
       PGresult* m_result;
       std::string m_query;
