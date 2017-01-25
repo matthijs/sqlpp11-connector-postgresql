@@ -29,7 +29,7 @@
 #define SQLPP_POSTGRESQL_CONNECTION_HANDLE_H
 
 #include <memory>
-#include <vector>
+#include <set>
 
 #include <libpq-fe.h>
 #include <sqlpp11/postgresql/visibility.h>
@@ -47,7 +47,7 @@ namespace sqlpp
       {
         const std::shared_ptr<connection_config> config;
         PGconn* postgres{nullptr};
-        std::vector<std::string> prepared_statement_names;
+        std::set<std::string> prepared_statement_names;
 
         connection_handle(const std::shared_ptr<connection_config>& config);
         ~connection_handle();
@@ -55,6 +55,18 @@ namespace sqlpp
         connection_handle(connection_handle&&) = delete;
         connection_handle& operator=(const connection_handle&) = delete;
         connection_handle& operator=(connection_handle&&) = delete;
+
+        PGconn* native() const
+        {
+          return postgres;
+        }
+
+        void deallocate_prepared_statement(const std::string& name)
+        {
+          std::string cmd = "DEALLOCATE \"" + name + "\"";
+          PGresult* result = PQexec(native(), cmd.c_str());
+          PQclear(result);
+        }
       };
     }
   }

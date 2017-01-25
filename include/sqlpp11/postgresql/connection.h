@@ -320,8 +320,7 @@ namespace sqlpp
       //! release_savepoint
       void release_savepoint(const std::string& name);
 
-      //! commit transaction (or throw transaction if transaction has
-      // finished already)
+      //! commit transaction (or throw transaction if transaction has finished already)
       void commit_transaction();
 
       //! rollback transaction
@@ -332,8 +331,6 @@ namespace sqlpp
 
       //! get the last inserted id for a certain table
       uint64_t last_insert_id(const std::string& table, const std::string& fieldname);
-
-      ::PGconn* native_handle();
     };
 
     inline std::string context_t::escape(const std::string& arg)

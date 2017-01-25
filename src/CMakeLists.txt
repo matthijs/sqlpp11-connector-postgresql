@@ -34,6 +34,7 @@ add_library(sqlpp-postgresql SHARED
 	exception.cpp
 	prepared_statement.cpp
 	detail/connection_handle.cpp
+	detail/prepared_statement_handle.cpp
 	result.cpp
 	${postgresql_headers}
 	${LIB_HEADERS}

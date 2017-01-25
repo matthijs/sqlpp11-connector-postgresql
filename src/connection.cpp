@@ -31,7 +31,7 @@
 
 #include <algorithm>
 #include <iostream>
-#include <random>
+
 
 #if __cplusplus == 201103L
 #include "make_unique.h"
@@ -55,29 +55,13 @@ namespace sqlpp
           std::cerr << "PostgreSQL debug: preparing: " << stmt << std::endl;
         }
 
-        auto result =
-            std::make_unique<detail::prepared_statement_handle_t>(handle.postgres, paramCount, handle.config->debug);
-
-        // Generate a random name for the prepared statement
-        while (std::find(handle.prepared_statement_names.begin(), handle.prepared_statement_names.end(),
-                         result->name) != handle.prepared_statement_names.end())
-        {
-          std::generate_n(result->name.begin(), 6, []() {
-            constexpr static auto charset = "0123456789"
-                                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                            "abcdefghijklmnopqrstuvwxyz";
-            constexpr size_t max = (sizeof(charset) - 1);
-            std::random_device rd;
-            return charset[rd() % max];
-          });
-        }
-        handle.prepared_statement_names.push_back(result->name);
+        auto prepared_statement =
+            std::make_unique<detail::prepared_statement_handle_t>(handle, paramCount);
 
         // Create the prepared statement
-        result->result = PQprepare(handle.postgres, result->name.c_str(), stmt.c_str(), 0, nullptr);
-
-        result->valid = true;
-        return result;
+        prepared_statement->result = PQprepare(handle.postgres, prepared_statement->name.c_str(), stmt.c_str(), 0, nullptr);
+        prepared_statement->valid = true;
+        return prepared_statement;
       }
 
       void execute_prepared_statement(detail::connection_handle& handle, detail::prepared_statement_handle_t& prepared)
@@ -108,8 +92,8 @@ namespace sqlpp
         std::cerr << "PostgreSQL debug: executing: " << stmt << std::endl;
       }
 
-      auto result = std::make_shared<detail::statement_handle_t>(native_handle(), _handle->config->debug);
-      result->result = PQexec(native_handle(), stmt.c_str());
+      auto result = std::make_shared<detail::statement_handle_t>(*_handle, _handle->config->debug);
+      result->result = PQexec(_handle->native(), stmt.c_str());
       result->valid = true;
 
       return result;
@@ -264,11 +248,6 @@ namespace sqlpp
       std::string in{PQgetvalue(res, 0, 0)};
       PQclear(res);
       return std::stoi(in);
-    }
-
-    ::PGconn* connection::native_handle()
-    {
-      return _handle->postgres;
     }
   }
 }
