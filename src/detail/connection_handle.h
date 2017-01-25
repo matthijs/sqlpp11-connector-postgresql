@@ -66,6 +66,7 @@ namespace sqlpp
           std::string cmd = "DEALLOCATE \"" + name + "\"";
           PGresult* result = PQexec(native(), cmd.c_str());
           PQclear(result);
+          prepared_statement_names.erase(name);
         }
       };
     }
