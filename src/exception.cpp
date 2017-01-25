@@ -29,39 +29,35 @@
 
 using namespace sqlpp::postgresql;
 
-failure::failure(const std::string& whatarg) : sqlpp::exception(whatarg)
+const std::exception& failure::base() const noexcept
 {
+  return *this;
 }
 
-broken_connection::broken_connection() : failure("Connection to database failed")
-{
-}
-
-broken_connection::broken_connection(const std::string& whatarg) : failure(whatarg)
-{
-}
-
-sql_error::sql_error() : failure("Failed query"), m_Q()
-{
-}
-
-sql_error::sql_error(const std::string& whatarg) : failure(whatarg), m_Q()
-{
-}
-
-sql_error::sql_error(const std::string& whatarg, const std::string& Q) : failure(whatarg), m_Q(Q)
-{
-}
-
-sql_error::~sql_error() noexcept
-{
-}
-
-const std::string& sql_error::query() const noexcept
-{
-  return m_Q;
-}
-
-in_doubt_error::in_doubt_error(const std::string& whatarg) : failure(whatarg)
-{
-}
+broken_connection::~broken_connection() noexcept = default;
+sql_error::~sql_error() noexcept = default;
+in_doubt_error::~in_doubt_error() noexcept = default;
+feature_not_supported::~feature_not_supported() noexcept = default;
+data_exception::~data_exception() noexcept = default;
+integrity_constraint_violation::~integrity_constraint_violation() noexcept = default;
+not_null_violation::~not_null_violation() noexcept = default;
+restrict_violation::~restrict_violation() noexcept = default;
+foreign_key_violation::~foreign_key_violation() noexcept = default;
+unique_violation::~unique_violation() noexcept = default;
+check_violation::~check_violation() noexcept = default;
+invalid_cursor_state::~invalid_cursor_state() noexcept = default;
+invalid_sql_statement_name::~invalid_sql_statement_name() noexcept = default;
+invalid_cursor_name::~invalid_cursor_name() noexcept = default;
+syntax_error::~syntax_error() noexcept = default;
+undefined_column::~undefined_column() noexcept = default;
+undefined_function::~undefined_function() noexcept = default;
+undefined_table::~undefined_table() noexcept = default;
+insufficient_privilege::~insufficient_privilege() noexcept = default;
+insufficient_resources::~insufficient_resources() noexcept = default;
+disk_full::~disk_full() noexcept = default;
+out_of_memory::~out_of_memory() noexcept = default;
+too_many_connections::~too_many_connections() noexcept = default;
+plpgsql_error::~plpgsql_error() noexcept = default;
+plpgsql_raise::~plpgsql_raise() noexcept = default;
+plpgsql_no_data_found::~plpgsql_no_data_found() noexcept = default;
+plpgsql_too_many_rows::~plpgsql_too_many_rows() noexcept = default;
