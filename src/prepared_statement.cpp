@@ -1,5 +1,6 @@
 /**
  * Copyright © 2014-2015, Matthijs Möhlmann
+ * Copyright © 2015-2016, Bartosz Wieczorek
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,13 +26,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sqlpp11/exception.h>
 #include <sqlpp11/postgresql/prepared_statement.h>
+#include <sqlpp11/exception.h>
 
 #include "detail/prepared_statement_handle.h"
 
 #include <iostream>
 #include <sstream>
+#include <date.h>
 
 namespace sqlpp
 {
@@ -39,7 +41,7 @@ namespace sqlpp
   {
     // ctor
     prepared_statement_t::prepared_statement_t(std::shared_ptr<detail::prepared_statement_handle_t>&& handle)
-        : _handle{std::move(handle)}
+        : _handle{handle}
     {
       if (_handle && _handle->debug)
       {
@@ -114,6 +116,50 @@ namespace sqlpp
       if (!is_null)
       {
         _handle->paramValues[index] = *value;
+      }
+    }
+
+    void prepared_statement_t::_bind_date_parameter(size_t index, const ::sqlpp::chrono::day_point* value, bool is_null)
+    {
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: binding date parameter at index: " << index << ", being "
+                  << (is_null ? "" : "not ") << "null" << std::endl;
+      }
+
+      // Assign values
+      _handle->nullValues[index] = is_null;
+      if (!is_null)
+      {
+        const auto ymd = ::date::year_month_day{*value};
+        _handle->paramValues[index] = std::string(std::to_string(static_cast<int>(ymd.year())) + "-" +
+                                                  std::to_string(static_cast<unsigned>(ymd.month())) + "-" +
+                                                  std::to_string(static_cast<unsigned>(ymd.day())));
+      }
+    }
+
+    void prepared_statement_t::_bind_date_time_parameter(size_t index,
+                                                         const ::sqlpp::chrono::microsecond_point* value,
+                                                         bool is_null)
+    {
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: binding date time parameter at index: " << index << ", being "
+                  << (is_null ? "" : "not ") << "null" << std::endl;
+      }
+
+      // Assign values
+      _handle->nullValues[index] = is_null;
+      if (!is_null)
+      {
+        const auto dp = ::date::floor<::date::days>(*value);
+        const auto time = date::make_time(*value - dp);
+        const auto ymd = ::date::year_month_day{dp};
+        _handle->paramValues[index] = std::string(
+            std::to_string(static_cast<int>(ymd.year())) + "-" + std::to_string(static_cast<unsigned>(ymd.month())) +
+            "-" + std::to_string(static_cast<unsigned>(ymd.day())) + " " + std::to_string(time.hours().count()) + ":" +
+            std::to_string(time.minutes().count()) + ":" + std::to_string(time.seconds().count()) + "." +
+            std::to_string(time.subseconds().count()));
       }
     }
   }

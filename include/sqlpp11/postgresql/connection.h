@@ -59,11 +59,17 @@ namespace sqlpp
       context_t(const connection& db) : _db(db)
       {
       }
+      context_t(const connection&&) = delete;
 
       template <typename T>
       std::ostream& operator<<(T t)
       {
         return _os << t;
+      }
+
+      std::ostream& operator<<(bool t)
+      {
+        return _os << (t ? "TRUE" : "FALSE");
       }
 
       std::string escape(const std::string& arg);
@@ -93,6 +99,13 @@ namespace sqlpp
     {
     private:
       std::unique_ptr<detail::connection_handle> _handle;
+      bool _transaction_active{false};
+
+      void validate_connection_handle() const
+      {
+        if (!_handle)
+          throw std::logic_error("connection handle used, but not initialized");
+      }
 
       // direct execution
       bind_result_t select_impl(const std::string& stmt);
@@ -132,12 +145,16 @@ namespace sqlpp
       }
 
       // ctor / dtor
+      connection();
       connection(const std::shared_ptr<connection_config>& config);
       ~connection();
       connection(const connection&) = delete;
-      connection(connection&&) = delete;
+      connection(connection&&);
       connection& operator=(const connection&) = delete;
-      connection& operator=(connection&&) = delete;
+      connection& operator=(connection&&);
+
+      // creates a connection handle and connects to database
+      void connectUsing(const std::shared_ptr<connection_config>& config) noexcept(false);
 
       // Select stmt (returns a result)
       template <typename Select>
@@ -242,7 +259,7 @@ namespace sqlpp
       template <
           typename Execute,
           typename Enable = typename std::enable_if<not std::is_convertible<Execute, std::string>::value, void>::type>
-      std::shared_ptr<detail::prepared_statement_handle_t> execute(const Execute& x)
+      std::shared_ptr<detail::statement_handle_t> execute(const Execute& x)
       {
         _context_t ctx(*this);
         serialize(x, ctx);
@@ -270,22 +287,18 @@ namespace sqlpp
 
       //! call run on the argument
       template <typename T>
-      auto _run(const T& t, const std::true_type&) -> decltype(t._run(*this))
+      auto _run(const T& t, sqlpp::consistent_t) -> decltype(t._run(*this))
       {
         return t._run(*this);
       }
 
-      template <typename T>
-      auto _run(const T& t, const std::false_type&) -> decltype(t._run(*this));
+      template <typename Check, typename T>
+      auto _run(const T& t, Check) -> Check;
 
       template <typename T>
-      auto operator()(const T& t) -> decltype(t._run(*this))
+      auto operator()(const T& t) -> decltype(this->_run(t, sqlpp::run_check_t<_serializer_context_t, T>{}))
       {
-        sqlpp::run_check_t<T>::_();
-        sqlpp::serialize_check_t<_serializer_context_t, T>::_();
-        using _ok = sqlpp::logic::all_t<sqlpp::run_check_t<T>::type::value,
-                                        sqlpp::serialize_check_t<_serializer_context_t, T>::type::value>;
-        return _run(t, _ok{});
+        return _run(t, sqlpp::run_check_t<_serializer_context_t, T>{});
       }
 
       //! call prepare on the argument
@@ -294,16 +307,15 @@ namespace sqlpp
       {
         return t._prepare(*this);
       }
+
       template <typename T>
-      auto _prepare(const T& t, const std::false_type&) -> decltype(t._prepare(*this));
+      auto _prepare(const T& t, const std::false_type&) -> void;
+
       template <typename T>
-      auto prepare(const T& t) -> decltype(t._prepare(*this))
+      auto prepare(const T& t) -> decltype(this->_prepare(t, sqlpp::prepare_check_t<_serializer_context_t, T>{}))
       {
-        sqlpp::prepare_check_t<T>::_();
-        sqlpp::serialize_check_t<_serializer_context_t, T>::_();
-        using _ok = sqlpp::logic::all_t<sqlpp::prepare_check_t<T>::type::value,
-                                        sqlpp::serialize_check_t<_serializer_context_t, T>::type::value>;
-        return _prepare(t, _ok{});
+        sqlpp::prepare_check_t<_serializer_context_t, T>::_();
+        return _prepare(t, sqlpp::prepare_check_t<_serializer_context_t, T>{});
       }
 
       //! start transaction
@@ -318,8 +330,7 @@ namespace sqlpp
       //! release_savepoint
       void release_savepoint(const std::string& name);
 
-      //! commit transaction (or throw transaction if transaction has
-      // finished already)
+      //! commit transaction (or throw transaction if transaction has finished already)
       void commit_transaction();
 
       //! rollback transaction
@@ -330,8 +341,6 @@ namespace sqlpp
 
       //! get the last inserted id for a certain table
       uint64_t last_insert_id(const std::string& table, const std::string& fieldname);
-
-      ::PGconn* native_handle();
     };
 
     inline std::string context_t::escape(const std::string& arg)
@@ -340,7 +349,5 @@ namespace sqlpp
     }
   }
 }
-
-#include <sqlpp11/postgresql/serializer.h>
 
 #endif
