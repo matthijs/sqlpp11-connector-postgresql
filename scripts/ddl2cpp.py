@@ -39,6 +39,9 @@ types = {
     'double': 'floating_point',
     'float': 'floating_point',
     'numeric': 'floating_point',
+    
+    'json' : 'text',
+    'jsonb' : 'text',
 
     # For now keep this a varchar
     'date': 'day_point',

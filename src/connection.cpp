@@ -32,7 +32,6 @@
 #include <algorithm>
 #include <iostream>
 
-
 #if __cplusplus == 201103L
 #include "make_unique.h"
 #endif
@@ -55,11 +54,11 @@ namespace sqlpp
           std::cerr << "PostgreSQL debug: preparing: " << stmt << std::endl;
         }
 
-        auto prepared_statement =
-            std::make_unique<detail::prepared_statement_handle_t>(handle, paramCount);
+        auto prepared_statement = std::make_unique<detail::prepared_statement_handle_t>(handle, paramCount);
 
         // Create the prepared statement
-        prepared_statement->result = PQprepare(handle.postgres, prepared_statement->name.c_str(), stmt.c_str(), 0, nullptr);
+        prepared_statement->result =
+            PQprepare(handle.postgres, prepared_statement->name.c_str(), stmt.c_str(), 0, nullptr);
         prepared_statement->valid = true;
         return prepared_statement;
       }
@@ -87,6 +86,7 @@ namespace sqlpp
 
     std::shared_ptr<detail::statement_handle_t> connection::execute(const std::string& stmt)
     {
+      validate_connection_handle();
       if (_handle->config->debug)
       {
         std::cerr << "PostgreSQL debug: executing: " << stmt << std::endl;
@@ -99,14 +99,16 @@ namespace sqlpp
       return result;
     }
 
+    connection::connection()
+    {
+    }
+
     connection::connection(const std::shared_ptr<connection_config>& config)
         : _handle(std::make_unique<detail::connection_handle>(config))
     {
     }
 
-    connection::~connection()
-    {
-    }
+    connection::~connection() = default;
 
     connection::connection(connection&& other)
     {
@@ -119,6 +121,11 @@ namespace sqlpp
       _handle = std::move(other._handle);
       _transaction_active = other._transaction_active;
       return *this;
+    }
+
+    void connection::connectUsing(const std::shared_ptr<connection_config>& config)
+    {
+      _handle = std::make_unique<detail::connection_handle>(config);
     }
 
     // direct execution
@@ -145,41 +152,48 @@ namespace sqlpp
     // prepared execution
     prepared_statement_t connection::prepare_impl(const std::string& stmt, const size_t& paramCount)
     {
+      validate_connection_handle();
       return {prepare_statement(*_handle, stmt, paramCount)};
     }
 
     bind_result_t connection::run_prepared_select_impl(prepared_statement_t& prep)
     {
+      validate_connection_handle();
       execute_prepared_statement(*_handle, *prep._handle.get());
       return {prep._handle};
     }
 
     size_t connection::run_prepared_execute_impl(prepared_statement_t& prep)
     {
+      validate_connection_handle();
       execute_prepared_statement(*_handle, *prep._handle.get());
       return prep._handle->result.affected_rows();
     }
 
     size_t connection::run_prepared_insert_impl(prepared_statement_t& prep)
     {
+      validate_connection_handle();
       execute_prepared_statement(*_handle, *prep._handle.get());
       return prep._handle->result.affected_rows();
     }
 
     size_t connection::run_prepared_update_impl(prepared_statement_t& prep)
     {
+      validate_connection_handle();
       execute_prepared_statement(*_handle, *prep._handle.get());
       return prep._handle->result.affected_rows();
     }
 
     size_t connection::run_prepared_remove_impl(prepared_statement_t& prep)
     {
+      validate_connection_handle();
       execute_prepared_statement(*_handle, *prep._handle.get());
       return prep._handle->result.affected_rows();
     }
 
     std::string connection::escape(const std::string& s) const
     {
+      validate_connection_handle();
       // Escape strings
       std::string result;
       result.resize((s.size() * 2) + 1);

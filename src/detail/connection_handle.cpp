@@ -125,7 +125,6 @@ namespace sqlpp
             conninfo.append(" sslmode=verify-full");
             break;
           case connection_config::sslmode_t::prefer:
-          default:
             break;
         }
         if (!config->sslcompression)
@@ -166,9 +165,9 @@ namespace sqlpp
 
         if (PQstatus(this->postgres) != CONNECTION_OK)
         {
-          const std::string msg(PQerrorMessage(this->postgres));
+          std::string msg(PQerrorMessage(this->postgres));
           PQfinish(this->postgres);
-          throw broken_connection(msg);
+          throw broken_connection(std::move(msg));
         }
       }
 

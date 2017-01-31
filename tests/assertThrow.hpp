@@ -8,7 +8,7 @@
     {                                 \
       code;                           \
     }                                 \
-    catch (const exception& e)        \
+    catch (const exception&)        \
     {                                 \
       exceptionThrown = true;         \
     }                                 \

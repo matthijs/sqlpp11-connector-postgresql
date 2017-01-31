@@ -24,13 +24,13 @@
  */
 
 #include "TabFoo.h"
-#include <sqlpp11/sqlpp11.h>
-#include <sqlpp11/postgresql/postgresql.h>
 #include <sqlpp11/postgresql/exception.h>
+#include <sqlpp11/postgresql/postgresql.h>
+#include <sqlpp11/sqlpp11.h>
 
+#include <cassert>
 #include <iostream>
 #include <vector>
-#include <cassert>
 
 namespace
 {
@@ -52,21 +52,29 @@ namespace
   }
 }
 
+void open(const std::string& name)
+{
+  auto config = std::make_shared<sqlpp::postgresql::connection_config>();
+  config->dbname = name;
+  auto db = sqlpp::postgresql::connection{config};
+}
+
 namespace sql = sqlpp::postgresql;
 int DateTime(int, char**)
 {
   auto config = std::make_shared<sql::connection_config>();
   config->dbname = "sqlpp11_tests";
+
+  sql::connection db;
   try
   {
-    sql::connection db(config);
+    db.connectUsing(config);
   }
   catch (const sqlpp::exception&)
   {
     std::cerr << "For testing, you'll need to create a database sqlpp_postgresql" << std::endl;
     throw;
   }
-  sql::connection db(config);
 
   db.execute(R"(DROP TABLE IF EXISTS tabfoo;)");
   db.execute(R"(CREATE TABLE tabfoo

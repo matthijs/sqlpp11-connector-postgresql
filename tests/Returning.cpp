@@ -1,10 +1,10 @@
 #include <iostream>
 
-#include <sqlpp11/sqlpp11.h>
 #include <sqlpp11/postgresql/postgresql.h>
+#include <sqlpp11/sqlpp11.h>
 
-#include "TabFoo.h"
 #include "TabBar.h"
+#include "TabFoo.h"
 
 namespace sql = sqlpp::postgresql;
 int Returning(int, char**)
@@ -13,9 +13,10 @@ int Returning(int, char**)
   model::TabBar bar;
   auto config = std::make_shared<sql::connection_config>();
   config->dbname = "sqlpp11_tests";
+  sql::connection db;
   try
   {
-    sql::connection db(config);
+    db.connectUsing(config);
   }
   catch (const sql::broken_connection&)
   {
@@ -23,7 +24,6 @@ int Returning(int, char**)
     throw;
   }
 
-  sql::connection db(config);
   try
   {
     db.execute(R"(DROP TABLE IF EXISTS tabfoo;)");

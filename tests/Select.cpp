@@ -25,8 +25,8 @@
 
 #include "TabFoo.h"
 
-#include <sqlpp11/sqlpp11.h>
 #include <sqlpp11/postgresql/postgresql.h>
+#include <sqlpp11/sqlpp11.h>
 
 #include <cassert>
 #include <iostream>
@@ -67,16 +67,16 @@ int Select(int argc, char** argv)
 {
   auto config = std::make_shared<sql::connection_config>();
   config->dbname = "sqlpp11_tests";
+  sql::connection db;
   try
   {
-    sql::connection db(config);
+    db.connectUsing(config);
   }
   catch (const sqlpp::exception&)
   {
     std::cerr << "For testing, you'll need to create a database sqlpp_postgresql" << std::endl;
     throw;
   }
-  sql::connection db(config);
 
   db.execute(R"(DROP TABLE IF EXISTS tabfoo;)");
   db.execute(R"(CREATE TABLE tabfoo
@@ -152,8 +152,8 @@ int Select(int argc, char** argv)
   auto tx = start_transaction(db);
   if (const auto& row = *db(select(all_of(tab), select(max(tab.alpha)).from(tab)).from(tab).unconditionally()).begin())
   {
-    int a = row.alpha;
-    int m = row.max;
+    auto a = row.alpha;
+    auto m = row.max;
     std::cerr << "-----------------------------" << a << ", " << m << std::endl;
   }
   tx.commit();

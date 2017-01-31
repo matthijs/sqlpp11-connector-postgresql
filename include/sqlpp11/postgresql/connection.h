@@ -101,6 +101,12 @@ namespace sqlpp
       std::unique_ptr<detail::connection_handle> _handle;
       bool _transaction_active{false};
 
+      void validate_connection_handle() const
+      {
+        if (!_handle)
+          throw std::logic_error("connection handle used, but not initialized");
+      }
+
       // direct execution
       bind_result_t select_impl(const std::string& stmt);
       size_t insert_impl(const std::string& stmt);
@@ -139,12 +145,16 @@ namespace sqlpp
       }
 
       // ctor / dtor
+      connection();
       connection(const std::shared_ptr<connection_config>& config);
       ~connection();
       connection(const connection&) = delete;
       connection(connection&&);
       connection& operator=(const connection&) = delete;
       connection& operator=(connection&&);
+
+      // creates a connection handle and connects to database
+      void connectUsing(const std::shared_ptr<connection_config>& config) noexcept(false);
 
       // Select stmt (returns a result)
       template <typename Select>

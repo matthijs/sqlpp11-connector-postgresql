@@ -2,8 +2,8 @@
 
 #include "assertThrow.hpp"
 
-#include "TabFoo.h"
 #include "TabBar.h"
+#include "TabFoo.h"
 
 namespace sql = sqlpp::postgresql;
 int Exceptions(int, char**)
@@ -19,9 +19,10 @@ int Exceptions(int, char**)
   auto config = std::make_shared<sql::connection_config>();
   config->dbname = "sqlpp11_tests";
 
+  sql::connection db;
   try
   {
-    sql::connection db(config);
+    db.connectUsing(config);
   }
   catch (const sql::broken_connection&)
   {
@@ -29,7 +30,6 @@ int Exceptions(int, char**)
     throw;
   }
 
-  sql::connection db(config);
   try
   {
     db.execute(R"(DROP TABLE IF EXISTS tabfoo;)");
