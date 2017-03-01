@@ -167,6 +167,16 @@ namespace sqlpp
       this->_handle = std::move(other._handle);
     }
 
+    connection& connection::operator= (connection&& other)
+    {
+      if (this != &other) {
+        // TODO: check this logic
+        this->_transaction_active = other._transaction_active;
+        this->_handle = std::move(other._handle);
+      }
+      return *this;
+    }
+
     // direct execution
     bind_result_t connection::select_impl(const std::string& stmt)
     {

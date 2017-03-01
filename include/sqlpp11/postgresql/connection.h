@@ -142,7 +142,7 @@ namespace sqlpp
       connection(const connection&) = delete;
       connection(connection&&);
       connection& operator=(const connection&) = delete;
-      connection& operator=(connection&&) = default;
+      connection& operator=(connection&&);
 
       // Select stmt (returns a result)
       template <typename Select>
