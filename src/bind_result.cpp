@@ -143,8 +143,13 @@ namespace sqlpp
         throw sqlpp::exception("PostgreSQL error: index out of range");
       }
 
-      *value = const_cast<const char*>(PQgetvalue(_handle->result, _handle->count, index));
-      *len = PQgetlength(_handle->result, _handle->count, index);
+      if (PQgetisnull(_handle->result, _handle->count, index)) {
+        *value = nullptr;
+        *len = 0;
+      } else {
+        *value = const_cast<const char*>(PQgetvalue(_handle->result, _handle->count, index));
+        *len = PQgetlength(_handle->result, _handle->count, index);
+      }
     }
   }
 }
