@@ -153,6 +153,7 @@ namespace sqlpp
         *len = PQgetlength(_handle->result, _handle->count, index);
       }
     }
+
     void bind_result_t::_bind_date_result(size_t index, ::sqlpp::chrono::day_point* value, bool* is_null)
     {
       if (_handle->debug)
@@ -175,21 +176,8 @@ namespace sqlpp
       if (_handle->debug)
         std::cerr << "PostgreSQL debug: date string: " << date_string << std::endl;
 
-#if 0
-      if (check_digits(date_string, date_digits))
-      {
-#endif
-        const auto ymd = ::date::year(std::atoi(date_string)) / atoi(date_string + 5) / atoi(date_string + 8);
-        *value = ::sqlpp::chrono::day_point(ymd);
-#if 0
-      }
-      else
-      {
-        if (_handle->debug)
-          std::cerr << "PostgreSQL debug: invalid date result: " << date_string << std::endl;
-        *value = {};
-      }
-#endif
+      const auto ymd = ::date::year(std::atoi(date_string)) / atoi(date_string + 5) / atoi(date_string + 8);
+      *value = ::sqlpp::chrono::day_point(ymd);
     }
 
     void bind_result_t::_bind_date_time_result(size_t index, ::sqlpp::chrono::microsecond_point* value, bool* is_null)
@@ -214,53 +202,14 @@ namespace sqlpp
       if (_handle->debug)
         std::cerr << "PostgreSQL debug: date_time string: " << date_time_string << std::endl;
 
-#if 0
-      if (check_digits(date_time_string, date_digits))
-      {
-#endif
-        const auto ymd =
-            ::date::year(std::atoi(date_time_string)) / atoi(date_time_string + 5) / atoi(date_time_string + 8);
-        *value = ::sqlpp::chrono::day_point(ymd);
-#if 0
-      }
-      else
-      {
-        if (_handle->debug)
-          std::cerr << "PostgreSQL debug: invalid date_time result: " << date_time_string << std::endl;
-        *value = {};
-
-        return;
-      }
-#endif
+      const auto ymd = ::date::year(std::atoi(date_time_string)) / atoi(date_time_string + 5) / atoi(date_time_string + 8);
+      *value = ::sqlpp::chrono::day_point(ymd);
 
       const auto time_string = date_time_string + 11;
-#if 0
-      if (check_digits(time_string, time_digits))
-      {
-#endif
-        *value += ::std::chrono::hours(std::atoi(time_string)) + std::chrono::minutes(std::atoi(time_string + 3)) +
-                  std::chrono::seconds(std::atoi(time_string + 6));
-#if 0
-      }
-      else
-      {
-        return;
-      }
-#endif
+      *value += ::std::chrono::hours(std::atoi(time_string)) + std::chrono::minutes(std::atoi(time_string + 3)) +
+                std::chrono::seconds(std::atoi(time_string + 6));
       const auto ms_string = time_string + 9;
-#if 0
-      if (check_digits(ms_string, ms_digits))
-      {
-#endif
-        *value += ::std::chrono::milliseconds(std::atoi(ms_string));
-#if 0
-      }
-      else
-      {
-        return;
-      }
-#endif
-      *is_null = PQgetisnull(_handle->result, _handle->count, index);
+      *value += ::std::chrono::milliseconds(std::atoi(ms_string));
     }
 
   }
