@@ -134,8 +134,16 @@ namespace sqlpp
 
       const auto iindex = static_cast<int>(index);
       const auto& res = _handle->result;
-      *value = res.getValue<const char*>(_handle->count, iindex);
-      *len = res.length(_handle->count, iindex);
+      if (res.isNull(_handle->count, iindex))
+      {
+        *value = nullptr;
+        *len = 0;
+      }
+      else
+      {
+        *value = res.getValue<const char*>(_handle->count, iindex);
+        *len = res.length(_handle->count, iindex);
+      }
     }
 
     void bind_result_t::_bind_date_result(size_t index, ::sqlpp::chrono::day_point* value, bool* is_null)
