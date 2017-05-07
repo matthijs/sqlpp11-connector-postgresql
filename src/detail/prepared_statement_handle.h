@@ -56,7 +56,7 @@ namespace sqlpp
         std::vector<std::string> paramValues;
 
         // ctor
-        prepared_statement_handle_t(PGconn* _connection, const size_t& paramCount, bool _debug)
+		prepared_statement_handle_t(PGconn* _connection, const size_t& paramCount, bool _debug)
             : connection(_connection), debug(_debug), nullValues(paramCount), paramValues(paramCount)
         {
         }

@@ -99,7 +99,7 @@ namespace sqlpp
       void execute_statement(detail::connection_handle& handle, detail::prepared_statement_handle_t& prepared)
       {
         // Execute a prepared statement
-        char* paramValues[prepared.paramValues.size()];
+        char** paramValues = (char**)malloc(sizeof(char*) * prepared.paramValues.size());
         // int paramLengths[prepared.paramValues.size()];
         for (uint32_t i = 0; i < prepared.paramValues.size(); i++)
         {
@@ -141,6 +141,7 @@ namespace sqlpp
             prepared.valid = false;
             errmsg.append(std::string(PQresStatus(ret)) + std::string(": ") +
                           std::string(PQresultErrorMessage(prepared.result)));
+			free(paramValues);
             throw sqlpp::exception(errmsg);
           case PGRES_COMMAND_OK:
           case PGRES_TUPLES_OK:
@@ -149,6 +150,8 @@ namespace sqlpp
             prepared.valid = true;
             break;
         }
+
+		free(paramValues);
       }
     }
 
@@ -292,10 +295,11 @@ namespace sqlpp
     std::string connection::escape(const std::string& s) const
     {
       // Escape strings
-      char to[(s.size() * 2) + 1];
+      char* to = (char*)malloc((s.size() * 2) + 1);
       int err;
       size_t length = PQescapeStringConn(_handle->postgres, to, s.c_str(), s.size(), &err);
       std::string result(to, length);
+	  free(to);
       return result;
     }
 

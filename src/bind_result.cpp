@@ -33,6 +33,10 @@
 
 #include "detail/prepared_statement_handle.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#pragma warning (disable:4800)	// int to bool
+#endif
+
 namespace sqlpp
 {
   namespace postgresql
