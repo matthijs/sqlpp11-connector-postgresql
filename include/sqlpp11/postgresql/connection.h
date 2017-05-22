@@ -263,7 +263,7 @@ namespace sqlpp
       }
 
       template <typename PreparedExecute>
-      void run_prepared_execute(const PreparedExecute& x)
+      size_t run_prepared_execute(const PreparedExecute& x)
       {
         x._prepared_statement._reset();
         x._bind_params();
@@ -272,6 +272,13 @@ namespace sqlpp
 
       // escape argument
       std::string escape(const std::string& s) const;
+
+      //! call run on the argument
+      template <typename T>
+      auto run(const T& t) -> decltype(t._run(*this))
+      {
+        return t._run(*this);
+      }
 
       //! call run on the argument
       template <typename T>
