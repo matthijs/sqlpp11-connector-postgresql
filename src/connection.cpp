@@ -300,15 +300,46 @@ namespace sqlpp
     }
 
     //! start transaction
-    void connection::start_transaction()
+    void connection::start_transaction(isolation_level isolation_level)
     {
       if (_transaction_active)
       {
         throw sqlpp::exception("PostgreSQL error: transaction already open");
       }
 
-      auto prepared = prepare_statement(*_handle, "BEGIN", 0);
-      execute_statement(*_handle, prepared);
+      switch (isolation_level)
+      {
+      case isolation_level::serializable:
+        {
+          auto prepared = prepare_statement(*_handle, "BEGIN ISOLATION LEVEL SERIALIZABLE", 0);
+          execute_statement(*_handle, prepared);
+          break;
+        }
+      case isolation_level::repeatable_read:
+        {
+          auto prepared = prepare_statement(*_handle, "BEGIN ISOLATION LEVEL REPEATABLE READ", 0);
+          execute_statement(*_handle, prepared);
+          break;
+        }
+      case isolation_level::read_committed:
+        {
+          auto prepared = prepare_statement(*_handle, "BEGIN ISOLATION LEVEL READ COMMITTED", 0);
+          execute_statement(*_handle, prepared);
+          break;
+        }
+      case isolation_level::read_uncommitted:
+        {
+          auto prepared = prepare_statement(*_handle, "BEGIN ISOLATION LEVEL READ UNCOMMITTED", 0);
+          execute_statement(*_handle, prepared);
+          break;
+        }
+      case isolation_level::undefined:
+        {
+          auto prepared = prepare_statement(*_handle, "BEGIN", 0);
+          execute_statement(*_handle, prepared);
+          break;
+        }
+      }
       _transaction_active = true;
     }
 

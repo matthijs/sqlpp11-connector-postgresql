@@ -27,7 +27,9 @@ macro (build_and_run arg)
 	# Add headers to sources to enable file browsing in IDEs
 	add_executable(Sqlpp11PostgreSQL${arg} ${arg}.cpp ${sqlpp_headers})
 	target_link_libraries(Sqlpp11PostgreSQL${arg} sqlpp-postgresql)
+    include_directories("../include")
 	add_test(${arg} Sqlpp11PostgreSQL${arg})
 endmacro ()
 
-build_and_run(SelectTest)
+build_and_run(BasicTest)
+#build_and_run(TransactionTest)
