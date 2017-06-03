@@ -29,6 +29,7 @@ macro (build_and_run arg)
 	target_link_libraries(Sqlpp11PostgreSQL${arg} sqlpp-postgresql)
     include_directories("../include")
 	add_test(${arg} Sqlpp11PostgreSQL${arg})
+    target_compile_features(sqlpp-postgresql PRIVATE cxx_auto_type)
 endmacro ()
 
 build_and_run(BasicTest)
