@@ -26,6 +26,7 @@
  */
 
 #include <sqlpp11/postgresql/connection.h>
+#include <sqlpp11/transaction.h>
 #include <sqlpp11/exception.h>
 
 #include <algorithm>
@@ -300,14 +301,14 @@ namespace sqlpp
     }
 
     //! start transaction
-    void connection::start_transaction(isolation_level isolation_level)
+    void connection::start_transaction(sqlpp::isolation_level level)
     {
       if (_transaction_active)
       {
         throw sqlpp::exception("PostgreSQL error: transaction already open");
       }
 
-      switch (isolation_level)
+      switch (level)
       {
       case isolation_level::serializable:
         {
