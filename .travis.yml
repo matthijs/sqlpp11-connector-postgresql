@@ -28,7 +28,7 @@ install:
     - sudo update-alternatives --quiet --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9 --slave /usr/bin/gcov gcov /usr/bin/gcov-4.9
     - sudo update-alternatives --quiet --set gcc /usr/bin/gcc-4.9
     - cd ..
-    - git clone --branch isolation_level --depth 1 https://github.com/volka/sqlpp11.git
+    - git clone --branch master --depth 1 https://github.com/rbock/sqlpp11.git
     - cd sqlpp11
     - cmake . -DHinnantDate_ROOT_DIR="$PWD/../date"
     - sudo make install
