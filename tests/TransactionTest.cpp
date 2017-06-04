@@ -45,19 +45,26 @@ int main()
   try {
     sql::connection db(config);
 
-    auto current_level = db(custom_query(sqlpp::verbatim("show transaction_isolation;"))
-            .with_result_type_of(select(sqlpp::value("").as(level))))
-        .front().level;
-    assert(current_level == "read committed");
-    std::cerr << "isolation level outside transaction: " << current_level << "\n";
+    {
+      auto current_level = db(custom_query(sqlpp::verbatim("show transaction_isolation;"))
+              .with_result_type_of(select(sqlpp::value("").as(level))))
+          .front().level;
+      assert(current_level == "read committed");
+      std::cerr << "isolation level outside transaction: " << current_level << "\n";
 
-    auto tx = start_transaction(db, sqlpp::isolation_level::serializable);
+      auto tx = start_transaction(db, sqlpp::isolation_level::serializable);
 
-    current_level = db(custom_query(sqlpp::verbatim("show transaction_isolation;"))
-            .with_result_type_of(select(sqlpp::value("").as(level))))
-        .front().level;
-    assert(current_level == "serializable");
-    std::cerr << "isolation level in transaction(serializable) : " << current_level << "\n";
+      current_level = db(custom_query(sqlpp::verbatim("show transaction_isolation;"))
+              .with_result_type_of(select(sqlpp::value("").as(level))))
+          .front().level;
+      assert(current_level == "serializable");
+      std::cerr << "isolation level in transaction(serializable) : " << current_level << "\n";
+      tx.commit();
+    }
+    
+    assert(db.get_default_isolation_level() == sqlpp::isolation_level::read_committed);
+    db.set_default_isolation_level(sqlpp::isolation_level::serializable);
+    assert(db.get_default_isolation_level() == sqlpp::isolation_level::serializable);
 
   } catch (const sqlpp::exception& ex) {
       std::cerr << "Got exception as expected: " << ex.what() << std::endl;

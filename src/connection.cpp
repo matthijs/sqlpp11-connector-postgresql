@@ -242,6 +242,23 @@ namespace sqlpp
           new detail::prepared_statement_handle_t(prepare_statement(*_handle, stmt, paramCount)))};
     }
 
+    // direct execute, note that there is no way to get at the result through this
+    size_t connection::execute(const std::string& stmt)
+    {
+        PGresult* res = PQexec(_handle->postgres, stmt.c_str());
+        auto status = PQresultStatus(res);
+        if ((status != PGRES_TUPLES_OK) && (status != PGRES_SINGLE_TUPLE) &&
+            (status != PGRES_COMMAND_OK))
+        {
+          // all other result stati are errors
+          if (res) PQclear(res);
+          throw sqlpp::exception("PostgreSQL error: executing statement failed - " + stmt);
+        }
+        size_t row_count = static_cast<size_t>(PQntuples(res));
+        PQclear(res);
+        return row_count;
+    }
+
     bind_result_t connection::run_prepared_select_impl(prepared_statement_t& prep)
     {
       execute_statement(*_handle, *prep._handle.get());
@@ -300,6 +317,54 @@ namespace sqlpp
       return result;
     }
 
+    void connection::set_default_isolation_level(isolation_level level)
+    {
+      std::string level_str = "read uncommmitted";
+      switch (level) {
+      case isolation_level::read_committed:
+        level_str = "read committed";
+        break;
+      case isolation_level::read_uncommitted:
+        level_str = "read uncommitted";
+        break;
+      case isolation_level::repeatable_read:
+        level_str = "repeatable read";
+        break;
+      case isolation_level::serializable:
+        level_str = "serializable";
+        break;
+      default:
+          throw sqlpp::exception("Invalid isolation level");
+      }
+      std::string cmd = "SET default_transaction_isolation to '" + level_str + "'";
+      execute(cmd);
+    }
+
+    isolation_level connection::get_default_isolation_level()
+    {
+      PGresult* res = PQexec(_handle->postgres, "SHOW default_transaction_isolation;");
+      auto status = PQresultStatus(res);
+      if ((status != PGRES_TUPLES_OK) && (status != PGRES_SINGLE_TUPLE) &&
+          (status != PGRES_COMMAND_OK))
+      {
+        PQclear(res);
+        throw sqlpp::exception("PostgreSQL error: could not read default_transaction_isolation");
+      }
+
+      std::string in{PQgetvalue(res, 0, 0)};
+      PQclear(res);
+      if (in == "read committed") {
+          return isolation_level::read_committed;
+      } else if (in == "read uncommitted") {
+          return isolation_level::read_uncommitted;
+      } else if (in == "repeatable read") {
+          return isolation_level::repeatable_read;
+      } else if (in == "serializable") {
+          return isolation_level::serializable;
+      }
+      return isolation_level::undefined;
+    }
+
     //! start transaction
     void connection::start_transaction(sqlpp::isolation_level level)
     {
@@ -312,32 +377,27 @@ namespace sqlpp
       {
       case isolation_level::serializable:
         {
-          auto prepared = prepare_statement(*_handle, "BEGIN ISOLATION LEVEL SERIALIZABLE", 0);
-          execute_statement(*_handle, prepared);
+          execute("BEGIN ISOLATION LEVEL SERIALIZABLE");
           break;
         }
       case isolation_level::repeatable_read:
         {
-          auto prepared = prepare_statement(*_handle, "BEGIN ISOLATION LEVEL REPEATABLE READ", 0);
-          execute_statement(*_handle, prepared);
+          execute("BEGIN ISOLATION LEVEL REPEATABLE READ");
           break;
         }
       case isolation_level::read_committed:
         {
-          auto prepared = prepare_statement(*_handle, "BEGIN ISOLATION LEVEL READ COMMITTED", 0);
-          execute_statement(*_handle, prepared);
+          execute("BEGIN ISOLATION LEVEL READ COMMITTED");
           break;
         }
       case isolation_level::read_uncommitted:
         {
-          auto prepared = prepare_statement(*_handle, "BEGIN ISOLATION LEVEL READ UNCOMMITTED", 0);
-          execute_statement(*_handle, prepared);
+          execute("BEGIN ISOLATION LEVEL READ UNCOMMITTED");
           break;
         }
       case isolation_level::undefined:
         {
-          auto prepared = prepare_statement(*_handle, "BEGIN", 0);
-          execute_statement(*_handle, prepared);
+          execute("BEGIN");
           break;
         }
       }
