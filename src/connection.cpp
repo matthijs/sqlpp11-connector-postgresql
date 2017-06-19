@@ -36,10 +36,19 @@
 #include "detail/prepared_statement_handle.h"
 #include "detail/connection_handle.h"
 
+#ifdef SQLPP_DYNAMIC_LOADING
+#include <sqlpp11/postgresql/dynamic_libpq.h>
+#endif
+
 namespace sqlpp
 {
-  namespace postgresql
-  {
+    namespace postgresql
+    {
+
+#ifdef SQLPP_DYNAMIC_LOADING
+    using namespace dynamic;
+#endif
+
     namespace
     {
       detail::prepared_statement_handle_t prepare_statement(detail::connection_handle& handle,
@@ -240,23 +249,6 @@ namespace sqlpp
     {
       return {std::unique_ptr<detail::prepared_statement_handle_t>(
           new detail::prepared_statement_handle_t(prepare_statement(*_handle, stmt, paramCount)))};
-    }
-
-    // direct execute, note that there is no way to get at the result through this
-    size_t connection::execute(const std::string& stmt)
-    {
-        PGresult* res = PQexec(_handle->postgres, stmt.c_str());
-        auto status = PQresultStatus(res);
-        if ((status != PGRES_TUPLES_OK) && (status != PGRES_SINGLE_TUPLE) &&
-            (status != PGRES_COMMAND_OK))
-        {
-          // all other result stati are errors
-          if (res) PQclear(res);
-          throw sqlpp::exception("PostgreSQL error: executing statement failed - " + stmt);
-        }
-        size_t row_count = static_cast<size_t>(PQntuples(res));
-        PQclear(res);
-        return row_count;
     }
 
     bind_result_t connection::run_prepared_select_impl(prepared_statement_t& prep)

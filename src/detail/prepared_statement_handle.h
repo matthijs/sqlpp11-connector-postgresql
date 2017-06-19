@@ -34,10 +34,18 @@
 
 #include <libpq-fe.h>
 
+#ifdef SQLPP_DYNAMIC_LOADING
+#include <sqlpp11/postgresql/dynamic_libpq.h>
+#endif
+ 
 namespace sqlpp
 {
   namespace postgresql
   {
+ 
+#ifdef SQLPP_DYNAMIC_LOADING
+    using namespace dynamic;
+#endif
     namespace detail
     {
       struct prepared_statement_handle_t
