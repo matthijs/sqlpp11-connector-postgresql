@@ -33,7 +33,7 @@ add_library(sqlpp-postgresql SHARED
 target_compile_features(sqlpp-postgresql PRIVATE
 	cxx_auto_type)
 
-target_link_libraries(sqlpp-postgresql PUBLIC sqlpp11 PRIVATE ${PostgreSQL_LIBRARIES})
+target_link_libraries(sqlpp-postgresql PRIVATE ${PostgreSQL_LIBRARIES})
 
 target_include_directories(sqlpp-postgresql PRIVATE ${PostgreSQL_INCLUDE_DIRS} "../include/")
 

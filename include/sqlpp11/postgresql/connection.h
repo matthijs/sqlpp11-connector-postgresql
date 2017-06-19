@@ -29,6 +29,7 @@
 #define SQLPP_POSTGRESQL_CONNECTION_H
 
 #include <sqlpp11/connection.h>
+#include <sqlpp11/transaction.h>
 #include <sqlpp11/serialize.h>
 #include <sqlpp11/postgresql/connection_config.h>
 #include <sqlpp11/postgresql/bind_result.h>
@@ -307,8 +308,14 @@ namespace sqlpp
         return _prepare(t, sqlpp::prepare_check_t<_serializer_context_t, T>{});
       }
 
+      //! set the default transaction isolation level to use for new transactions
+      void set_default_isolation_level(isolation_level level);
+
+      //! get the currently set default transaction isolation level
+      isolation_level get_default_isolation_level();
+
       //! start transaction
-      void start_transaction();
+      void start_transaction(isolation_level level = isolation_level::undefined);
 
       //! commit transaction (or throw transaction if transaction has
       // finished already)
