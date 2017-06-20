@@ -258,6 +258,12 @@ namespace sqlpp
       return result;
     }
 
+    size_t connection::execute(const std::string& stmt)
+    {
+      auto prepared  = prepare_impl(stmt, 0);
+      return run_prepared_execute_impl(prepared);
+    }
+
     size_t connection::run_prepared_insert_impl(prepared_statement_t& prep)
     {
       execute_statement(*_handle, *prep._handle.get());

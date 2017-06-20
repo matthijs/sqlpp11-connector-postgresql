@@ -32,8 +32,12 @@ set(ConfigPackageLocation lib/cmake/sqlpp-postgresql)
 find_package(Sqlpp11 REQUIRED)
 find_package(PostgreSQL REQUIRED)
 
+include_directories("${PROJECT_SOURCE_DIR}/include")
 add_subdirectory(src)
-#add_subdirectory(tests)
+
+if(ENABLE_TESTS)
+  add_subdirectory(tests)
+endif()
 
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp11" DESTINATION include COMPONENT Devel)
 install(

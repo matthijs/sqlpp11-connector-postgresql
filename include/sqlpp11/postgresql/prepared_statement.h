@@ -29,6 +29,8 @@
 #define SQLPP_POSTGRESQL_PREPARED_STATEMENT_H
 
 #include <memory>
+#include <chrono>
+#include <sqlpp11/data_types.h>
 
 namespace sqlpp
 {
@@ -68,6 +70,8 @@ namespace sqlpp
       void _bind_floating_point_parameter(size_t index, const double* value, bool is_null);
       void _bind_integral_parameter(size_t index, const int64_t* value, bool is_null);
       void _bind_text_parameter(size_t index, const std::string* value, bool is_null);
+      void _bind_date_parameter(size_t index, const ::sqlpp::chrono::day_point* value, bool is_null);
+      void _bind_date_time_parameter(size_t index, const ::sqlpp::chrono::microsecond_point* value, bool is_null);
     };
   }
 }
