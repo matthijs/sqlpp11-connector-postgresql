@@ -41,7 +41,10 @@ SQLPP_ALIAS_PROVIDER(level);
 int main()
 {
   auto config = std::make_shared<sql::connection_config>();
-  config->host = "/var/run/postgresql";
+  config->dbname = getenv("USER");
+  config->user= config->dbname;
+  config->debug = true;
+
   try {
     sql::connection db(config);
 
