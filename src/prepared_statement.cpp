@@ -125,5 +125,84 @@ namespace sqlpp
         _handle->paramValues[index] = *value;
       }
     }
+
+    void prepared_statement_t::_bind_date_parameter(size_t index, const ::sqlpp::chrono::day_point* value, bool is_null)
+    {
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: binding date parameter at index "
+                  << index << ", being " << (is_null ? "" : "not ") << "null" <<  std::endl;
+      }
+      _handle->nullValues[index] = is_null;
+      if (not is_null)
+      {
+        const auto ymd = ::date::year_month_day{*value};
+        std::ostringstream os;
+        os << ymd;
+        _handle->paramValues[index] = os.str();
+
+        if (_handle->debug)
+        {
+          std::cerr << "PostgreSQL debug: binding date parameter string: " << _handle->paramValues[index] << std::endl;
+        }
+      }
+    }
+
+    namespace {
+
+      long get_timezone_offset()
+      {
+         static time_t last_query = 0;
+         static long offset = 0;
+         time_t now = time(nullptr);
+         // only update once an hour
+         if (now - last_query > 3600)
+         {
+#ifdef _WINDOWS
+            offset = -_timezone;
+#else
+            struct tm* tm  = std::localtime(&now);
+            offset = tm->tm_gmtoff;
+            last_query = now;
+#endif
+         }
+         return offset;
+      }
+    }
+
+    void prepared_statement_t::_bind_date_time_parameter(size_t index, const ::sqlpp::chrono::microsecond_point* value, bool is_null)
+    {
+      if (_handle->debug)
+      {
+        std::cerr << "PostgreSQL debug: binding date_time parameter at index "
+          << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
+      }
+      _handle->nullValues[index] = is_null;
+      if (not is_null)
+      {
+        const auto dp = ::sqlpp::chrono::floor<::date::days>(*value);
+        const auto time = ::date::make_time(::sqlpp::chrono::floor<::std::chrono::microseconds>(*value - dp));
+        const auto ymd = ::date::year_month_day{dp};
+
+        // Timezone handling - always treat the value as local time and always add the local time zone. The
+        // "without time zone" type will just ignore it, while the "with time zone" type will store it and use
+        // it to produce a correct answer in the correct time zone
+        long tz_off = get_timezone_offset();
+        const char tz_sign = tz_off > 0 ? '+' : '-';
+        if (tz_off < 0) tz_off = -tz_off;
+
+        const long tz_hour = tz_off/3600;
+        const long tz_min = (tz_off % 3600) / 60;
+
+        std::ostringstream os;
+        os << ymd << ' ' << time << tz_sign << tz_hour << ":" << tz_min;
+        _handle->paramValues[index] = os.str();
+        if (_handle->debug)
+        {
+          std::cerr << "PostgreSQL debug: binding date_time parameter string: " << _handle->paramValues[index] << std::endl;
+        }
+      }
+    }
+
   }
 }

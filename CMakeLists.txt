@@ -62,6 +62,8 @@ endif()
 include_directories("${SQLPP11_INCLUDE_DIR}")
 include_directories("${DATE_INCLUDE_DIR}")
 
+include_directories("${PROJECT_SOURCE_DIR}/include")
+
 add_subdirectory(src)
 if (ENABLE_TESTS)
     add_subdirectory(tests)

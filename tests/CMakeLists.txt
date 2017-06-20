@@ -42,4 +42,5 @@ endmacro()
 
 build_and_run(BasicTest)
 build_and_run_dynamic(BasicTest)
+build_and_run(DateTest)
 #build_and_run(TransactionTest)
