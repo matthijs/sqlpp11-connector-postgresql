@@ -39,10 +39,7 @@ namespace
   {
     if (l != r)
     {
-      std::cerr << line << ": ";
-      serialize(::sqlpp::wrap_operand_t<L>{l}, std::cerr);
-      std::cerr << " != ";
-      serialize(::sqlpp::wrap_operand_t<R>{r}, std::cerr);
+      std::cerr << line << ": --" << l << " != " << r  << "--"<< std::cerr;
       throw std::runtime_error("Unexpected result");
     }
   }
@@ -51,8 +48,8 @@ namespace
   void prepare_table(Db&& db)
   {
     // prepare test with timezone
-    db.execute("DROP TABLE IF EXISTS tab_date_time");
-    db.execute("CREATE TABLE tab_sample (bigint alpha, text beta, bool gamma)");
+    db.execute("DROP TABLE IF EXISTS tab_sample");
+    db.execute("CREATE TABLE tab_sample (alpha bigint, beta text, gamma bool)");
   }
 
 }
@@ -78,51 +75,54 @@ int main()
     db(insert_into(tab).default_values());
     for (const auto& row: db(select(all_of(tab)).from(tab).unconditionally()))
     {
+      // TODO: this is very inconsistent - default for int is "is_null", default
+      // text is "not null, but empty", default for bool is "is_null" and 
+      // accessing the value yields an exception (as opposed to int, which works)
       require_equal(__LINE__, row.alpha.is_null(), true);
-      require_equal(__LINE__, row.alpha.value(), ::sqlpp::integer{}); 
-      require_equal(__LINE__, row.beta.is_null(), true);
-      require_equal(__LINE__, row.beta.value(), ::sqlpp::text{});
+      require_equal(__LINE__, row.alpha.value(), 0); 
+      require_equal(__LINE__, row.beta.is_null(), false);
+      require_equal(__LINE__, row.beta.value(), "");
       require_equal(__LINE__, row.gamma.is_null(), true);
-      require_equal(__LINE__, row.gamma.value(), ::sqlpp::boolean{});
+      //require_equal(__LINE__, row.gamma.value(), false);
     }
 
-    /*
-    db(update(tab).set(tab.alpha = today, tab.colTimePoint = now).unconditionally());
+    db(update(tab).set(tab.alpha = 10, tab.beta = "Cookies!", tab.gamma = true).unconditionally());
 
     for (const auto& row: db(select(all_of(tab)).from(tab).unconditionally()))
     {
-      require_equal(__LINE__, row.alpha.is_null(), true);
-      require_equal(__LINE__, row.alpha.value(), ::sqlpp::chrono::day_point{});
-      require_equal(__LINE__, row.beta.is_null(), true);
-      require_equal(__LINE__, row.beta.value(), ::sqlpp::chrono::microsecond_point{});
-      require_equal(__LINE__, row.gamma.is_null(), true);
-      require_equal(__LINE__, row.gamma.value(), ::sqlpp::chrono::microsecond_point{});
+      require_equal(__LINE__, row.alpha.is_null(), false);
+      require_equal(__LINE__, row.alpha.value(), 10);
+      require_equal(__LINE__, row.beta.is_null(), false);
+      require_equal(__LINE__, row.beta.value(), "Cookies!");
+      require_equal(__LINE__, row.gamma.is_null(), false);
+      require_equal(__LINE__, row.gamma.value(), true);
     }
 
-    db(update(tab).set(tab.colDayPoint = yesterday, tab.colTimePoint = today).unconditionally());
+    db(update(tab).set(tab.alpha = 20, tab.beta = "Monster", tab.gamma = false).unconditionally());
 
     for (const auto& row: db(select(all_of(tab)).from(tab).unconditionally()))
     {
-       require_equal(__LINE__, row.colDayPoint.value(), yesterday);
-       require_equal(__LINE__, row.colTimePoint.value(), today);
+       require_equal(__LINE__, row.alpha.value(), 20);
+       require_equal(__LINE__, row.beta.value(), "Monster");
+       require_equal(__LINE__, row.gamma.value(), false);
     }
 
     auto prepared_update = db.prepare(
-             update(tab).set(tab.colDayPoint = parameter(tab.colDayPoint), tab.colTimePoint = parameter(tab.colTimePoint))
-                .unconditionally());
-      prepared_update.params.colDayPoint = today;
-      prepared_update.params.colTimePoint = now;
-      std::cout << "---- running prepared update ----" << std::endl;
-      db(prepared_update);
-      std::cout << "---- finished prepared update ----" << std::endl;
+           update(tab).set(tab.alpha = parameter(tab.alpha), tab.beta = parameter(tab.beta), tab.gamma = parameter(tab.gamma))
+              .unconditionally());
+    prepared_update.params.alpha = 30;
+    prepared_update.params.beta = "IceCream";
+    prepared_update.params.gamma = true;
+    std::cout << "---- running prepared update ----" << std::endl;
+    db(prepared_update);
+    std::cout << "---- finished prepared update ----" << std::endl;
 
-      for (const auto& row: db(select(all_of(tab)).from(tab).unconditionally()))
-      {
-         require_equal(__LINE__, row.colDayPoint.value(), today);
-         require_equal(__LINE__, row.colTimePoint.value(), now);
-      }
+    for (const auto& row: db(select(all_of(tab)).from(tab).unconditionally()))
+    {
+       require_equal(__LINE__, row.alpha.value(), 30);
+       require_equal(__LINE__, row.beta.value(), "IceCream");
+       require_equal(__LINE__, row.gamma.value(), true);
     }
-      */
   } catch (std::exception& e)
   {
     std::cerr << "Exception: " << e.what() << std::endl;

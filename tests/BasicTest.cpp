@@ -35,6 +35,7 @@ int main()
 {
   auto config = std::make_shared<sql::connection_config>();
   config->host = "localhost";
+  config->user = "unknown_user_must_fail";
   try {
     sql::connection db(config);
 
