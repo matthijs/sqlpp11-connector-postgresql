@@ -352,8 +352,10 @@ namespace sqlpp
         {
           auto ts = std::chrono::system_clock::to_time_t(*value);
           std::tm* tm = std::localtime(&ts);
+          std::string time_str{"1900-01-01 00:00:00 CEST"};
+          strftime(const_cast<char*>(time_str.data()), time_str.size(), "%F %T %Z", tm);
           std::cerr << "PostgreSQL debug: calculated timestamp "
-                    << std::put_time(tm, "%F %T %Z") << "\n";
+                    << time_str << std::endl;
         }
       }
       else
