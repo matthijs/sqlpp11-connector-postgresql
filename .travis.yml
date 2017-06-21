@@ -38,7 +38,7 @@ install:
 before_script:
     - mkdir build
     - cd build
-    - cmake .. -DCMAKE_PREFIX_PATH="/usr/local/" -DDATE_INCLUDE_DIR="$PWD/../../date"
+    - cmake .. -DCMAKE_PREFIX_PATH="/usr/local/" -DDATE_INCLUDE_DIR="$PWD/../../date" -DENABLE_TESTS=True
 
 script:
     - cmake --build .
