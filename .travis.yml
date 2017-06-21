@@ -42,4 +42,8 @@ before_script:
 
 script:
     - cmake --build .
-
+    - sudo apt-get install postgresql-9.1
+    - echo -e "sudo -u postgres createuser -l -S -D -R $USER\nsudo -u postgres createdb $USER" > setup_db.sh
+    - chmod a+x setup_db.sh
+    - sudo ./setup_db.sh
+    - ctest --output-on-failure

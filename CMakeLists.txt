@@ -66,6 +66,7 @@ include_directories("${PROJECT_SOURCE_DIR}/include")
 
 add_subdirectory(src)
 if (ENABLE_TESTS)
+    enable_testing()
     add_subdirectory(tests)
 endif()
 

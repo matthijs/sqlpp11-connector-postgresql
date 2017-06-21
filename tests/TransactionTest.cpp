@@ -25,7 +25,6 @@
 
 #include <stdexcept>
 #include <memory>
-#include <cassert>
 #include <iostream>
 
 #include <sqlpp11/sqlpp11.h>
@@ -33,6 +32,18 @@
 #include <sqlpp11/transaction.h>
 #include <sqlpp11/custom_query.h>
 #include <sqlpp11/postgresql/connection.h>
+
+namespace {
+  template<typename L, typename R>
+  void require_equal(int line, const L& l, const R& r)
+  {
+    if (l != r)
+    {
+      std::cerr << line << ": " << l << " != " << r << std::endl;
+      throw std::runtime_error("Unexpected result");
+    }
+  }
+}
 
 namespace sql = sqlpp::postgresql;
 
@@ -52,7 +63,7 @@ int main()
       auto current_level = db(custom_query(sqlpp::verbatim("show transaction_isolation;"))
               .with_result_type_of(select(sqlpp::value("").as(level))))
           .front().level;
-      assert(current_level == "read committed");
+      require_equal(__LINE__, current_level, "read committed");
       std::cerr << "isolation level outside transaction: " << current_level << "\n";
 
       auto tx = start_transaction(db, sqlpp::isolation_level::serializable);
@@ -60,17 +71,25 @@ int main()
       current_level = db(custom_query(sqlpp::verbatim("show transaction_isolation;"))
               .with_result_type_of(select(sqlpp::value("").as(level))))
           .front().level;
-      assert(current_level == "serializable");
+      require_equal(__LINE__, current_level, "serializable");
       std::cerr << "isolation level in transaction(serializable) : " << current_level << "\n";
       tx.commit();
     }
     
-    assert(db.get_default_isolation_level() == sqlpp::isolation_level::read_committed);
+    require_equal(__LINE__, (int)db.get_default_isolation_level(), (int)sqlpp::isolation_level::read_committed);
     db.set_default_isolation_level(sqlpp::isolation_level::serializable);
-    assert(db.get_default_isolation_level() == sqlpp::isolation_level::serializable);
+    require_equal(__LINE__, (int)db.get_default_isolation_level(), (int)sqlpp::isolation_level::serializable);
 
-  } catch (const sqlpp::exception& ex) {
-      std::cerr << "Got exception as expected: " << ex.what() << std::endl;
-      assert(ex.what() == std::string("PostgreSQL error: failed to connect to the database"));
   }
+  catch (const sqlpp::exception& ex) 
+  {
+    std::cerr << "Got exception: " << ex.what() << std::endl;
+    return 1;
+  }
+  catch(...)
+  {
+    std::cerr << "Got unknown exception" << std::endl;
+    return 1;
+  }
+  return 0;
 }

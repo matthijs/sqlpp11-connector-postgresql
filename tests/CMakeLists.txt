@@ -37,7 +37,7 @@ macro (build_and_run_dynamic arg)
     target_link_libraries(Sqlpp11PostgreSQL${arg}-dynamic sqlpp-postgresql-dynamic dl)
     include_directories("../include")
     target_compile_features(Sqlpp11PostgreSQL${arg}-dynamic PRIVATE cxx_auto_type)
-    add_test(${arg} Sqlpp11PostgreSQL${arg}-dynamic)
+    add_test(${arg}-dyanmic Sqlpp11PostgreSQL${arg}-dynamic)
 endmacro()
 
 build_and_run(BasicTest)
