@@ -97,7 +97,7 @@ namespace sqlpp
             throw sqlpp::exception(errmsg);
           case PGRES_COMMAND_OK:
           case PGRES_TUPLES_OK:
-          case PGRES_SINGLE_TUPLE:
+          // case PGRES_SINGLE_TUPLE: // supported from 9.2, should only occur with PQsendQuery
           default:
             result.valid = true;
             break;
@@ -154,7 +154,7 @@ namespace sqlpp
             throw sqlpp::exception(errmsg);
           case PGRES_COMMAND_OK:
           case PGRES_TUPLES_OK:
-          case PGRES_SINGLE_TUPLE:
+          // case PGRES_SINGLE_TUPLE: // supported from 9.2, should only occur with PQsendQuery
           default:
             prepared.valid = true;
             break;
@@ -342,8 +342,7 @@ namespace sqlpp
     {
       PGresult* res = PQexec(_handle->postgres, "SHOW default_transaction_isolation;");
       auto status = PQresultStatus(res);
-      if ((status != PGRES_TUPLES_OK) && (status != PGRES_SINGLE_TUPLE) &&
-          (status != PGRES_COMMAND_OK))
+      if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK))
       {
         PQclear(res);
         throw sqlpp::exception("PostgreSQL error: could not read default_transaction_isolation");
