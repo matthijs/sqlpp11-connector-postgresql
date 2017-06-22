@@ -35,10 +35,19 @@
 #include "detail/prepared_statement_handle.h"
 #include "detail/connection_handle.h"
 
+#ifdef SQLPP_DYNAMIC_LOADING
+#include <sqlpp11/postgresql/dynamic_libpq.h>
+#endif
+
 namespace sqlpp
 {
-  namespace postgresql
-  {
+    namespace postgresql
+    {
+
+#ifdef SQLPP_DYNAMIC_LOADING
+    using namespace dynamic;
+#endif
+
     namespace
     {
       detail::prepared_statement_handle_t prepare_statement(detail::connection_handle& handle,
@@ -256,6 +265,12 @@ namespace sqlpp
       size_t result;
       in >> result;
       return result;
+    }
+
+    size_t connection::execute(const std::string& stmt)
+    {
+      auto prepared  = prepare_impl(stmt, 0);
+      return run_prepared_execute_impl(prepared);
     }
 
     size_t connection::run_prepared_insert_impl(prepared_statement_t& prep)
