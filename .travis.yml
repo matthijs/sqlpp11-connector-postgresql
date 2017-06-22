@@ -28,7 +28,7 @@ install:
     - sudo update-alternatives --quiet --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9 --slave /usr/bin/gcov gcov /usr/bin/gcov-4.9
     - sudo update-alternatives --quiet --set gcc /usr/bin/gcc-4.9
     - cd ..
-    - git clone --branch develop --depth 1 https://github.com/rbock/sqlpp11.git
+    - git clone --branch master --depth 1 https://github.com/rbock/sqlpp11.git
     - cd sqlpp11
     - cmake . -DHinnantDate_ROOT_DIR="$PWD/../date"
     - sudo make install
@@ -38,8 +38,12 @@ install:
 before_script:
     - mkdir build
     - cd build
-    - cmake .. -DCMAKE_PREFIX_PATH="/usr/local/" -DDATE_INCLUDE_DIR="$PWD/../../date"
+    - cmake .. -DCMAKE_PREFIX_PATH="/usr/local/" -DDATE_INCLUDE_DIR="$PWD/../../date" -DENABLE_TESTS=True
 
 script:
     - cmake --build .
-
+    - sudo apt-get install postgresql-9.1
+    - echo -e "sudo -u postgres createuser -l -S -D -R $USER\nsudo -u postgres createdb $USER" > setup_db.sh
+    - chmod a+x setup_db.sh
+    - sudo ./setup_db.sh
+    - ctest --output-on-failure

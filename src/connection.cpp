@@ -26,6 +26,7 @@
  */
 
 #include <sqlpp11/postgresql/connection.h>
+#include <sqlpp11/transaction.h>
 #include <sqlpp11/exception.h>
 
 #include <algorithm>
@@ -96,7 +97,7 @@ namespace sqlpp
             throw sqlpp::exception(errmsg);
           case PGRES_COMMAND_OK:
           case PGRES_TUPLES_OK:
-          case PGRES_SINGLE_TUPLE:
+          // case PGRES_SINGLE_TUPLE: // supported from 9.2, should only occur with PQsendQuery
           default:
             result.valid = true;
             break;
@@ -153,7 +154,7 @@ namespace sqlpp
             throw sqlpp::exception(errmsg);
           case PGRES_COMMAND_OK:
           case PGRES_TUPLES_OK:
-          case PGRES_SINGLE_TUPLE:
+          // case PGRES_SINGLE_TUPLE: // supported from 9.2, should only occur with PQsendQuery
           default:
             prepared.valid = true;
             break;
@@ -314,16 +315,89 @@ namespace sqlpp
       return result;
     }
 
+    void connection::set_default_isolation_level(isolation_level level)
+    {
+      std::string level_str = "read uncommmitted";
+      switch (level) {
+      case isolation_level::read_committed:
+        level_str = "read committed";
+        break;
+      case isolation_level::read_uncommitted:
+        level_str = "read uncommitted";
+        break;
+      case isolation_level::repeatable_read:
+        level_str = "repeatable read";
+        break;
+      case isolation_level::serializable:
+        level_str = "serializable";
+        break;
+      default:
+          throw sqlpp::exception("Invalid isolation level");
+      }
+      std::string cmd = "SET default_transaction_isolation to '" + level_str + "'";
+      execute(cmd);
+    }
+
+    isolation_level connection::get_default_isolation_level()
+    {
+      PGresult* res = PQexec(_handle->postgres, "SHOW default_transaction_isolation;");
+      auto status = PQresultStatus(res);
+      if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK))
+      {
+        PQclear(res);
+        throw sqlpp::exception("PostgreSQL error: could not read default_transaction_isolation");
+      }
+
+      std::string in{PQgetvalue(res, 0, 0)};
+      PQclear(res);
+      if (in == "read committed") {
+          return isolation_level::read_committed;
+      } else if (in == "read uncommitted") {
+          return isolation_level::read_uncommitted;
+      } else if (in == "repeatable read") {
+          return isolation_level::repeatable_read;
+      } else if (in == "serializable") {
+          return isolation_level::serializable;
+      }
+      return isolation_level::undefined;
+    }
+
     //! start transaction
-    void connection::start_transaction()
+    void connection::start_transaction(sqlpp::isolation_level level)
     {
       if (_transaction_active)
       {
         throw sqlpp::exception("PostgreSQL error: transaction already open");
       }
 
-      auto prepared = prepare_statement(*_handle, "BEGIN", 0);
-      execute_statement(*_handle, prepared);
+      switch (level)
+      {
+      case isolation_level::serializable:
+        {
+          execute("BEGIN ISOLATION LEVEL SERIALIZABLE");
+          break;
+        }
+      case isolation_level::repeatable_read:
+        {
+          execute("BEGIN ISOLATION LEVEL REPEATABLE READ");
+          break;
+        }
+      case isolation_level::read_committed:
+        {
+          execute("BEGIN ISOLATION LEVEL READ COMMITTED");
+          break;
+        }
+      case isolation_level::read_uncommitted:
+        {
+          execute("BEGIN ISOLATION LEVEL READ UNCOMMITTED");
+          break;
+        }
+      case isolation_level::undefined:
+        {
+          execute("BEGIN");
+          break;
+        }
+      }
       _transaction_active = true;
     }
 

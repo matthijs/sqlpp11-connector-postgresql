@@ -24,8 +24,8 @@
  */
 
 #include <stdexcept>
+#include <iostream>
 #include <memory>
-#include <cassert>
 
 #include <sqlpp11/postgresql/connection.h>
 #include <sqlpp11/sqlpp11.h>
@@ -35,12 +35,14 @@ int main()
 {
   auto config = std::make_shared<sql::connection_config>();
   config->host = "localhost";
+  config->user = "unknown_user_must_fail";
   try {
     sql::connection db(config);
 
     throw std::logic_error("should never reach this point");
   } catch (const sqlpp::exception& ex) {
-      assert(ex.what() == std::string("PostgreSQL error: failed to connect to the database"));
+    std::cout << "Got exception: " << ex.what();
+    if (ex.what() != std::string("PostgreSQL error: failed to connect to the database")) return 1;
   }
+  return 0;
 }
-
