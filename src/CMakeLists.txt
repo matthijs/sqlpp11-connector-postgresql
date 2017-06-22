@@ -43,12 +43,31 @@ add_library(sqlpp-postgresql SHARED
 # Properties
 set_property(TARGET sqlpp-postgresql PROPERTY CXX_STANDARD 11)
 
-target_compile_features(sqlpp-postgresql PRIVATE
-	cxx_auto_type)
+add_library(sqlpp-postgresql-dynamic SHARED
+        bind_result.cpp
+        connection.cpp
+        prepared_statement.cpp
+        detail/connection_handle.cpp
+        detail/dynamic_libpq.cpp)
 
-target_link_libraries(sqlpp-postgresql PUBLIC sqlpp11 PRIVATE ${PostgreSQL_LIBRARIES})
+if (WIN32)
+get_filename_component(POSTGRESQL_LIB_FILE ${PostgreSQL_LIBRARIES} NAME)
+elseif(APPLE)
+set(POSTGRESQL_LIB_FILE "lib${PostgreSQL_LIBRARIES}.dylib")
+else()
+set(POSTGRESQL_LIB_FILE "lib${PostgreSQL_LIBRARIES}.so")
+endif()
+
+message("PostgreSQL LIB FILE: ${POSTGRESQL_LIB_FILE}")
+target_compile_options(sqlpp-postgresql-dynamic INTERFACE -DSQLPP_DYNAMIC_LOADING)
+target_compile_options(sqlpp-postgresql-dynamic PRIVATE -DSQLPP_DYNAMIC_LOADING -DSQLPP_DYNAMIC_LOADING_FILENAME=${POSTGRESQL_LIB_FILE})
+target_compile_features(sqlpp-postgresql PRIVATE cxx_auto_type)
+target_compile_features(sqlpp-postgresql-dynamic PRIVATE cxx_auto_type)
+
+target_link_libraries(sqlpp-postgresql PRIVATE ${PostgreSQL_LIBRARIES})
 
 target_include_directories(sqlpp-postgresql PRIVATE ${PostgreSQL_INCLUDE_DIRS} "../include/")
+target_include_directories(sqlpp-postgresql-dynamic PRIVATE ${PostgreSQL_INCLUDE_DIRS} "../include/")
 
 # The include directory should be PUBLIC. However, that would store an absolute path in the package configuration
 # so leave it PRIVATE and correct that in the ...Config.cmake file. This can be changed when the FindPostgreSQL.cmake got updated.
@@ -56,16 +75,20 @@ target_include_directories(sqlpp-postgresql PRIVATE ${PostgreSQL_INCLUDE_DIRS} "
 
 # Keep this in sync with the releases in sqlpp11
 set(sqlpp-postgresql_VERSION_MAJOR 0)
-set(sqlpp-postgresql_VERSION_MINOR 35)
+set(sqlpp-postgresql_VERSION_MINOR 48)
 set(sqlpp-postgresql_VERSION_PATCH 0)
 set(sqlpp-postgresql_VERSION_STRING ${sqlpp-postgresql_VERSION_MAJOR}.${sqlpp-postgresql_VERSION_MINOR}.${sqlpp-postgresql_VERSION_PATCH})
 set_target_properties(sqlpp-postgresql PROPERTIES VERSION ${sqlpp-postgresql_VERSION_STRING}
 	        SOVERSION ${sqlpp-postgresql_VERSION_MAJOR})
+set_target_properties(sqlpp-postgresql-dynamic PROPERTIES VERSION ${sqlpp-postgresql_VERSION_STRING}
+            SOVERSION ${sqlpp-postgresql_VERSION_MAJOR})
 
 install(TARGETS sqlpp-postgresql
         EXPORT postgresqlTargets
-        DESTINATION lib
-)
+        DESTINATION lib)
+install(TARGETS sqlpp-postgresql-dynamic
+        EXPORT postgresqlTargets
+        DESTINATION lib)
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(

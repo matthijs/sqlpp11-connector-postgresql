@@ -41,7 +41,7 @@ namespace sqlpp
     void Result::checkIndex(int record, int field) const noexcept(false)
     {
       if (record > records_size() || field > field_count())
-        throw std::out_of_range("libpq error: index out of range");
+        throw std::out_of_range("PostgreSQL error: index out of range");
     }
 
     void Result::operator=(PGresult* res)
@@ -218,11 +218,13 @@ namespace sqlpp
 
     bool Result::isNull(int record, int field) const
     {
+      /// check index?
       return PQgetisnull(m_result, record, field);
     }
 
     int Result::length(int record, int field) const
     {
+      /// check index?
       return PQgetlength(m_result, record, field);
     }
 

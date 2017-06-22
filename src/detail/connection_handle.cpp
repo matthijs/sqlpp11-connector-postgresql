@@ -32,14 +32,26 @@
 
 #include <iostream>  // DEBUG
 
+#ifdef SQLPP_DYNAMIC_LOADING
+#include <sqlpp11/postgresql/dynamic_libpq.h>
+#endif
+
 namespace sqlpp
 {
   namespace postgresql
   {
+
+#ifdef SQLPP_DYNAMIC_LOADING
+    using namespace dynamic;
+#endif
+
     namespace detail
     {
       connection_handle::connection_handle(const std::shared_ptr<connection_config>& conf) : config(conf)
       {
+#ifdef SQLPP_DYNAMIC_LOADING
+        init_pg("");
+#endif
         if (config->debug)
         {
           std::cerr << "PostgreSQL debug: connecting to the database server." << std::endl;
