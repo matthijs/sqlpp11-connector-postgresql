@@ -26,5 +26,8 @@ config.log
 .sconf_temp
 .sconsign.dblite
 
+# QtCreator config files
+*.user
+
 # Build directory
 build
