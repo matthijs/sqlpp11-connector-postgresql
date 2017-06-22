@@ -24,11 +24,24 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+set(LIB_HEADERS
+    detail/prepared_statement_handle.h
+)
+
 add_library(sqlpp-postgresql SHARED
 	bind_result.cpp
 	connection.cpp
+	exception.cpp
 	prepared_statement.cpp
-	detail/connection_handle.cpp)
+	detail/connection_handle.cpp
+	detail/prepared_statement_handle.cpp
+	result.cpp
+	${postgresql_headers}
+	${LIB_HEADERS}
+)
+
+# Properties
+set_property(TARGET sqlpp-postgresql PROPERTY CXX_STANDARD 11)
 
 add_library(sqlpp-postgresql-dynamic SHARED
         bind_result.cpp

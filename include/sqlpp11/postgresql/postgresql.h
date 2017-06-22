@@ -29,5 +29,8 @@
 #define SQLPP_POSTGRESQL_H
 
 #include <sqlpp11/postgresql/connection.h>
+#include <sqlpp11/postgresql/exception.h>
+#include <sqlpp11/postgresql/insert.h>
+#include <sqlpp11/postgresql/update.h>
 
 #endif

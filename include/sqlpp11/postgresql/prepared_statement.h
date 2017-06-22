@@ -29,8 +29,7 @@
 #define SQLPP_POSTGRESQL_PREPARED_STATEMENT_H
 
 #include <memory>
-#include <chrono>
-#include <sqlpp11/data_types.h>
+#include <sqlpp11/chrono.h>
 
 namespace sqlpp
 {

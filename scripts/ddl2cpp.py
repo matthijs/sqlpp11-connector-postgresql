@@ -39,11 +39,16 @@ types = {
     'double': 'floating_point',
     'float': 'floating_point',
     'numeric': 'floating_point',
+    
+    'json' : 'text',
+    'jsonb' : 'text',
 
     # For now keep this a varchar
-    'date': 'varchar',
-    'time without time zone': 'varchar',
-    'timestamp without time zone': 'varchar',
+    'date': 'day_point',
+    'time without time zone': 'time_point',
+    'time with time zone': 'time_point',
+    'timestamp without time zone': 'time_point',
+    'timestamp with time zone': 'time_point',
 
     # User defined types, for now a varchar
     'USER-DEFINED': 'varchar',

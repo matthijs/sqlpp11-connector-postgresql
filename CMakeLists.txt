@@ -27,6 +27,8 @@
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 project(sqlpp11-connector-postgresql VERSION 0.1 LANGUAGES CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(ConfigPackageLocation lib/cmake/sqlpp-postgresql)
 
 #find_package(Sqlpp11 REQUIRED)
