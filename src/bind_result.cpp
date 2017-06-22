@@ -25,6 +25,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <date.h>  // Howard Hinnant's date library
+
 #include <sqlpp11/postgresql/bind_result.h>
 #include <sqlpp11/exception.h>
 
@@ -152,8 +154,72 @@ namespace sqlpp
         throw sqlpp::exception("PostgreSQL error: index out of range");
       }
 
-      *value = const_cast<const char*>(PQgetvalue(_handle->result, _handle->count, index));
-      *len = PQgetlength(_handle->result, _handle->count, index);
+      if (PQgetisnull(_handle->result, _handle->count, index)) {
+        *value = nullptr;
+        *len = 0;
+      } else {
+        *value = const_cast<const char*>(PQgetvalue(_handle->result, _handle->count, index));
+        *len = PQgetlength(_handle->result, _handle->count, index);
+      }
     }
+
+    void bind_result_t::_bind_date_result(size_t index, ::sqlpp::chrono::day_point* value, bool* is_null)
+    {
+      if (_handle->debug)
+        std::cerr << "PostgreSQL debug: binding date result at index: " << index << std::endl;
+
+      if (index > _handle->fields)
+      {
+        throw sqlpp::exception("PostgreSQL error: index out of range");
+      }
+
+      *is_null = PQgetisnull(_handle->result, _handle->count, index);
+      if (*is_null)
+      {
+        *value = {};
+        return;
+      }
+
+      const auto date_string =
+          const_cast<const char*>(PQgetvalue(_handle->result, _handle->count, index));
+      if (_handle->debug)
+        std::cerr << "PostgreSQL debug: date string: " << date_string << std::endl;
+
+      const auto ymd = ::date::year(std::atoi(date_string)) / atoi(date_string + 5) / atoi(date_string + 8);
+      *value = ::sqlpp::chrono::day_point(ymd);
+    }
+
+    void bind_result_t::_bind_date_time_result(size_t index, ::sqlpp::chrono::microsecond_point* value, bool* is_null)
+    {
+      if (_handle->debug)
+        std::cerr << "PostgreSQL debug: binding date result at index: " << index << std::endl;
+
+      if (index > _handle->fields)
+      {
+        throw sqlpp::exception("PostgreSQL error: index out of range");
+      }
+
+      *is_null = PQgetisnull(_handle->result, _handle->count, index);
+      if (*is_null)
+      {
+        *value = {};
+        return;
+      }
+
+      const auto date_time_string =
+          const_cast<const char*>(PQgetvalue(_handle->result, _handle->count, index));
+      if (_handle->debug)
+        std::cerr << "PostgreSQL debug: date_time string: " << date_time_string << std::endl;
+
+      const auto ymd = ::date::year(std::atoi(date_time_string)) / atoi(date_time_string + 5) / atoi(date_time_string + 8);
+      *value = ::sqlpp::chrono::day_point(ymd);
+
+      const auto time_string = date_time_string + 11;
+      *value += ::std::chrono::hours(std::atoi(time_string)) + std::chrono::minutes(std::atoi(time_string + 3)) +
+                std::chrono::seconds(std::atoi(time_string + 6));
+      const auto ms_string = time_string + 9;
+      *value += ::std::chrono::milliseconds(std::atoi(ms_string));
+    }
+
   }
 }
