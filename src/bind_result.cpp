@@ -124,10 +124,6 @@ namespace sqlpp
       {
         std::cerr << "PostgreSQL debug: binding text result at index: " << index << std::endl;
       }
-      if (index > _handle->fields)
-      {
-        throw sqlpp::exception("PostgreSQL error: index out of range");
-      }
 
       *value = _handle->result.getValue<const char *>(_handle->count, index);
       *len = _handle->result.length(_handle->count, index);

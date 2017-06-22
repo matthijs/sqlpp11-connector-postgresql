@@ -64,7 +64,7 @@ namespace sqlpp
       inline T getValue(int record, int field) const
       {
         static_assert(std::is_arithmetic<T>::value, "Value must be numeric type");
-        checkIndexAndThrow(record, field);
+        checkIndex(record, field);
         T t(0);
         try
         {
@@ -90,8 +90,8 @@ namespace sqlpp
       [[noreturn]] void ThrowSQLError(const std::string& Err, const std::string& Query) const;
       std::string StatusError() const;
       int errorPosition() const noexcept;
-
-      void checkIndexAndThrow(int record, int field) const noexcept(false);
+      bool hasError();
+      void checkIndex(int record, int field) const noexcept(false);
 
       PGresult* m_result;
       std::string m_query;
@@ -106,7 +106,7 @@ namespace sqlpp
     template <>
     inline bool Result::getValue<bool>(int record, int field) const
     {
-      checkIndexAndThrow(record, field);
+      checkIndex(record, field);
       auto val = PQgetvalue(m_result, record, field);
       if (*val == 't')
         return true;

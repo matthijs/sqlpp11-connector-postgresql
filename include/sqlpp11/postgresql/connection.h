@@ -359,6 +359,4 @@ namespace sqlpp
   }
 }
 
-#include <sqlpp11/postgresql/serializer.h>
-
 #endif

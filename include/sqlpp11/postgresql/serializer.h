@@ -29,8 +29,8 @@
 #define SQLPP_POSTGRESQL_INTERPRETER_H
 
 #include <sqlpp11/interpreter.h>
-#include <sqlpp11/wrap_operand.h>
 #include <sqlpp11/parameter.h>
+#include <sqlpp11/wrap_operand.h>
 
 namespace sqlpp
 {

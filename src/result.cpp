@@ -38,7 +38,7 @@ namespace sqlpp
     {
     }
 
-    void Result::checkIndexAndThrow(int record, int field) const noexcept(false)
+    void Result::checkIndex(int record, int field) const noexcept(false)
     {
       if (record > records_size() || field > field_count())
         throw std::out_of_range("PostgreSQL error: index out of range");

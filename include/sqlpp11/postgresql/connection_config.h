@@ -28,8 +28,8 @@
 #ifndef SQLPP_POSTGRESQL_CONNECTION_CONFIG_H
 #define SQLPP_POSTGRESQL_CONNECTION_CONFIG_H
 
-#include <string>
 #include <sqlpp11/postgresql/visibility.h>
+#include <string>
 
 namespace sqlpp
 {
