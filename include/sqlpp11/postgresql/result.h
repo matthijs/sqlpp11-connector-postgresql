@@ -104,6 +104,12 @@ namespace sqlpp
     }
 
     template <>
+    inline std::string Result::getValue<std::string>(int record, int field) const
+    {
+      return {getValue<const char*>(record, field)};
+    }
+
+    template <>
     inline bool Result::getValue<bool>(int record, int field) const
     {
       checkIndex(record, field);

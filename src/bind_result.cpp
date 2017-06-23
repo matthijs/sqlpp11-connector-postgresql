@@ -41,7 +41,7 @@ namespace sqlpp
   {
     bind_result_t::bind_result_t(const std::shared_ptr<detail::statement_handle_t>& handle) : _handle(handle)
     {
-      if (this->_handle && this->_handle->debug)
+      if (this->_handle && this->_handle->debug())
       {
         // cerr
         std::cerr << "PostgreSQL debug: constructing bind result, using handle at: " << this->_handle.get()
@@ -51,7 +51,7 @@ namespace sqlpp
 
     bool bind_result_t::next_impl()
     {
-      if (_handle->debug)
+      if (_handle->debug())
       {
         std::cerr << "PostgreSQL debug: accessing next row of handle at " << _handle.get() << std::endl;
       }
@@ -85,9 +85,10 @@ namespace sqlpp
       return true;
     }
 
-    void bind_result_t::_bind_boolean_result(size_t index, signed char* value, bool* is_null)
+    void bind_result_t::_bind_boolean_result(size_t _index, signed char* value, bool* is_null)
     {
-      if (_handle->debug)
+      auto index = static_cast<int>(_index);
+      if (_handle->debug())
       {
         std::cerr << "PostgreSQL debug: binding boolean result at index: " << index << std::endl;
       }
@@ -96,9 +97,10 @@ namespace sqlpp
       *value = _handle->result.getValue<bool>(_handle->count, index);
     }
 
-    void bind_result_t::_bind_floating_point_result(size_t index, double* value, bool* is_null)
+    void bind_result_t::_bind_floating_point_result(size_t _index, double* value, bool* is_null)
     {
-      if (_handle->debug)
+      auto index = static_cast<int>(_index);
+      if (_handle->debug())
       {
         std::cerr << "PostgreSQL debug: binding floating_point result at index: " << index << std::endl;
       }
@@ -107,9 +109,10 @@ namespace sqlpp
       *value = _handle->result.getValue<double>(_handle->count, index);
     }
 
-    void bind_result_t::_bind_integral_result(size_t index, int64_t* value, bool* is_null)
+    void bind_result_t::_bind_integral_result(size_t _index, int64_t* value, bool* is_null)
     {
-      if (_handle->debug)
+      auto index = static_cast<int>(_index);
+      if (_handle->debug())
       {
         std::cerr << "PostgreSQL debug: binding integral result at index: " << index << std::endl;
       }
@@ -118,14 +121,15 @@ namespace sqlpp
       *value = _handle->result.getValue<unsigned long long>(_handle->count, index);
     }
 
-    void bind_result_t::_bind_text_result(size_t index, const char** value, size_t* len)
+    void bind_result_t::_bind_text_result(size_t _index, const char** value, size_t* len)
     {
-      if (_handle->debug)
+      auto index = static_cast<int>(_index);
+      if (_handle->debug())
       {
         std::cerr << "PostgreSQL debug: binding text result at index: " << index << std::endl;
       }
 
-      *value = _handle->result.getValue<const char *>(_handle->count, index);
+      *value = _handle->result.getValue<const char*>(_handle->count, index);
       *len = _handle->result.length(_handle->count, index);
     }
 
@@ -170,9 +174,11 @@ namespace sqlpp
       }
     }
 
-    void bind_result_t::_bind_date_result(size_t index, ::sqlpp::chrono::day_point* value, bool* is_null)
+    void bind_result_t::_bind_date_result(size_t _index, ::sqlpp::chrono::day_point* value, bool* is_null)
     {
-      if (_handle->debug)
+      auto index = static_cast<int>(_index);
+
+      if (_handle->debug())
       {
         std::cerr << "PostgreSQL debug: binding date result at index: " << index << std::endl;
       }
@@ -183,11 +189,11 @@ namespace sqlpp
       {
         const auto date_string = _handle->result.getValue<const char*>(_handle->count, index);
 
-        if (_handle->debug)
+        if (_handle->debug())
         {
           std::cerr << "PostgreSQL debug: date string: " << date_string << std::endl;
         }
-        auto len = _handle->result.length(_handle->count, index);
+        auto len = static_cast<size_t>(_handle->result.length(_handle->count, index));
 
         if (len >= date_digits.size() && check_digits(date_string, date_digits))
         {
@@ -197,7 +203,7 @@ namespace sqlpp
         }
         else
         {
-          if (_handle->debug)
+          if (_handle->debug())
             std::cerr << "PostgreSQL debug: got invalid date '" << date_string << "'" << std::endl;
           *value = {};
         }
@@ -209,15 +215,12 @@ namespace sqlpp
     }
 
     // always returns local time for timestamp with time zone
-    void bind_result_t::_bind_date_time_result(size_t index, ::sqlpp::chrono::microsecond_point* value, bool* is_null)
+    void bind_result_t::_bind_date_time_result(size_t _index, ::sqlpp::chrono::microsecond_point* value, bool* is_null)
     {
-      if (_handle->debug)
+      auto index = static_cast<int>(_index);
+      if (_handle->debug())
       {
         std::cerr << "PostgreSQL debug: binding date_time result at index: " << index << std::endl;
-      }
-      if (index > _handle->fields)
-      {
-        throw sqlpp::exception("PostgreSQL error: index out of range");
       }
 
       *is_null = _handle->result.isNull(_handle->count, index);
@@ -226,11 +229,11 @@ namespace sqlpp
       {
         const auto date_string = _handle->result.getValue(_handle->count, index);
 
-        if (_handle->debug)
+        if (_handle->debug())
         {
           std::cerr << "PostgreSQL debug: got date_time string: " << date_string << std::endl;
         }
-        auto len = _handle->result.length(_handle->count, index);
+        auto len = static_cast<size_t>(_handle->result.length(_handle->count, index));
         if (len >= date_digits.size() && check_digits(date_string, date_digits))
         {
           const auto ymd =
@@ -239,7 +242,7 @@ namespace sqlpp
         }
         else
         {
-          if (_handle->debug)
+          if (_handle->debug())
             std::cerr << "PostgreSQL debug: got invalid date_time" << std::endl;
           *value = {};
           return;
@@ -247,7 +250,7 @@ namespace sqlpp
 
         auto date_time_size = date_digits.size() + time_digits.size();
         const auto time_string = date_string + date_digits.size();
-        if ((len >= date_time_size) && check_digits)
+        if ((len >= date_time_size) && check_digits(date_string, date_digits))
         {
           // not the ' ' (or standard: 'T') prefix for times
           *value += std::chrono::hours(std::atoi(time_string + 1)) + std::chrono::minutes(std::atoi(time_string + 4)) +
@@ -290,7 +293,7 @@ namespace sqlpp
             //*value += std::chrono::hours(zone_hour) - std::chrono::minutes(zone_min);
           }
         }
-        if (_handle->debug)
+        if (_handle->debug())
         {
           auto ts = std::chrono::system_clock::to_time_t(*value);
           std::tm* tm = std::localtime(&ts);

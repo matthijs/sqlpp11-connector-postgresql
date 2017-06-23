@@ -255,7 +255,7 @@ namespace sqlpp
       }
 
       // Execute
-      std::shared_ptr<sqlpp::postgresql::detail::statement_handle_t> execute(const std::string& command);
+      std::shared_ptr<detail::statement_handle_t> execute(const std::string& command);
 
       template <
           typename Execute,

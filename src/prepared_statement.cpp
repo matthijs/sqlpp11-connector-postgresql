@@ -48,7 +48,7 @@ namespace sqlpp
     prepared_statement_t::prepared_statement_t(std::shared_ptr<detail::prepared_statement_handle_t>&& handle)
         : _handle{handle}
     {
-      if (_handle && _handle->debug)
+      if (_handle && _handle->debug())
       {
         std::cerr << "PostgreSQL debug: constructing prepared_statement, using handle at: " << _handle.get()
                   << std::endl;
@@ -57,7 +57,7 @@ namespace sqlpp
 
     void prepared_statement_t::_bind_boolean_parameter(size_t index, const signed char* value, bool is_null)
     {
-      if (_handle->debug)
+      if (_handle->debug())
       {
         std::cerr << "PostgreSQL debug: binding boolean parameter " << (*value ? "true" : "false")
                   << " at index: " << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
@@ -79,7 +79,7 @@ namespace sqlpp
 
     void prepared_statement_t::_bind_floating_point_parameter(size_t index, const double* value, bool is_null)
     {
-      if (_handle->debug)
+      if (_handle->debug())
       {
         std::cerr << "PostgreSQL debug: binding floating_point parameter " << *value << " at index: " << index
                   << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
@@ -94,7 +94,7 @@ namespace sqlpp
 
     void prepared_statement_t::_bind_integral_parameter(size_t index, const int64_t* value, bool is_null)
     {
-      if (_handle->debug)
+      if (_handle->debug())
       {
         std::cerr << "PostgreSQL debug: binding integral parameter " << *value << " at index: " << index << ", being "
                   << (is_null ? "" : "not ") << "null" << std::endl;
@@ -110,7 +110,7 @@ namespace sqlpp
 
     void prepared_statement_t::_bind_text_parameter(size_t index, const std::string* value, bool is_null)
     {
-      if (_handle->debug)
+      if (_handle->debug())
       {
         std::cerr << "PostgreSQL debug: binding text parameter " << *value << " at index: " << index << ", being "
                   << (is_null ? "" : "not ") << "null" << std::endl;
@@ -126,7 +126,7 @@ namespace sqlpp
 
     void prepared_statement_t::_bind_date_parameter(size_t index, const ::sqlpp::chrono::day_point* value, bool is_null)
     {
-      if (_handle->debug)
+      if (_handle->debug())
       {
         std::cerr << "PostgreSQL debug: binding date parameter at index "
                   << index << ", being " << (is_null ? "" : "not ") << "null" <<  std::endl;
@@ -139,7 +139,7 @@ namespace sqlpp
         os << ymd;
         _handle->paramValues[index] = os.str();
 
-        if (_handle->debug)
+        if (_handle->debug())
         {
           std::cerr << "PostgreSQL debug: binding date parameter string: " << _handle->paramValues[index] << std::endl;
         }
@@ -170,7 +170,7 @@ namespace sqlpp
 
     void prepared_statement_t::_bind_date_time_parameter(size_t index, const ::sqlpp::chrono::microsecond_point* value, bool is_null)
     {
-      if (_handle->debug)
+      if (_handle->debug())
       {
         std::cerr << "PostgreSQL debug: binding date_time parameter at index "
           << index << ", being " << (is_null ? "" : "not ") << "null" << std::endl;
@@ -195,7 +195,7 @@ namespace sqlpp
         std::ostringstream os;
         os << ymd << ' ' << time << tz_sign << tz_hour << ":" << tz_min;
         _handle->paramValues[index] = os.str();
-        if (_handle->debug)
+        if (_handle->debug())
         {
           std::cerr << "PostgreSQL debug: binding date_time parameter string: " << _handle->paramValues[index] << std::endl;
         }

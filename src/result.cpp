@@ -232,5 +232,10 @@ namespace sqlpp
     {
       clear();
     }
+
+    ExecStatusType Result::status()
+    {
+      return PQresultStatus(m_result);
+    }
   }
 }

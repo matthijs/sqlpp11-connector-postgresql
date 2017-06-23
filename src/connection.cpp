@@ -64,33 +64,16 @@ namespace sqlpp
           std::cerr << "PostgreSQL debug: preparing: " << stmt << std::endl;
         }
 
-        auto prepared_statement = std::make_unique<detail::prepared_statement_handle_t>(handle, paramCount);
-
-        // Create the prepared statement
-        prepared_statement->result =
-            PQprepare(handle.postgres, prepared_statement->name.c_str(), stmt.c_str(), 0, nullptr);
-        prepared_statement->valid = true;
-        return prepared_statement;
+        return std::make_unique<detail::prepared_statement_handle_t>(handle, stmt, paramCount);
       }
 
       void execute_prepared_statement(detail::connection_handle& handle, detail::prepared_statement_handle_t& prepared)
       {
-        int size = static_cast<int>(prepared.paramValues.size());
-        // Execute a prepared statement
-        std::vector<char*> paramValues(size);
-        // int paramLengths[prepared.paramValues.size()];
-        for (int i = 0; i < size; i++)
-          paramValues[i] = prepared.nullValues[i] ? nullptr : const_cast<char*>(prepared.paramValues[i].c_str());
-
-        // Execute prepared statement with the parameters.
-        prepared.clearResult();
-        prepared.valid = false;
-        prepared.count = 0;
-        prepared.totalCount = 0;
-        prepared.result =
-            PQexecPrepared(handle.postgres, prepared.name.c_str(), size, paramValues.data(), nullptr, nullptr, 0);
-
-        prepared.valid = true;
+        if (handle.config->debug)
+        {
+          std::cerr << "PostgreSQL debug: executing: " << prepared.name() << std::endl;
+        }
+        prepared.execute();
       }
     }
 
@@ -128,7 +111,7 @@ namespace sqlpp
         std::cerr << "PostgreSQL debug: executing: " << stmt << std::endl;
       }
 
-      auto result = std::make_shared<detail::statement_handle_t>(*_handle, _handle->config->debug);
+      auto result = std::make_shared<detail::statement_handle_t>(*_handle);
       result->result = PQexec(_handle->native(), stmt.c_str());
       result->valid = true;
 
@@ -224,17 +207,14 @@ namespace sqlpp
 
     isolation_level connection::get_default_isolation_level()
     {
-      /// @todo run execute
-      PGresult* res = PQexec(_handle->postgres, "SHOW default_transaction_isolation;");
-      auto status = PQresultStatus(res);
+      auto res = execute("SHOW default_transaction_isolation;");
+      auto status = res->result.status();
       if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK))
       {
-        PQclear(res);
         throw sqlpp::exception("PostgreSQL error: could not read default_transaction_isolation");
       }
 
-      std::string in{PQgetvalue(res, 0, 0)};
-      PQclear(res);
+      auto in = res->result.getValue<std::string>(0, 0);
       if (in == "read committed")
       {
         return isolation_level::read_committed;

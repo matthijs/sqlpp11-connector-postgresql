@@ -57,13 +57,12 @@ namespace sqlpp
         detail::connection_handle& connection;
         Result result;
         bool valid{false};
-        bool debug{false};
         uint32_t count{0};
         uint32_t totalCount = {0};
         uint32_t fields = {0};
 
         // ctor
-        statement_handle_t(detail::connection_handle& _connection, bool _debug);
+        statement_handle_t(detail::connection_handle& _connection);
         statement_handle_t(const statement_handle_t&) = delete;
         statement_handle_t(statement_handle_t&&) = default;
         statement_handle_t& operator=(const statement_handle_t&) = delete;
@@ -72,17 +71,22 @@ namespace sqlpp
         virtual ~statement_handle_t();
         bool operator!() const;
         void clearResult();
+
+        bool debug() const;
       };
 
       struct prepared_statement_handle_t : public statement_handle_t
       {
-        std::string name{"xxxxxx"};
+      private:
+        std::string _name{"xxxxxx"};
+
+      public:
         // Store prepared statement arguments
         std::vector<bool> nullValues;
         std::vector<std::string> paramValues;
 
         // ctor
-        prepared_statement_handle_t(detail::connection_handle& _connection, const size_t& paramCount);
+        prepared_statement_handle_t(detail::connection_handle& _connection, std::string stmt, const size_t& paramCount);
         prepared_statement_handle_t(const prepared_statement_handle_t&) = delete;
         prepared_statement_handle_t(prepared_statement_handle_t&&) = default;
         prepared_statement_handle_t& operator=(const prepared_statement_handle_t&) = delete;
@@ -90,8 +94,16 @@ namespace sqlpp
 
         virtual ~prepared_statement_handle_t();
 
+        void execute();
+
+        std::string name() const
+        {
+          return _name;
+        }
+
       private:
         void generate_name();
+        void prepare(std::string stmt);
       };
     }
   }
