@@ -11,37 +11,34 @@ namespace sqlpp
       statement_handle_t::statement_handle_t(connection_handle& _connection, bool _debug)
           : connection(_connection), debug(_debug)
       {
-	  }
-	  
-	  statement_handle_t::~statement_handle_t()
-	  {
-		  clearResult();
-	  }
-	  
-	  bool statement_handle_t::operator!() const
-	  {
-		  return !valid;
-	  }
-	  
-	  void statement_handle_t::clearResult()
-	  {
-		  if (result)
-		  {
-			  result.clear();
-		  }
-	  }
-	  
-	  prepared_statement_handle_t::prepared_statement_handle_t(connection_handle& _connection, const size_t& paramCount)
-		  : statement_handle_t(_connection, _connection.config->debug), nullValues(paramCount), paramValues(paramCount)
+      }
+
+      statement_handle_t::~statement_handle_t()
+      {
+        clearResult();
+      }
+
+      bool statement_handle_t::operator!() const
+      {
+        return !valid;
+      }
+
+      void statement_handle_t::clearResult()
+      {
+        if (result)
+        {
+          result.clear();
+        }
+      }
+
+      prepared_statement_handle_t::prepared_statement_handle_t(connection_handle& _connection, const size_t& paramCount)
+          : statement_handle_t(_connection, _connection.config->debug), nullValues(paramCount), paramValues(paramCount)
       {
         generate_name();
       }
 
       prepared_statement_handle_t::~prepared_statement_handle_t()
       {
-        clearResult();
-        // Execute DEALLOCATE on the connection_handle for this
-        // prepared statement.
         if (valid && !name.empty())
         {
           connection.deallocate_prepared_statement(name);
@@ -54,8 +51,7 @@ namespace sqlpp
         while (connection.prepared_statement_names.find(name) != connection.prepared_statement_names.end())
         {
           std::generate_n(name.begin(), 6, []() {
-            constexpr static auto charset = "0123456789"
-                                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            constexpr static auto charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                             "abcdefghijklmnopqrstuvwxyz";
             constexpr size_t max = (sizeof(charset) - 1);
             std::random_device rd;
