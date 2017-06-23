@@ -34,6 +34,7 @@
 #include <sqlpp11/postgresql/prepared_statement.h>
 #include <sqlpp11/postgresql/result.h>
 #include <sqlpp11/serialize.h>
+#include <sqlpp11/transaction.h>
 
 #include <sstream>
 
@@ -95,7 +96,7 @@ namespace sqlpp
     };
 
     // Connection
-    class DLL_PUBLIC connection : public sqlpp::connection
+    class connection : public sqlpp::connection
     {
     private:
       std::unique_ptr<detail::connection_handle> _handle;
@@ -298,6 +299,7 @@ namespace sqlpp
       template <typename T>
       auto operator()(const T& t) -> decltype(this->_run(t, sqlpp::run_check_t<_serializer_context_t, T>{}))
       {
+        sqlpp::run_check_t<_serializer_context_t, T>::_();
         return _run(t, sqlpp::run_check_t<_serializer_context_t, T>{});
       }
 
@@ -318,8 +320,11 @@ namespace sqlpp
         return _prepare(t, sqlpp::prepare_check_t<_serializer_context_t, T>{});
       }
 
-      //! start transaction
-      void start_transaction();
+      //! set the default transaction isolation level to use for new transactions
+      void set_default_isolation_level(isolation_level level);
+
+      //! get the currently set default transaction isolation level
+      isolation_level get_default_isolation_level();
 
       //! create savepoint
       void savepoint(const std::string& name);
@@ -330,11 +335,15 @@ namespace sqlpp
       //! release_savepoint
       void release_savepoint(const std::string& name);
 
-      //! commit transaction (or throw transaction if transaction has finished already)
+      //! start transaction
+      void start_transaction(isolation_level level = isolation_level::undefined);
+
+      //! commit transaction (or throw transaction if transaction has
+      // finished already)
       void commit_transaction();
 
       //! rollback transaction
-      void rollback_transaction(bool report = false);
+      void rollback_transaction(bool report);
 
       //! report rollback failure
       void report_rollback_failure(const std::string& message) noexcept;

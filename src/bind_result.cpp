@@ -92,11 +92,8 @@ namespace sqlpp
         std::cerr << "PostgreSQL debug: binding boolean result at index: " << index << std::endl;
       }
 
-      // Assign value
-      const auto iindex = static_cast<int>(index);
-      const auto& res = _handle->result;
-      *value = res.getValue<bool>(_handle->count, iindex);
-      *is_null = res.isNull(_handle->count, iindex);
+      *is_null = _handle->result.isNull(_handle->count, index);
+      *value = _handle->result.getValue<bool>(_handle->count, index);
     }
 
     void bind_result_t::_bind_floating_point_result(size_t index, double* value, bool* is_null)
@@ -106,10 +103,8 @@ namespace sqlpp
         std::cerr << "PostgreSQL debug: binding floating_point result at index: " << index << std::endl;
       }
 
-      const auto iindex = static_cast<int>(index);
-      const auto& res = _handle->result;
-      *value = res.getValue<double>(_handle->count, iindex);
-      *is_null = res.isNull(_handle->count, iindex);
+      *is_null = _handle->result.isNull(_handle->count, index);
+      *value = _handle->result.getValue<double>(_handle->count, index);
     }
 
     void bind_result_t::_bind_integral_result(size_t index, int64_t* value, bool* is_null)
@@ -119,10 +114,8 @@ namespace sqlpp
         std::cerr << "PostgreSQL debug: binding integral result at index: " << index << std::endl;
       }
 
-      const auto iindex = static_cast<int>(index);
-      const auto& res = _handle->result;
-      *value = res.getValue<int64_t>(_handle->count, iindex);
-      *is_null = res.isNull(_handle->count, iindex);
+      *is_null = _handle->result.isNull(_handle->count, index);
+      *value = _handle->result.getValue<unsigned long long>(_handle->count, index);
     }
 
     void bind_result_t::_bind_text_result(size_t index, const char** value, size_t* len)
@@ -132,17 +125,48 @@ namespace sqlpp
         std::cerr << "PostgreSQL debug: binding text result at index: " << index << std::endl;
       }
 
-      const auto iindex = static_cast<int>(index);
-      const auto& res = _handle->result;
-      if (res.isNull(_handle->count, iindex))
+      *value = _handle->result.getValue<const char *>(_handle->count, index);
+      *len = _handle->result.length(_handle->count, index);
+    }
+
+    // same parsing logic as SQLite connector
+    // PostgreSQL will return one of those (using the default ISO client):
+    //
+    // 2010-10-11 01:02:03 - ISO timestamp without timezone
+    // 2011-11-12 01:02:03.123456 - ISO timesapt with sub-second (microsecond) precision
+    // 1997-12-17 07:37:16-08 - ISO timestamp with timezone
+    // 1992-10-10 01:02:03-06:30 - for some timezones with non-hour offset
+    // 1900-01-01 - date only
+    // we do not support time-only values !
+    namespace
+    {
+      const auto date_digits = std::vector<char>{1, 1, 1, 1, 0, 1, 1, 0, 1, 1};  // 2016-11-10
+      const auto time_digits = std::vector<char>{0, 1, 1, 0, 1, 1, 0, 1, 1};     // ' 13:12:11'
+      const auto ms_digits = std::vector<char>{0, 1, 1, 1, 1, 1, 1};             // .123
+      const auto tz_digits = std::vector<char>{0, 1, 1};                         // -05
+      const auto tz_min_digits = std::vector<char>{0, 1, 1};                     // :30
+
+      auto check_digits(const char* text, const std::vector<char>& digitFlags) -> bool
       {
-        *value = nullptr;
-        *len = 0;
-      }
-      else
-      {
-        *value = res.getValue<const char*>(_handle->count, iindex);
-        *len = res.length(_handle->count, iindex);
+        for (const auto digitFlag : digitFlags)
+        {
+          if (digitFlag)
+          {
+            if (not std::isdigit(*text))
+            {
+              return false;
+            }
+          }
+          else
+          {
+            if (std::isdigit(*text) or *text == '\0')
+            {
+              return false;
+            }
+          }
+          ++text;
+        }
+        return true;
       }
     }
 
@@ -153,34 +177,131 @@ namespace sqlpp
         std::cerr << "PostgreSQL debug: binding date result at index: " << index << std::endl;
       }
 
-      const auto& res = _handle->result;
-      int y, m, d;
-      const auto buf = res.getValue<const char*>(_handle->count, static_cast<int>(index));
-      if (strlen(buf))
+      *is_null = _handle->result.isNull(_handle->count, index);
+
+      if (!(*is_null))
       {
-        sscanf(buf, "%4d-%2d-%2d", &y, &m, &d);
-        *is_null = false;
-        *value = ::date::year(y) / ::date::month(m) / ::date::day(d);
+        const auto date_string = _handle->result.getValue<const char*>(_handle->count, index);
+
+        if (_handle->debug)
+        {
+          std::cerr << "PostgreSQL debug: date string: " << date_string << std::endl;
+        }
+        auto len = _handle->result.length(_handle->count, index);
+
+        if (len >= date_digits.size() && check_digits(date_string, date_digits))
+        {
+          const auto ymd =
+              ::date::year(std::atoi(date_string)) / std::atoi(date_string + 5) / std::atoi(date_string + 8);
+          *value = ::sqlpp::chrono::day_point(ymd);
+        }
+        else
+        {
+          if (_handle->debug)
+            std::cerr << "PostgreSQL debug: got invalid date '" << date_string << "'" << std::endl;
+          *value = {};
+        }
+      }
+      else
+      {
+        *value = {};
       }
     }
 
+    // always returns local time for timestamp with time zone
     void bind_result_t::_bind_date_time_result(size_t index, ::sqlpp::chrono::microsecond_point* value, bool* is_null)
     {
-      using namespace std::chrono;
       if (_handle->debug)
       {
-        std::cerr << "PostgreSQL debug: binding date result at index: " << index << std::endl;
+        std::cerr << "PostgreSQL debug: binding date_time result at index: " << index << std::endl;
+      }
+      if (index > _handle->fields)
+      {
+        throw sqlpp::exception("PostgreSQL error: index out of range");
       }
 
-      const auto& res = _handle->result;
-      unsigned y, mon, d, h, min, s, ms(0);
-      const auto buf = res.getValue<const char*>(_handle->count, static_cast<int>(index));
-      if (strlen(buf))
+      *is_null = _handle->result.isNull(_handle->count, index);
+
+      if (!(*is_null))
       {
-        sscanf(buf, "%4d-%2d-%2d %2d:%2d:%2d.%3d", &y, &mon, &d, &h, &min, &s, &ms);
-        *is_null = false;
-        *value = ::sqlpp::chrono::day_point(::date::year(y) / ::date::month(mon) / ::date::day(d)) +  //
-                 hours(h) + minutes(min) + seconds(s) + microseconds(ms * 1000);
+        const auto date_string = _handle->result.getValue(_handle->count, index);
+
+        if (_handle->debug)
+        {
+          std::cerr << "PostgreSQL debug: got date_time string: " << date_string << std::endl;
+        }
+        auto len = _handle->result.length(_handle->count, index);
+        if (len >= date_digits.size() && check_digits(date_string, date_digits))
+        {
+          const auto ymd =
+              ::date::year(std::atoi(date_string)) / std::atoi(date_string + 5) / std::atoi(date_string + 8);
+          *value = ::sqlpp::chrono::day_point(ymd);
+        }
+        else
+        {
+          if (_handle->debug)
+            std::cerr << "PostgreSQL debug: got invalid date_time" << std::endl;
+          *value = {};
+          return;
+        }
+
+        auto date_time_size = date_digits.size() + time_digits.size();
+        const auto time_string = date_string + date_digits.size();
+        if ((len >= date_time_size) && check_digits)
+        {
+          // not the ' ' (or standard: 'T') prefix for times
+          *value += std::chrono::hours(std::atoi(time_string + 1)) + std::chrono::minutes(std::atoi(time_string + 4)) +
+                    std::chrono::seconds(std::atoi(time_string + 7));
+        }
+        else
+        {
+          return;
+        }
+
+        bool has_ms = false;
+        if ((len >= (date_time_size + ms_digits.size())) && (time_string[time_digits.size()] == '.'))
+        {
+          has_ms = true;
+          date_time_size += ms_digits.size();
+          const auto ms_string = time_string + time_digits.size();
+          if (check_digits(ms_string, ms_digits))
+          {
+            *value += std::chrono::microseconds(std::atoi(ms_string + 1));
+          }
+        }
+        if (len >= (date_time_size + tz_digits.size()))
+        {
+          const auto tz_string = date_string + date_time_size;
+          const auto zone_hour = std::atoi(tz_string);
+          auto zone_min = 0;
+
+          if ((len >= date_time_size + tz_digits.size() + tz_min_digits.size()) &&
+              check_digits(tz_string + tz_digits.size(), tz_min_digits))
+          {
+            zone_min = std::atoi(tz_string + tz_digits.size() + 1);
+          }
+          // ignore -00:xx, as there currently is no timezone using it, and hopefully never will be
+          if (zone_hour >= 0)
+          {
+            //*value += std::chrono::hours(zone_hour) + std::chrono::minutes(zone_min);
+          }
+          else
+          {
+            //*value += std::chrono::hours(zone_hour) - std::chrono::minutes(zone_min);
+          }
+        }
+        if (_handle->debug)
+        {
+          auto ts = std::chrono::system_clock::to_time_t(*value);
+          std::tm* tm = std::localtime(&ts);
+          std::string time_str{"1900-01-01 00:00:00 CEST"};
+          strftime(const_cast<char*>(time_str.data()), time_str.size(), "%F %T %Z", tm);
+          std::cerr << "PostgreSQL debug: calculated timestamp " << time_str << std::endl;
+        }
+      }
+      else
+      {
+        *value = {};
       }
     }
   }

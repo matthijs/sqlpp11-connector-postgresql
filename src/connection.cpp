@@ -26,8 +26,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sqlpp11/exception.h>
 #include <sqlpp11/postgresql/connection.h>
-#include <sqlpp11/postgresql/exception.h>
+#include <sqlpp11/transaction.h>
 
 #include <algorithm>
 #include <iostream>
@@ -39,10 +40,18 @@
 #include "detail/connection_handle.h"
 #include "detail/prepared_statement_handle.h"
 
+#ifdef SQLPP_DYNAMIC_LOADING
+#include <sqlpp11/postgresql/dynamic_libpq.h>
+#endif
+
 namespace sqlpp
 {
   namespace postgresql
   {
+#ifdef SQLPP_DYNAMIC_LOADING
+    using namespace dynamic;
+#endif
+
     namespace
     {
       std::unique_ptr<detail::prepared_statement_handle_t> prepare_statement(detail::connection_handle& handle,
@@ -84,48 +93,13 @@ namespace sqlpp
       }
     }
 
-    std::shared_ptr<detail::statement_handle_t> connection::execute(const std::string& stmt)
-    {
-      validate_connection_handle();
-      if (_handle->config->debug)
-      {
-        std::cerr << "PostgreSQL debug: executing: " << stmt << std::endl;
-      }
-
-      auto result = std::make_shared<detail::statement_handle_t>(*_handle, _handle->config->debug);
-      result->result = PQexec(_handle->native(), stmt.c_str());
-      result->valid = true;
-
-      return result;
-    }
-
-    connection::connection()
-    {
-    }
-
     connection::connection(const std::shared_ptr<connection_config>& config)
-        : _handle(std::make_unique<detail::connection_handle>(config))
+        : _handle(new detail::connection_handle(config))
     {
     }
 
-    connection::~connection() = default;
-
-    connection::connection(connection&& other)
+    connection::~connection()
     {
-      _handle = std::move(other._handle);
-      _transaction_active = other._transaction_active;
-    }
-
-    connection& connection::operator=(connection&& other)
-    {
-      _handle = std::move(other._handle);
-      _transaction_active = other._transaction_active;
-      return *this;
-    }
-
-    void connection::connectUsing(const std::shared_ptr<connection_config>& config)
-    {
-      _handle = std::make_unique<detail::connection_handle>(config);
     }
 
     // direct execution
@@ -191,6 +165,7 @@ namespace sqlpp
       return prep._handle->result.affected_rows();
     }
 
+    // TODO: Fix escaping.
     std::string connection::escape(const std::string& s) const
     {
       validate_connection_handle();
@@ -205,9 +180,41 @@ namespace sqlpp
     }
 
     //! start transaction
-    void connection::start_transaction()
+    void connection::start_transaction(sqlpp::isolation_level level)
     {
-      execute("BEGIN");
+      if (_transaction_active)
+      {
+        throw sqlpp::exception("PostgreSQL error: transaction already open");
+      }
+      switch (level)
+      {
+        case isolation_level::serializable:
+        {
+          execute("BEGIN ISOLATION LEVEL SERIALIZABLE");
+          break;
+        }
+        case isolation_level::repeatable_read:
+        {
+          execute("BEGIN ISOLATION LEVEL REPEATABLE READ");
+          break;
+        }
+        case isolation_level::read_committed:
+        {
+          execute("BEGIN ISOLATION LEVEL READ COMMITTED");
+          break;
+        }
+        case isolation_level::read_uncommitted:
+        {
+          execute("BEGIN ISOLATION LEVEL READ UNCOMMITTED");
+          break;
+        }
+        case isolation_level::undefined:
+        {
+          execute("BEGIN");
+          break;
+        }
+      }
+      _transaction_active = true;
     }
 
     //! create savepoint
@@ -231,20 +238,33 @@ namespace sqlpp
       execute("RELEASE SAVEPOINT " + name);
     }
 
-    //! commit transaction
+    //! commit transaction (or throw transaction if transaction has
+    // finished already)
     void connection::commit_transaction()
     {
+      if (!_transaction_active)
+      {
+        throw sqlpp::exception("PostgreSQL error: transaction failed or finished.");
+      }
+
+      _transaction_active = false;
       execute("COMMIT");
     }
 
     //! rollback transaction
     void connection::rollback_transaction(bool report)
     {
+      if (!_transaction_active)
+      {
+        throw sqlpp::exception("PostgreSQL error: transaction failed or finished.");
+      }
       execute("ROLLBACK");
       if (report)
       {
         std::cerr << "PostgreSQL warning: rolling back unfinished transaction" << std::endl;
       }
+
+      _transaction_active = false;
     }
 
     //! report rollback failure

@@ -60,7 +60,7 @@ namespace sqlpp
       void operator=(PGresult* res);
       operator bool() const;
 
-      template <typename T>
+      template <typename T = const char*>
       inline T getValue(int record, int field) const
       {
         static_assert(std::is_arithmetic<T>::value, "Value must be numeric type");

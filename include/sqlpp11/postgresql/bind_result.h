@@ -30,7 +30,7 @@
 
 #include <memory>
 #include <sqlpp11/chrono.h>
-#include "visibility.h"
+#include <sqlpp11/data_types.h>
 
 namespace sqlpp
 {
@@ -41,7 +41,7 @@ namespace sqlpp
       struct statement_handle_t;
     }
 
-    class DLL_PUBLIC bind_result_t
+    class bind_result_t
     {
     private:
       std::shared_ptr<detail::statement_handle_t> _handle;
