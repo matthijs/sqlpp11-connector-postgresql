@@ -102,6 +102,22 @@ namespace sqlpp
     connection::~connection()
     {
     }
+	
+	connection::connection(connection&& other)
+    {
+      this->_transaction_active = other._transaction_active;
+      this->_handle = std::move(other._handle);
+    }
+
+    connection& connection::operator= (connection&& other)
+    {
+      if (this != &other) {
+        // TODO: check this logic
+        this->_transaction_active = other._transaction_active;
+        this->_handle = std::move(other._handle);
+      }
+      return *this;
+}
 
     std::shared_ptr<detail::statement_handle_t> connection::execute(const std::string& stmt)
     {
