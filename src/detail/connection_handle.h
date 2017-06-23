@@ -47,7 +47,7 @@ namespace sqlpp
       {
         const std::shared_ptr<connection_config> config;
         PGconn* postgres{nullptr};
-        std::set<std::string> prepared_statement_names;
+		std::set<std::string> prepared_statement_names;
 
         connection_handle(const std::shared_ptr<connection_config>& config);
         ~connection_handle();
@@ -64,7 +64,7 @@ namespace sqlpp
         void deallocate_prepared_statement(const std::string& name)
         {
           std::string cmd = "DEALLOCATE \"" + name + "\"";
-          PGresult* result = PQexec(native(), cmd.c_str());
+          PGresult* result = PQexec(postgres, cmd.c_str());
           PQclear(result);
           prepared_statement_names.erase(name);
         }

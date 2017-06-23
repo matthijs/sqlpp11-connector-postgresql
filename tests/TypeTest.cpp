@@ -35,23 +35,22 @@
 namespace
 {
   template <typename L, typename R>
-  void require_equal(int line, const L& l, const R& r) 
+  void require_equal(int line, const L& l, const R& r)
   {
     if (l != r)
     {
-      std::cerr << line << ": --" << l << " != " << r  << "--"<< std::cerr;
+      std::cerr << line << ": --" << l << " != " << r << "--" << std::endl;
       throw std::runtime_error("Unexpected result");
     }
   }
 
-  template<class Db>
+  template <class Db>
   void prepare_table(Db&& db)
   {
     // prepare test with timezone
     db.execute("DROP TABLE IF EXISTS tab_sample");
     db.execute("CREATE TABLE tab_sample (alpha bigint, beta text, gamma bool)");
   }
-
 }
 
 namespace sql = sqlpp::postgresql;
@@ -73,22 +72,22 @@ int main()
 
     const auto tab = TabSample{};
     db(insert_into(tab).default_values());
-    for (const auto& row: db(select(all_of(tab)).from(tab).unconditionally()))
+    for (const auto& row : db(select(all_of(tab)).from(tab).unconditionally()))
     {
       // TODO: this is very inconsistent - default for int is "is_null", default
-      // text is "not null, but empty", default for bool is "is_null" and 
+      // text is "not null, but empty", default for bool is "is_null" and
       // accessing the value yields an exception (as opposed to int, which works)
       require_equal(__LINE__, row.alpha.is_null(), true);
-      require_equal(__LINE__, row.alpha.value(), 0); 
+      require_equal(__LINE__, row.alpha.value(), 0);
       require_equal(__LINE__, row.beta.is_null(), false);
       require_equal(__LINE__, row.beta.value(), "");
       require_equal(__LINE__, row.gamma.is_null(), true);
-      //require_equal(__LINE__, row.gamma.value(), false);
+      // require_equal(__LINE__, row.gamma.value(), false);
     }
 
     db(update(tab).set(tab.alpha = 10, tab.beta = "Cookies!", tab.gamma = true).unconditionally());
 
-    for (const auto& row: db(select(all_of(tab)).from(tab).unconditionally()))
+    for (const auto& row : db(select(all_of(tab)).from(tab).unconditionally()))
     {
       require_equal(__LINE__, row.alpha.is_null(), false);
       require_equal(__LINE__, row.alpha.value(), 10);
@@ -100,16 +99,17 @@ int main()
 
     db(update(tab).set(tab.alpha = 20, tab.beta = "Monster", tab.gamma = false).unconditionally());
 
-    for (const auto& row: db(select(all_of(tab)).from(tab).unconditionally()))
+    for (const auto& row : db(select(all_of(tab)).from(tab).unconditionally()))
     {
-       require_equal(__LINE__, row.alpha.value(), 20);
-       require_equal(__LINE__, row.beta.value(), "Monster");
-       require_equal(__LINE__, row.gamma.value(), false);
+      require_equal(__LINE__, row.alpha.value(), 20);
+      require_equal(__LINE__, row.beta.value(), "Monster");
+      require_equal(__LINE__, row.gamma.value(), false);
     }
 
     auto prepared_update = db.prepare(
-           update(tab).set(tab.alpha = parameter(tab.alpha), tab.beta = parameter(tab.beta), tab.gamma = parameter(tab.gamma))
-              .unconditionally());
+        update(tab)
+            .set(tab.alpha = parameter(tab.alpha), tab.beta = parameter(tab.beta), tab.gamma = parameter(tab.gamma))
+            .unconditionally());
     prepared_update.params.alpha = 30;
     prepared_update.params.beta = "IceCream";
     prepared_update.params.gamma = true;
@@ -117,13 +117,14 @@ int main()
     db(prepared_update);
     std::cout << "---- finished prepared update ----" << std::endl;
 
-    for (const auto& row: db(select(all_of(tab)).from(tab).unconditionally()))
+    for (const auto& row : db(select(all_of(tab)).from(tab).unconditionally()))
     {
-       require_equal(__LINE__, row.alpha.value(), 30);
-       require_equal(__LINE__, row.beta.value(), "IceCream");
-       require_equal(__LINE__, row.gamma.value(), true);
+      require_equal(__LINE__, row.alpha.value(), 30);
+      require_equal(__LINE__, row.beta.value(), "IceCream");
+      require_equal(__LINE__, row.gamma.value(), true);
     }
-  } catch (std::exception& e)
+  }
+  catch (std::exception& e)
   {
     std::cerr << "Exception: " << e.what() << std::endl;
     return 1;
