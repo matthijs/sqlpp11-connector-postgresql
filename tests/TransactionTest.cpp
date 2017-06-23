@@ -23,18 +23,53 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdexcept>
-#include <memory>
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 
-#include <sqlpp11/sqlpp11.h>
 #include <sqlpp11/alias_provider.h>
-#include <sqlpp11/transaction.h>
 #include <sqlpp11/custom_query.h>
 #include <sqlpp11/postgresql/connection.h>
+#include <sqlpp11/sqlpp11.h>
+#include <sqlpp11/transaction.h>
 
-namespace {
-  template<typename L, typename R>
+namespace
+{
+  std::ostream& operator<<(std::ostream& stream, const sqlpp::isolation_level& level)
+  {
+    switch (level)
+    {
+      case sqlpp::isolation_level::serializable:
+      {
+        stream << "SERIALIZABLE";
+        break;
+      }
+      case sqlpp::isolation_level::repeatable_read:
+      {
+        stream << "REPEATABLE READ";
+        break;
+      }
+      case sqlpp::isolation_level::read_committed:
+      {
+        stream << "READ COMMITTED";
+        break;
+      }
+      case sqlpp::isolation_level::read_uncommitted:
+      {
+        stream << "READ UNCOMMITTED";
+        break;
+      }
+      case sqlpp::isolation_level::undefined:
+      {
+        stream << "BEGIN";
+        break;
+      }
+    }
+
+    return stream;
+  }
+
+  template <typename L, typename R>
   void require_equal(int line, const L& l, const R& r)
   {
     if (l != r)
@@ -53,40 +88,42 @@ int main()
 {
   auto config = std::make_shared<sql::connection_config>();
   config->dbname = getenv("USER");
-  config->user= config->dbname;
+  config->user = config->dbname;
   config->debug = true;
 
-  try {
+  try
+  {
     sql::connection db(config);
 
     {
       auto current_level = db(custom_query(sqlpp::verbatim("show transaction_isolation;"))
-              .with_result_type_of(select(sqlpp::value("").as(level))))
-          .front().level;
+                                  .with_result_type_of(select(sqlpp::value("").as(level))))
+                               .front()
+                               .level;
       require_equal(__LINE__, current_level, "read committed");
       std::cerr << "isolation level outside transaction: " << current_level << "\n";
 
       auto tx = start_transaction(db, sqlpp::isolation_level::serializable);
 
       current_level = db(custom_query(sqlpp::verbatim("show transaction_isolation;"))
-              .with_result_type_of(select(sqlpp::value("").as(level))))
-          .front().level;
+                             .with_result_type_of(select(sqlpp::value("").as(level))))
+                          .front()
+                          .level;
       require_equal(__LINE__, current_level, "serializable");
       std::cerr << "isolation level in transaction(serializable) : " << current_level << "\n";
       tx.commit();
     }
-    
-    require_equal(__LINE__, (int)db.get_default_isolation_level(), (int)sqlpp::isolation_level::read_committed);
-    db.set_default_isolation_level(sqlpp::isolation_level::serializable);
-    require_equal(__LINE__, (int)db.get_default_isolation_level(), (int)sqlpp::isolation_level::serializable);
 
+    require_equal(__LINE__, db.get_default_isolation_level(), sqlpp::isolation_level::read_committed);
+    db.set_default_isolation_level(sqlpp::isolation_level::serializable);
+    require_equal(__LINE__, db.get_default_isolation_level(), sqlpp::isolation_level::serializable);
   }
-  catch (const sqlpp::exception& ex) 
+  catch (const sqlpp::exception& ex)
   {
     std::cerr << "Got exception: " << ex.what() << std::endl;
     return 1;
   }
-  catch(...)
+  catch (...)
   {
     std::cerr << "Got unknown exception" << std::endl;
     return 1;

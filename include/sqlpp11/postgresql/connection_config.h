@@ -28,13 +28,14 @@
 #ifndef SQLPP_POSTGRESQL_CONNECTION_CONFIG_H
 #define SQLPP_POSTGRESQL_CONNECTION_CONFIG_H
 
+#include <sqlpp11/postgresql/visibility.h>
 #include <string>
 
 namespace sqlpp
 {
   namespace postgresql
   {
-    struct connection_config
+    struct DLL_PUBLIC connection_config
     {
       enum class sslmode_t
       {

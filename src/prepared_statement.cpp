@@ -1,5 +1,6 @@
 /**
  * Copyright © 2014-2015, Matthijs Möhlmann
+ * Copyright © 2015-2016, Bartosz Wieczorek
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,10 +33,7 @@
 
 #include <iostream>
 #include <sstream>
-
-#ifdef SQLPP_DYNAMIC_LOADING
-#include <sqlpp11/postgresql/dynamic_libpq.h>
-#endif
+#include <date.h>
 
 namespace sqlpp
 {
@@ -48,7 +46,7 @@ namespace sqlpp
 
     // ctor
     prepared_statement_t::prepared_statement_t(std::shared_ptr<detail::prepared_statement_handle_t>&& handle)
-        : _handle{std::move(handle)}
+        : _handle{handle}
     {
       if (_handle && _handle->debug)
       {

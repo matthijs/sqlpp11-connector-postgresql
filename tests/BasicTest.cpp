@@ -23,11 +23,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdexcept>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 
 #include <sqlpp11/postgresql/connection.h>
+#include <sqlpp11/postgresql/exception.h>
 #include <sqlpp11/sqlpp11.h>
 
 namespace sql = sqlpp::postgresql;
@@ -36,13 +37,17 @@ int main()
   auto config = std::make_shared<sql::connection_config>();
   config->host = "localhost";
   config->user = "unknown_user_must_fail";
-  try {
+  try
+  {
     sql::connection db(config);
 
     throw std::logic_error("should never reach this point");
-  } catch (const sqlpp::exception& ex) {
+  }
+  catch (const sqlpp::postgresql::broken_connection& ex)
+  {
     std::cout << "Got exception: " << ex.what();
-    if (ex.what() != std::string("PostgreSQL error: failed to connect to the database")) return 1;
+    if (ex.what() != std::string("PostgreSQL error: failed to connect to the database"))
+      return 1;
   }
   return 0;
 }

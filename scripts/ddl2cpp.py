@@ -39,11 +39,16 @@ types = {
     'double': 'floating_point',
     'float': 'floating_point',
     'numeric': 'floating_point',
+    
+    'json' : 'text',
+    'jsonb' : 'text',
 
     # For now keep this a varchar
-    'date': 'varchar',
-    'time without time zone': 'varchar',
-    'timestamp without time zone': 'varchar',
+    'date': 'day_point',
+    'time without time zone': 'time_point',
+    'time with time zone': 'time_point',
+    'timestamp without time zone': 'time_point',
+    'timestamp with time zone': 'time_point',
 
     # User defined types, for now a varchar
     'USER-DEFINED': 'varchar',
@@ -77,7 +82,7 @@ for table in tables:
         _writeLine(fd, 0, "")
         _writeLine(fd, 2, "struct " + column[3].capitalize() + " {")
         _writeLine(fd, 3, "struct _alias_t {")
-        _writeLine(fd, 4, "static constexpr const char _literal[] =\"" + column[3] + "\";")
+        _writeLine(fd, 4, 'static constexpr const char _literal[] = R"("{0}")";'.format(column[3]))
         _writeLine(fd, 4, "using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;")
         _writeLine(fd, 4, "template<typename T>")
         _writeLine(fd, 5, "struct _member_t {")
@@ -122,7 +127,7 @@ for table in tables:
 
     _writeLine(fd, 2, "using _value_type = sqlpp::no_value_t;")
     _writeLine(fd, 2, "struct _alias_t {")
-    _writeLine(fd, 3, "static constexpr const char _literal[] = \"" + table[0] + "\";")
+    _writeLine(fd, 3, 'static constexpr const char _literal[] = R"("{0}")";'.format(table[0]))
     _writeLine(fd, 3, "using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;")
     _writeLine(fd, 3, "template<typename T>")
     _writeLine(fd, 4, "struct _member_t {")

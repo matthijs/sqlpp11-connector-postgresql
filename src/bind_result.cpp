@@ -1,5 +1,6 @@
 /**
  * Copyright © 2014-2015, Matthijs Möhlmann
+ * Copyright © 2015-2016, Bartosz Wieczorek
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,29 +26,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sqlpp11/postgresql/bind_result.h>
 #include <sqlpp11/exception.h>
+#include <sqlpp11/postgresql/bind_result.h>
 
+#include <date.h>
 #include <iostream>
 #include <sstream>
-#include <iomanip>
 
 #include "detail/prepared_statement_handle.h"
-
-#ifdef SQLPP_DYNAMIC_LOADING
-#include <sqlpp11/postgresql/dynamic_libpq.h>
-#endif
 
 namespace sqlpp
 {
   namespace postgresql
   {
-
-#ifdef SQLPP_DYNAMIC_LOADING
-    using namespace dynamic;
-#endif
-
-    bind_result_t::bind_result_t(const std::shared_ptr<detail::prepared_statement_handle_t>& handle) : _handle(handle)
+    bind_result_t::bind_result_t(const std::shared_ptr<detail::statement_handle_t>& handle) : _handle(handle)
     {
       if (this->_handle && this->_handle->debug)
       {
@@ -67,7 +59,7 @@ namespace sqlpp
       // Fetch total amount
       if (_handle->totalCount == 0U)
       {
-        _handle->totalCount = PQntuples(_handle->result);
+        _handle->totalCount = _handle->result.records_size();
         if (_handle->totalCount == 0U)
           return false;
       }
@@ -87,7 +79,7 @@ namespace sqlpp
       // Really needed?
       if (_handle->fields == 0U)
       {
-        _handle->fields = PQnfields(_handle->result);
+        _handle->fields = _handle->result.field_count();
       }
 
       return true;
@@ -99,25 +91,9 @@ namespace sqlpp
       {
         std::cerr << "PostgreSQL debug: binding boolean result at index: " << index << std::endl;
       }
-      if (index > _handle->fields)
-      {
-        throw sqlpp::exception("PostgreSQL error: index out of range");
-      }
 
-      *is_null = PQgetisnull(_handle->result, _handle->count, index);
-
-      if (!(*is_null))
-      {
-        char result = PQgetvalue(_handle->result, _handle->count, index)[0];
-        if (result == 't')
-          *value = true;
-        else
-          *value = false;
-      }
-      else
-      {
-        *value = false;
-      }
+      *is_null = _handle->result.isNull(_handle->count, index);
+      *value = _handle->result.getValue<bool>(_handle->count, index);
     }
 
     void bind_result_t::_bind_floating_point_result(size_t index, double* value, bool* is_null)
@@ -126,22 +102,9 @@ namespace sqlpp
       {
         std::cerr << "PostgreSQL debug: binding floating_point result at index: " << index << std::endl;
       }
-      if (index > _handle->fields)
-      {
-        throw sqlpp::exception("PostgreSQL error: index out of range");
-      }
 
-      *is_null = PQgetisnull(_handle->result, _handle->count, index);
-
-      if (!(*is_null))
-      {
-        std::istringstream in{PQgetvalue(_handle->result, _handle->count, index)};
-        in >> *value;
-      }
-      else
-      {
-        *value = {};
-      }
+      *is_null = _handle->result.isNull(_handle->count, index);
+      *value = _handle->result.getValue<double>(_handle->count, index);
     }
 
     void bind_result_t::_bind_integral_result(size_t index, int64_t* value, bool* is_null)
@@ -150,21 +113,9 @@ namespace sqlpp
       {
         std::cerr << "PostgreSQL debug: binding integral result at index: " << index << std::endl;
       }
-      if (index > _handle->fields)
-      {
-        throw sqlpp::exception("PostgreSQL error: index out of range");
-      }
 
-      *is_null = PQgetisnull(_handle->result, _handle->count, index);
-
-      if (!(*is_null))
-      {
-         *value = std::strtoll(PQgetvalue(_handle->result, _handle->count, index), nullptr, 10);
-      }
-      else
-      {
-         *value = {};
-      }
+      *is_null = _handle->result.isNull(_handle->count, index);
+      *value = _handle->result.getValue<unsigned long long>(_handle->count, index);
     }
 
     void bind_result_t::_bind_text_result(size_t index, const char** value, size_t* len)
@@ -173,13 +124,9 @@ namespace sqlpp
       {
         std::cerr << "PostgreSQL debug: binding text result at index: " << index << std::endl;
       }
-      if (index > _handle->fields)
-      {
-        throw sqlpp::exception("PostgreSQL error: index out of range");
-      }
 
-      *value = const_cast<const char*>(PQgetvalue(_handle->result, _handle->count, index));
-      *len = PQgetlength(_handle->result, _handle->count, index);
+      *value = _handle->result.getValue<const char *>(_handle->count, index);
+      *len = _handle->result.length(_handle->count, index);
     }
 
     // same parsing logic as SQLite connector
@@ -193,11 +140,11 @@ namespace sqlpp
     // we do not support time-only values !
     namespace
     {
-      const auto date_digits = std::vector<char>{1,1,1,1,0,1,1,0,1,1}; // 2016-11-10
-      const auto time_digits = std::vector<char>{0,1,1,0,1,1,0,1,1}; // ' 13:12:11'
-      const auto ms_digits = std::vector<char>{0,1,1,1,1,1,1}; // .123
-      const auto tz_digits = std::vector<char>{0,1,1}; // -05
-      const auto tz_min_digits = std::vector<char>{0,1,1}; // :30
+      const auto date_digits = std::vector<char>{1, 1, 1, 1, 0, 1, 1, 0, 1, 1};  // 2016-11-10
+      const auto time_digits = std::vector<char>{0, 1, 1, 0, 1, 1, 0, 1, 1};     // ' 13:12:11'
+      const auto ms_digits = std::vector<char>{0, 1, 1, 1, 1, 1, 1};             // .123
+      const auto tz_digits = std::vector<char>{0, 1, 1};                         // -05
+      const auto tz_min_digits = std::vector<char>{0, 1, 1};                     // :30
 
       auto check_digits(const char* text, const std::vector<char>& digitFlags) -> bool
       {
@@ -229,28 +176,23 @@ namespace sqlpp
       {
         std::cerr << "PostgreSQL debug: binding date result at index: " << index << std::endl;
       }
-      if (index > _handle->fields)
-      {
-        throw sqlpp::exception("PostgreSQL error: index out of range");
-      }
 
-      *is_null = PQgetisnull(_handle->result, _handle->count, index);
+      *is_null = _handle->result.isNull(_handle->count, index);
 
       if (!(*is_null))
       {
-        const auto date_string = PQgetvalue(_handle->result, _handle->count, index);
+        const auto date_string = _handle->result.getValue<const char*>(_handle->count, index);
 
         if (_handle->debug)
         {
           std::cerr << "PostgreSQL debug: date string: " << date_string << std::endl;
         }
-        auto len = PQgetlength(_handle->result, _handle->count, index);
+        auto len = _handle->result.length(_handle->count, index);
 
         if (len >= date_digits.size() && check_digits(date_string, date_digits))
         {
-          const auto ymd = ::date::year(std::atoi(date_string))
-                / std::atoi(date_string + 5)
-                / std::atoi(date_string + 8);
+          const auto ymd =
+              ::date::year(std::atoi(date_string)) / std::atoi(date_string + 5) / std::atoi(date_string + 8);
           *value = ::sqlpp::chrono::day_point(ymd);
         }
         else
@@ -278,20 +220,21 @@ namespace sqlpp
         throw sqlpp::exception("PostgreSQL error: index out of range");
       }
 
-      *is_null = PQgetisnull(_handle->result, _handle->count, index);
+      *is_null = _handle->result.isNull(_handle->count, index);
 
       if (!(*is_null))
       {
-        const auto date_string = PQgetvalue(_handle->result, _handle->count, index);
+        const auto date_string = _handle->result.getValue(_handle->count, index);
 
         if (_handle->debug)
         {
           std::cerr << "PostgreSQL debug: got date_time string: " << date_string << std::endl;
         }
-        auto len = PQgetlength(_handle->result, _handle->count, index);
+        auto len = _handle->result.length(_handle->count, index);
         if (len >= date_digits.size() && check_digits(date_string, date_digits))
         {
-          const auto ymd = ::date::year(std::atoi(date_string)) / std::atoi(date_string + 5) / std::atoi(date_string + 8);
+          const auto ymd =
+              ::date::year(std::atoi(date_string)) / std::atoi(date_string + 5) / std::atoi(date_string + 8);
           *value = ::sqlpp::chrono::day_point(ymd);
         }
         else
@@ -307,9 +250,8 @@ namespace sqlpp
         if ((len >= date_time_size) && check_digits)
         {
           // not the ' ' (or standard: 'T') prefix for times
-          *value += std::chrono::hours(std::atoi(time_string + 1))
-                    + std::chrono::minutes(std::atoi(time_string + 4))
-                    + std::chrono::seconds(std::atoi(time_string + 7));
+          *value += std::chrono::hours(std::atoi(time_string + 1)) + std::chrono::minutes(std::atoi(time_string + 4)) +
+                    std::chrono::seconds(std::atoi(time_string + 7));
         }
         else
         {
@@ -317,15 +259,14 @@ namespace sqlpp
         }
 
         bool has_ms = false;
-        if ((len >= (date_time_size + ms_digits.size()))
-             && (time_string[time_digits.size()] == '.'))
+        if ((len >= (date_time_size + ms_digits.size())) && (time_string[time_digits.size()] == '.'))
         {
           has_ms = true;
           date_time_size += ms_digits.size();
           const auto ms_string = time_string + time_digits.size();
           if (check_digits(ms_string, ms_digits))
           {
-            *value += std::chrono::microseconds(std::atoi(ms_string+1));
+            *value += std::chrono::microseconds(std::atoi(ms_string + 1));
           }
         }
         if (len >= (date_time_size + tz_digits.size()))
@@ -334,9 +275,10 @@ namespace sqlpp
           const auto zone_hour = std::atoi(tz_string);
           auto zone_min = 0;
 
-          if ((len >= date_time_size + tz_digits.size() + tz_min_digits.size())&& check_digits(tz_string+tz_digits.size(), tz_min_digits))
+          if ((len >= date_time_size + tz_digits.size() + tz_min_digits.size()) &&
+              check_digits(tz_string + tz_digits.size(), tz_min_digits))
           {
-            zone_min = std::atoi(tz_string + tz_digits.size()+1);
+            zone_min = std::atoi(tz_string + tz_digits.size() + 1);
           }
           // ignore -00:xx, as there currently is no timezone using it, and hopefully never will be
           if (zone_hour >= 0)
@@ -354,8 +296,7 @@ namespace sqlpp
           std::tm* tm = std::localtime(&ts);
           std::string time_str{"1900-01-01 00:00:00 CEST"};
           strftime(const_cast<char*>(time_str.data()), time_str.size(), "%F %T %Z", tm);
-          std::cerr << "PostgreSQL debug: calculated timestamp "
-                    << time_str << std::endl;
+          std::cerr << "PostgreSQL debug: calculated timestamp " << time_str << std::endl;
         }
       }
       else
