@@ -102,22 +102,23 @@ namespace sqlpp
     connection::~connection()
     {
     }
-	
-	connection::connection(connection&& other)
+
+    connection::connection(connection&& other)
     {
       this->_transaction_active = other._transaction_active;
       this->_handle = std::move(other._handle);
     }
 
-    connection& connection::operator= (connection&& other)
+    connection& connection::operator=(connection&& other)
     {
-      if (this != &other) {
+      if (this != &other)
+      {
         // TODO: check this logic
         this->_transaction_active = other._transaction_active;
         this->_handle = std::move(other._handle);
       }
       return *this;
-}
+    }
 
     std::shared_ptr<detail::statement_handle_t> connection::execute(const std::string& stmt)
     {
@@ -201,7 +202,7 @@ namespace sqlpp
       std::string level_str = "read uncommmitted";
       switch (level)
       {
-	  /// @todo what about undefined ?
+        /// @todo what about undefined ?
         case isolation_level::read_committed:
           level_str = "read committed";
           break;
