@@ -28,6 +28,7 @@
 
 #include <sqlpp11/exception.h>
 #include <sqlpp11/postgresql/connection.h>
+#include <sqlpp11/postgresql/exception.h>
 #include <sqlpp11/transaction.h>
 
 #include <algorithm>
@@ -102,6 +103,20 @@ namespace sqlpp
     {
     }
 
+    std::shared_ptr<detail::statement_handle_t> connection::execute(const std::string& stmt)
+    {
+      validate_connection_handle();
+      if (_handle->config->debug)
+      {
+        std::cerr << "PostgreSQL debug: executing: " << stmt << std::endl;
+      }
+
+      auto result = std::make_shared<detail::statement_handle_t>(*_handle, _handle->config->debug);
+      result->result = PQexec(_handle->native(), stmt.c_str());
+      result->valid = true;
+
+      return result;
+    }
     // direct execution
     bind_result_t connection::select_impl(const std::string& stmt)
     {
@@ -163,6 +178,63 @@ namespace sqlpp
       validate_connection_handle();
       execute_prepared_statement(*_handle, *prep._handle.get());
       return prep._handle->result.affected_rows();
+    }
+
+    void connection::set_default_isolation_level(isolation_level level)
+    {
+      std::string level_str = "read uncommmitted";
+      switch (level)
+      {
+	  /// @todo what about undefined ?
+        case isolation_level::read_committed:
+          level_str = "read committed";
+          break;
+        case isolation_level::read_uncommitted:
+          level_str = "read uncommitted";
+          break;
+        case isolation_level::repeatable_read:
+          level_str = "repeatable read";
+          break;
+        case isolation_level::serializable:
+          level_str = "serializable";
+          break;
+        default:
+          throw sqlpp::exception("Invalid isolation level");
+      }
+      std::string cmd = "SET default_transaction_isolation to '" + level_str + "'";
+      execute(cmd);
+    }
+
+    isolation_level connection::get_default_isolation_level()
+    {
+      /// @todo run execute
+      PGresult* res = PQexec(_handle->postgres, "SHOW default_transaction_isolation;");
+      auto status = PQresultStatus(res);
+      if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK))
+      {
+        PQclear(res);
+        throw sqlpp::exception("PostgreSQL error: could not read default_transaction_isolation");
+      }
+
+      std::string in{PQgetvalue(res, 0, 0)};
+      PQclear(res);
+      if (in == "read committed")
+      {
+        return isolation_level::read_committed;
+      }
+      else if (in == "read uncommitted")
+      {
+        return isolation_level::read_uncommitted;
+      }
+      else if (in == "repeatable read")
+      {
+        return isolation_level::repeatable_read;
+      }
+      else if (in == "serializable")
+      {
+        return isolation_level::serializable;
+      }
+      return isolation_level::undefined;
     }
 
     // TODO: Fix escaping.
@@ -238,8 +310,7 @@ namespace sqlpp
       execute("RELEASE SAVEPOINT " + name);
     }
 
-    //! commit transaction (or throw transaction if transaction has
-    // finished already)
+    //! commit transaction (or throw transaction if transaction has finished already)
     void connection::commit_transaction()
     {
       if (!_transaction_active)

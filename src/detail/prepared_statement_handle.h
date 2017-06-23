@@ -42,12 +42,11 @@
 #ifdef SQLPP_DYNAMIC_LOADING
 #include <sqlpp11/postgresql/dynamic_libpq.h>
 #endif
- 
+
 namespace sqlpp
 {
   namespace postgresql
   {
- 
 #ifdef SQLPP_DYNAMIC_LOADING
     using namespace dynamic;
 #endif
@@ -75,7 +74,7 @@ namespace sqlpp
         void clearResult();
       };
 
-      struct  prepared_statement_handle_t : public statement_handle_t
+      struct prepared_statement_handle_t : public statement_handle_t
       {
         std::string name{"xxxxxx"};
         // Store prepared statement arguments
