@@ -79,7 +79,7 @@ int main()
       // accessing the value yields an exception (as opposed to int, which works)
       require_equal(__LINE__, row.alpha.is_null(), true);
       require_equal(__LINE__, row.alpha.value(), 0);
-      require_equal(__LINE__, row.beta.is_null(), false);
+      require_equal(__LINE__, row.beta.is_null(), true);
       require_equal(__LINE__, row.beta.value(), "");
       require_equal(__LINE__, row.gamma.is_null(), true);
       // require_equal(__LINE__, row.gamma.value(), false);
