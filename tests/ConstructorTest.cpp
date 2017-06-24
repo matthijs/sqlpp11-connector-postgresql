@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Volker Aßmann
+ * Copyright (c) 2017, Serge Robyns
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -23,31 +23,13 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <iostream>
-#include <memory>
-#include <stdexcept>
-
 #include <sqlpp11/postgresql/connection.h>
-#include <sqlpp11/postgresql/exception.h>
 #include <sqlpp11/sqlpp11.h>
 
 namespace sql = sqlpp::postgresql;
+
 int main()
 {
-  auto config = std::make_shared<sql::connection_config>();
-  config->host = "localhost";
-  config->user = "unknown_user_must_fail";
-  try
-  {
-    sql::connection db(config);
-
-    throw std::logic_error("should never reach this point");
-  }
-  catch (const sqlpp::postgresql::broken_connection& ex)
-  {
-    std::cout << "Got exception: '" << ex.what() << "'";
-    if (! strcmp(ex.what(), "Ident authentication failed for user \"unknown_user_must_fail\""))
-      return 1;
-  }
+  sql::connection db;
   return 0;
 }
