@@ -129,8 +129,16 @@ namespace sqlpp
         std::cerr << "PostgreSQL debug: binding text result at index: " << index << std::endl;
       }
 
-      *value = _handle->result.getValue<const char*>(_handle->count, index);
-      *len = _handle->result.length(_handle->count, index);
+      if (_handle->result.isNull(_handle->count, index))
+      {
+        *value = nullptr;
+        *len = 0;
+      }
+      else
+      {
+        *value = _handle->result.getValue<const char*>(_handle->count, index);
+        *len = _handle->result.length(_handle->count, index);
+      }
     }
 
     // same parsing logic as SQLite connector

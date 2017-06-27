@@ -77,6 +77,11 @@ namespace sqlpp
       }
     }
 
+    connection::connection()
+        : _handle()
+    {
+    }
+
     connection::connection(const std::shared_ptr<connection_config>& config)
         : _handle(new detail::connection_handle(config))
     {
