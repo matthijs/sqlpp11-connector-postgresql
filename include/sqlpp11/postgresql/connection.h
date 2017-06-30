@@ -297,8 +297,9 @@ namespace sqlpp
         return _run(t, sqlpp::run_check_t<_serializer_context_t, T>{});
       }
 
+      //! call run with insert support
       template <typename T>
-      auto run__(const T& t) -> decltype(this->_run(t, sqlpp::run_check_t<_serializer_context_t, T>{}))
+      auto run_(const T& t) -> decltype(this->_run(t, sqlpp::run_check_t<_serializer_context_t, T>{}))
       {
         sqlpp::run_check_t<_serializer_context_t, T>::_();
         return _run(t, sqlpp::run_check_t<_serializer_context_t, T>{});
