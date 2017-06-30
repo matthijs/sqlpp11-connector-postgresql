@@ -28,3 +28,7 @@ config.log
 
 # Build directory
 build
+
+# cmake tools
+.vscode/.cmaketools.json
+.vscode/c_cpp_properties.json
