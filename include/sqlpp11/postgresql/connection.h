@@ -282,13 +282,13 @@ namespace sqlpp
 
       //! call run on the argument
       template <typename T>
-      auto _run(const T& t, const std::true_type&) -> decltype(t._run(*this))
+      auto _run(const T& t, ::sqlpp::consistent_t) -> decltype(t._run(*this))
       {
         return t._run(*this);
       }
 
-      template <typename T>
-      auto _run(const T& t, const std::false_type&) -> void;
+      template <typename Check, typename T>
+      auto _run(const T& t, Check) -> Check;
 
       template <typename T>
       auto operator()(const T& t) -> decltype(this->_run(t, sqlpp::run_check_t<_serializer_context_t, T>{}))
@@ -307,13 +307,13 @@ namespace sqlpp
 
       //! call prepare on the argument
       template <typename T>
-      auto _prepare(const T& t, const std::true_type&) -> decltype(t._prepare(*this))
+      auto _prepare(const T& t, ::sqlpp::consistent_t) -> decltype(t._prepare(*this))
       {
         return t._prepare(*this);
       }
 
-      template <typename T>
-      auto _prepare(const T& t, const std::false_type&) -> void;
+      template <typename Check, typename T>
+      auto _prepare(const T& t, Check) -> Check;
 
       template <typename T>
       auto prepare(const T& t) -> decltype(this->_prepare(t, sqlpp::prepare_check_t<_serializer_context_t, T>{}))
