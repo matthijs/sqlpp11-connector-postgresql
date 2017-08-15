@@ -80,8 +80,10 @@ set(sqlpp-postgresql_VERSION_MAJOR 0)
 set(sqlpp-postgresql_VERSION_MINOR 48)
 set(sqlpp-postgresql_VERSION_PATCH 0)
 set(sqlpp-postgresql_VERSION_STRING ${sqlpp-postgresql_VERSION_MAJOR}.${sqlpp-postgresql_VERSION_MINOR}.${sqlpp-postgresql_VERSION_PATCH})
+
 set_target_properties(sqlpp-postgresql PROPERTIES VERSION ${sqlpp-postgresql_VERSION_STRING}
 	        SOVERSION ${sqlpp-postgresql_VERSION_MAJOR})
+
 set_target_properties(sqlpp-postgresql-dynamic PROPERTIES VERSION ${sqlpp-postgresql_VERSION_STRING}
             SOVERSION ${sqlpp-postgresql_VERSION_MAJOR})
 

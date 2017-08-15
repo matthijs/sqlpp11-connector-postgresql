@@ -35,6 +35,8 @@
 #include <sstream>
 #include <date.h>
 
+#include <iso646.h>
+
 namespace sqlpp
 {
   namespace postgresql

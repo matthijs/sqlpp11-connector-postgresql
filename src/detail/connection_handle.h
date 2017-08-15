@@ -47,7 +47,7 @@ namespace sqlpp
       {
         const std::shared_ptr<connection_config> config;
         PGconn* postgres{nullptr};
-		std::set<std::string> prepared_statement_names;
+        std::set<std::string> prepared_statement_names;
 
         connection_handle(const std::shared_ptr<connection_config>& config);
         ~connection_handle();

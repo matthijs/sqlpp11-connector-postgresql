@@ -30,6 +30,7 @@
 
 #include <memory>
 #include <sqlpp11/chrono.h>
+#include <sqlpp11/postgresql/visibility.h>
 
 namespace sqlpp
 {
@@ -44,7 +45,7 @@ namespace sqlpp
       struct prepared_statement_handle_t;
     }
 
-    class prepared_statement_t
+    class DLL_PUBLIC prepared_statement_t
     {
       friend sqlpp::postgresql::connection;
 

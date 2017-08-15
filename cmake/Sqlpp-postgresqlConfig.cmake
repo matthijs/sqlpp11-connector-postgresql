@@ -30,6 +30,14 @@ find_dependency(PostgreSQL REQUIRED)
 
 include("${CMAKE_CURRENT_LIST_DIR}/Sqlpp-postgresqlTargets.cmake")
 
-set_target_properties(Sqlpp::sqlpp-postgresql PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${PostgreSQL_INCLUDE_DIRS};$<TARGET_PROPERTY:INTERFACE_INCLUDE_DIRECTORIES>"
+get_filename_component(
+    _sqlpp_postgresql_install_prefix
+    "${CMAKE_CURRENT_LIST_DIR}/../../../"
+    ABSOLUTE
+)
+
+set_target_properties(
+        Sqlpp::sqlpp-postgresql
+    PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${_sqlpp_postgresql_install_prefix}/include"
 )

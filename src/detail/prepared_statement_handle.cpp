@@ -66,7 +66,7 @@ namespace sqlpp
         count = 0;
         totalCount = 0;
         result = PQexecPrepared(connection.postgres, _name.data(), size, values.data(), nullptr, nullptr, 0);
-		/// @todo validate result? is it really valid
+        /// @todo validate result? is it really valid
         valid = true;
       }
 

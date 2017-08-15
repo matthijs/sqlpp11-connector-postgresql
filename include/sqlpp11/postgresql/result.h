@@ -38,10 +38,19 @@
 
 #include <boost/lexical_cast.hpp>
 
+#ifdef SQLPP_DYNAMIC_LOADING
+#include <sqlpp11/postgresql/dynamic_libpq.h>
+#endif
+
+
 namespace sqlpp
 {
   namespace postgresql
   {
+#ifdef SQLPP_DYNAMIC_LOADING
+    using namespace dynamic;
+#endif
+
     class DLL_PUBLIC Result
     {
     public:
@@ -68,7 +77,9 @@ namespace sqlpp
         T t(0);
         try
         {
-          t = boost::lexical_cast<T>(PQgetvalue(m_result, record, field));
+            auto val = PQgetvalue(m_result, record, field);
+
+          t = boost::lexical_cast<T>(val);
         }
         catch (boost::bad_lexical_cast)
         {
@@ -100,7 +111,8 @@ namespace sqlpp
     template <>
     inline const char* Result::getValue<const char*>(int record, int field) const
     {
-      return const_cast<const char*>(PQgetvalue(m_result, record, field));
+        auto v = PQgetvalue(m_result, record, field);
+      return const_cast<const char*>(v);
     }
 
     template <>

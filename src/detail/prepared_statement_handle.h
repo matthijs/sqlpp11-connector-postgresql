@@ -75,7 +75,7 @@ namespace sqlpp
         bool debug() const;
       };
 
-      struct prepared_statement_handle_t : public statement_handle_t
+      struct DLL_PUBLIC prepared_statement_handle_t : public statement_handle_t
       {
       private:
         std::string _name{"xxxxxx"};

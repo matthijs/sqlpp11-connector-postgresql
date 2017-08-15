@@ -33,6 +33,7 @@
 #include <sqlpp11/postgresql/connection_config.h>
 #include <sqlpp11/postgresql/prepared_statement.h>
 #include <sqlpp11/postgresql/result.h>
+#include <sqlpp11/postgresql/visibility.h>
 #include <sqlpp11/serialize.h>
 #include <sqlpp11/transaction.h>
 
@@ -52,7 +53,7 @@ namespace sqlpp
     }
 
     // Forward declaration
-    class connection;
+    class DLL_PUBLIC connection;
 
     // Context
     struct context_t
@@ -96,7 +97,7 @@ namespace sqlpp
     };
 
     // Connection
-    class connection : public sqlpp::connection
+    class DLL_PUBLIC connection : public sqlpp::connection
     {
     private:
       std::unique_ptr<detail::connection_handle> _handle;
