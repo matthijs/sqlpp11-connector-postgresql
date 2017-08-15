@@ -1,5 +1,8 @@
 #include "prepared_statement_handle.h"
+
 #include <random>
+#include <algorithm>
+
 #include <sqlpp11/postgresql/connection_config.h>
 
 namespace sqlpp

@@ -24,20 +24,39 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
+cmake_minimum_required(
+    VERSION
+        3.2
+    FATAL_ERROR
+    )
+
 project(sqlpp11-connector-postgresql VERSION 0.1 LANGUAGES CXX)
 
-option( ENABLE_TESTS "Include Tests" ON )
+option(
+    ENABLE_TESTS
+    "Include Tests"
+    ON
+    )
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(
+    CMAKE_EXPORT_COMPILE_COMMANDS
+    ON
+    )
 
-set(ConfigPackageLocation lib/cmake/sqlpp-postgresql)
+set(
+    ConfigPackageLocation
+    lib/cmake/sqlpp-postgresql
+    )
 
 #find_package(Sqlpp11 REQUIRED)
 find_package(PostgreSQL REQUIRED)
-find_package(Boost REQUIRED)
 
-set(DATE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../date" CACHE FILEPATH "Path to Howard Hinnant's date library")
+set(
+    DATE_INCLUDE_DIR
+        "${CMAKE_CURRENT_SOURCE_DIR}/../date"
+    CACHE
+        FILEPATH "Path to Howard Hinnant's date library"
+    )
 
 if(NOT EXISTS ${DATE_INCLUDE_DIR}/date.h)
     message(SEND_ERROR "Can't find file date.h")
@@ -66,23 +85,29 @@ endif()
 
 include_directories("${SQLPP11_INCLUDE_DIR}")
 include_directories("${DATE_INCLUDE_DIR}")
-include_directories("${Boost_INCLUDE_DIRS}")
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
-add_definitions(-DBUILDING_DLL)
-
 add_subdirectory(src)
+
 if (ENABLE_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
 
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp11" DESTINATION include COMPONENT Devel)
 install(
-  FILES
-    cmake/Sqlpp-postgresqlConfig.cmake
-  DESTINATION
-    ${ConfigPackageLocation}
-  COMPONENT
-    Devel
-)
+    DIRECTORY
+        "${PROJECT_SOURCE_DIR}/include/sqlpp11"
+    DESTINATION
+        include
+    COMPONENT
+        Devel
+    )
+
+install(
+    FILES
+        cmake/Sqlpp-postgresqlConfig.cmake
+    DESTINATION
+        ${ConfigPackageLocation}
+    COMPONENT
+        Devel
+    )

@@ -1,3 +1,4 @@
+#pragma once
 /**
  * Copyright © 2015-2016, Bartosz Wieczorek
  * All rights reserved.
@@ -25,9 +26,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SQLPP_POSTGRESQL_RESULT_H
-#define SQLPP_POSTGRESQL_RESULT_H
-
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -36,8 +34,6 @@
 
 #include <sqlpp11/postgresql/visibility.h>
 
-#include <boost/lexical_cast.hpp>
-
 #ifdef SQLPP_DYNAMIC_LOADING
 #include <sqlpp11/postgresql/dynamic_libpq.h>
 #endif
@@ -45,94 +41,150 @@
 
 namespace sqlpp
 {
-  namespace postgresql
-  {
+namespace postgresql
+{
+
 #ifdef SQLPP_DYNAMIC_LOADING
-    using namespace dynamic;
+using namespace dynamic;
 #endif
 
-    class DLL_PUBLIC Result
+class DLL_PUBLIC Result
+{
+public:
+    Result();
+    ~Result();
+
+    ExecStatusType status();
+
+    void clear();
+
+    int affected_rows();
+    int records_size() const;
+    int field_count() const;
+    int length(int record, int field) const;
+    bool isNull(int record, int field) const;
+    void operator=(PGresult* res);
+    operator bool() const;
+
+    template <typename T = const char*>
+    inline T
+        getValue(
+                int record
+            ,   int field
+            ) const
+            {
+                static_assert(std::is_arithmetic<T>::value, "Value must be numeric type");
+                static_assert(false, "template specialization required");
+            }
+
+    const std::string& query() const
     {
-    public:
-      Result();
-      ~Result();
-
-      ExecStatusType status();
-
-      void clear();
-
-      int affected_rows();
-      int records_size() const;
-      int field_count() const;
-      int length(int record, int field) const;
-      bool isNull(int record, int field) const;
-      void operator=(PGresult* res);
-      operator bool() const;
-
-      template <typename T = const char*>
-      inline T getValue(int record, int field) const
-      {
-        static_assert(std::is_arithmetic<T>::value, "Value must be numeric type");
-        checkIndex(record, field);
-        T t(0);
-        try
-        {
-            auto val = PQgetvalue(m_result, record, field);
-
-          t = boost::lexical_cast<T>(val);
-        }
-        catch (boost::bad_lexical_cast)
-        {
-        }
-        return t;
-      }
-
-      const std::string& query() const
-      {
         return m_query;
-      }
-      std::string& query()
-      {
+    }
+
+    std::string& query()
+    {
         return m_query;
-      }
-
-    private:
-      void CheckStatus() const;
-      [[noreturn]] void ThrowSQLError(const std::string& Err, const std::string& Query) const;
-      std::string StatusError() const;
-      int errorPosition() const noexcept;
-      bool hasError();
-      void checkIndex(int record, int field) const noexcept(false);
-
-      PGresult* m_result;
-      std::string m_query;
-    };
-
-    template <>
-    inline const char* Result::getValue<const char*>(int record, int field) const
-    {
-        auto v = PQgetvalue(m_result, record, field);
-      return const_cast<const char*>(v);
     }
 
-    template <>
-    inline std::string Result::getValue<std::string>(int record, int field) const
-    {
-      return {getValue<const char*>(record, field)};
-    }
+private:
+    void CheckStatus() const;
+    [[noreturn]] void ThrowSQLError(const std::string& Err, const std::string& Query) const;
+    std::string StatusError() const;
+    int errorPosition() const noexcept;
+    bool hasError();
+    void checkIndex(int record, int field) const noexcept(false);
 
-    template <>
-    inline bool Result::getValue<bool>(int record, int field) const
-    {
-      checkIndex(record, field);
-      auto val = PQgetvalue(m_result, record, field);
-      if (*val == 't')
-        return true;
-      else if (*val == 'f')
-        return false;
-      return const_cast<const char*>(val);
-    }
-  }
+    PGresult *
+        m_result;
+
+    std::string
+        m_query;
+};
+
+
+template <>
+inline const char *
+Result::getValue<const char*>(int record, int field) const
+{
+    auto v = PQgetvalue(m_result, record, field);
+    return const_cast<const char*>(v);
 }
 
-#endif
+template <>
+inline std::string
+Result::getValue<std::string>(int record, int field) const
+{
+    return getValue<const char*>(record, field);
+}
+
+template <>
+inline bool
+Result::getValue<bool>(int record, int field) const
+{
+    checkIndex(record, field);
+
+    auto val = PQgetvalue(m_result, record, field);
+
+    if (*val == 't')
+        return true;
+    else if (*val == 'f')
+        return false;
+
+    return const_cast<const char*>(val);
+}
+
+
+template <>
+inline double
+    Result::getValue<double>(
+            int record
+        ,   int field
+        ) const
+        {
+            checkIndex(record, field);
+
+            auto
+                val = PQgetvalue(m_result, record, field);
+
+            if (!val)
+                return 0.0;
+
+            try
+            {
+                return std::stod(val);
+            }
+            catch (...)
+            {
+            }
+
+            return 0.0;
+        }
+
+template <>
+inline unsigned long long
+    Result::getValue<unsigned long long>(
+            int record
+        ,   int field
+        ) const
+        {
+            checkIndex(record, field);
+
+            auto
+                val = PQgetvalue(m_result, record, field);
+
+            if (!val)
+                return 0.0;
+
+            try
+            {
+                return std::stoull(val);
+            }
+            catch (...)
+            {
+            }
+
+            return 0.0;
+        }
+}
+}
