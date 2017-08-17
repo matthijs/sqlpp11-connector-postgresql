@@ -24,6 +24,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef SQLPP_DYNAMIC_LOADING
+
 #include "sqlpp11/postgresql/dynamic_libpq.h"
 #include "sqlpp11/exception.h"
 
@@ -37,8 +39,6 @@
 #else
 #include <Windows.h>
 #endif
-
-#ifdef SQLPP_DYNAMIC_LOADING
 
 namespace sqlpp {
 namespace postgresql {

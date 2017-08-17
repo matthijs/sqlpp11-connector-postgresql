@@ -24,13 +24,40 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+# Only because I haven't used older versions.
 cmake_minimum_required(
     VERSION
-        3.2
+        3.9
     FATAL_ERROR
     )
 
-project(sqlpp11-connector-postgresql VERSION 0.1 LANGUAGES CXX)
+set(
+    SQLPP_NAMESAPCE
+    "Sqlpp11::"
+    )
+
+set(
+    SQLPP_EXPORT_NAME
+    "Sqlpp11PostgreSQL"
+    )
+
+set(
+    ConfigPackageLocation
+    lib/cmake/${SQLPP_EXPORT_NAME}
+    )
+
+#
+# Set a name, version, and enable languages for the entire project.
+#
+project(
+        sqlpp11-connector-postgresql
+    VERSION
+        0.1
+#    DESCRIPTION
+#        "PostgreSQL Connector for Sqlpp11"
+    LANGUAGES
+        CXX
+    )
 
 option(
     ENABLE_TESTS
@@ -38,15 +65,15 @@ option(
     ON
     )
 
+#
+#   Enable/Disable output of compile commands during generation.
+#   If enabled, generates a compile_commands.json file containing the exact compiler calls.
+#
 set(
     CMAKE_EXPORT_COMPILE_COMMANDS
     ON
     )
 
-set(
-    ConfigPackageLocation
-    lib/cmake/sqlpp-postgresql
-    )
 
 #find_package(Sqlpp11 REQUIRED)
 find_package(PostgreSQL REQUIRED)
@@ -83,9 +110,40 @@ else()
     message("including sqlpp11 from ${SQLPP11_INCLUDE_DIR}")
 endif()
 
+################################################################################
+#
+################################################################################
+if (WIN32)
+
+    get_filename_component(
+        POSTGRESQL_LIB_FILE
+        ${PostgreSQL_LIBRARIES}
+        NAME
+        )
+
+elseif(APPLE)
+
+    set(POSTGRESQL_LIB_FILE "lib${PostgreSQL_LIBRARIES}.dylib")
+
+else()
+
+    set(POSTGRESQL_LIB_FILE "lib${PostgreSQL_LIBRARIES}.so")
+
+endif()
+
+message("PostgreSQL LIB FILE: ${POSTGRESQL_LIB_FILE}")
+
+
+################################################################################
+#
+################################################################################
+
 include_directories("${SQLPP11_INCLUDE_DIR}")
 include_directories("${DATE_INCLUDE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/include")
+
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_subdirectory(src)
 
@@ -94,20 +152,3 @@ if (ENABLE_TESTS)
     add_subdirectory(tests)
 endif()
 
-install(
-    DIRECTORY
-        "${PROJECT_SOURCE_DIR}/include/sqlpp11"
-    DESTINATION
-        include
-    COMPONENT
-        Devel
-    )
-
-install(
-    FILES
-        cmake/Sqlpp-postgresqlConfig.cmake
-    DESTINATION
-        ${ConfigPackageLocation}
-    COMPONENT
-        Devel
-    )

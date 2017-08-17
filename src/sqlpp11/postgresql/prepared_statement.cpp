@@ -26,10 +26,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sqlpp11/postgresql/prepared_statement.h>
 #include <sqlpp11/exception.h>
 
-#include "detail/prepared_statement_handle.h"
+#include <sqlpp11/postgresql/prepared_statement.h>
+#include <sqlpp11/postgresql/prepared_statement_handle.h>
 
 #include <iostream>
 #include <sstream>

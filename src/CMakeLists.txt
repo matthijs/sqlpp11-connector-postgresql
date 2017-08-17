@@ -25,69 +25,124 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-set(LIB_HEADERS
-    detail/prepared_statement_handle.h
+
+set(
+    source_path
+    sqlpp11/postgresql
 )
 
 
-################################################################################
-#
-################################################################################
-if (WIN32)
+# Keep this in sync with the releases in sqlpp11
+set(sqlpp-postgresql_VERSION_MAJOR 0)
+set(sqlpp-postgresql_VERSION_MINOR 48)
+set(sqlpp-postgresql_VERSION_PATCH 0)
+set(sqlpp-postgresql_VERSION_STRING ${sqlpp-postgresql_VERSION_MAJOR}.${sqlpp-postgresql_VERSION_MINOR}.${sqlpp-postgresql_VERSION_PATCH})
 
-    get_filename_component(
-        POSTGRESQL_LIB_FILE
-        ${PostgreSQL_LIBRARIES}
-        NAME
+
+############################################################################################################
+#
+#
+function(
+        sqlpp11_postgresql_target_emplace
+        target
+        sources
+    )
+
+    add_library(
+            ${target}
+        SHARED
+            ${sources}
         )
 
-elseif(APPLE)
+    set_target_properties(
+            ${target}
+        PROPERTIES
+            VERSION         ${sqlpp-postgresql_VERSION_STRING}
+            SOVERSION       ${sqlpp-postgresql_VERSION_MAJOR}
+            CXX_STANDARD    11
+            DEBUG_POSTFIX   d
+        )
 
-    set(POSTGRESQL_LIB_FILE "lib${PostgreSQL_LIBRARIES}.dylib")
+    target_compile_features(
+            ${target}
+        PUBLIC
+            cxx_auto_type
+        )
 
-else()
+    target_include_directories(
+            ${target}
+        PRIVATE
+            "${PostgreSQL_INCLUDE_DIRS}"
+            "${CMAKE_CURRENT_SOURCE_DIR}"
+        INTERFACE
+            $<INSTALL_INTERFACE:include>
+        )
 
-    set(POSTGRESQL_LIB_FILE "lib${PostgreSQL_LIBRARIES}.so")
 
-endif()
+    target_compile_definitions(
+            ${target}
+        PRIVATE
+            BUILDING_DLL
+        )
 
-message("PostgreSQL LIB FILE: ${POSTGRESQL_LIB_FILE}")
+    #
+    #   specify rules for installing the target
+    #
+    install(
+        TARGETS
+            ${target}
+        EXPORT
+            ${SQLPP_EXPORT_NAME}
+        RUNTIME # shared library
+            DESTINATION
+                bin
+        ARCHIVE # import library
+            DESTINATION
+                lib
+        LIBRARY # static library
+            DESTINATION
+                lib
+        INCLUDES DESTINATION
+            include
+        )
 
+endfunction()
 
 
 ################################################################################
 #   collect sources
 ################################################################################
 
-
-
 set(
     sources_cpp
-        bind_result.cpp
-        connection.cpp
-        exception.cpp
-        prepared_statement.cpp
-        detail/connection_handle.cpp
-        detail/prepared_statement_handle.cpp
-        result.cpp
+        ${source_path}/bind_result.cpp
+        ${source_path}/connection.cpp
+        ${source_path}/connection_handle.cpp
+        ${source_path}/dynamic_libpq.cpp
+        ${source_path}/exception.cpp
+        ${source_path}/prepared_statement.cpp
+        ${source_path}/prepared_statement_handle.cpp
+        ${source_path}/result.cpp
     )
 
 set(
     sources_h
-        ../include/sqlpp11/postgresql/bind_result.h
-        ../include/sqlpp11/postgresql/connection.h
-        ../include/sqlpp11/postgresql/connection_config.h
-        ../include/sqlpp11/postgresql/dynamic_libpq.h
-        ../include/sqlpp11/postgresql/exception.h
-        ../include/sqlpp11/postgresql/insert.h
-        ../include/sqlpp11/postgresql/postgresql.h
-        ../include/sqlpp11/postgresql/prepared_statement.h
-        ../include/sqlpp11/postgresql/result.h
-        ../include/sqlpp11/postgresql/returning.h
-        ../include/sqlpp11/postgresql/returning_column_list.h
-        ../include/sqlpp11/postgresql/serializer.h
-        ../include/sqlpp11/postgresql/update.h
-        ../include/sqlpp11/postgresql/visibility.h
+        ${source_path}/bind_result.h
+        ${source_path}/connection.h
+        ${source_path}/connection_config.h
+        ${source_path}/connection_handle.h
+        ${source_path}/dynamic_libpq.h
+        ${source_path}/exception.h
+        ${source_path}/insert.h
+        ${source_path}/postgresql.h
+        ${source_path}/prepared_statement.h
+        ${source_path}/prepared_statement_handle.h
+        ${source_path}/result.h
+        ${source_path}/returning.h
+        ${source_path}/returning_column_list.h
+        ${source_path}/serializer.h
+        ${source_path}/update.h
+        ${source_path}/visibility.h
     )
 
 set(
@@ -109,173 +164,126 @@ source_group(
     )
 
 
+
 ################################################################################
 #   register targets
 ################################################################################
 set(
-        targetA
-        sqlpp-postgresql
+    targetA
+    sqlpp-postgresql
     )
 
 set(
-        targetB
-        sqlpp-postgresql-dynamic
+    targetB
+    sqlpp-postgresql-dynamic
+    )
+
+sqlpp11_postgresql_target_emplace(
+    ${targetA}
+    "${sources}"
+    )
+
+sqlpp11_postgresql_target_emplace(
+    ${targetB}
+    "${sources}"
     )
 
 
-add_library(
-        ${targetA}
-    SHARED
-        ${sources}
-)
-
-add_library(
-        ${targetB}
-    SHARED
-        ${sources}
-        detail/dynamic_libpq.cpp
-    )
-
-################################################################################
-set_property(
-    TARGET
-        ${targetA}
-    PROPERTY
-        CXX_STANDARD 11
-    )
-
-target_compile_options(
-        ${targetA}
-    PRIVATE
-        -DBUILDING_DLL
-    )
-
-target_compile_options(
-        ${targetB}
-    INTERFACE
-        -DSQLPP_DYNAMIC_LOADING
-    )
-
-target_compile_options(
-        ${targetB}
-    PRIVATE
-        -DBUILDING_DLL
-        -DSQLPP_DYNAMIC_LOADING
-        -DSQLPP_DYNAMIC_LOADING_FILENAME=${POSTGRESQL_LIB_FILE}
-    )
-
-target_compile_features(
-        ${targetA}
-    PRIVATE
-        cxx_auto_type
-    )
-
-target_compile_features(
-        ${targetB}
-    PRIVATE
-        cxx_auto_type
-    )
-
+# individual settings TargetA
 target_link_libraries(
         ${targetA}
     PRIVATE
         ${PostgreSQL_LIBRARIES}
+    INTERFACE
+
     )
 
-target_include_directories(
-        ${targetA}
-    PRIVATE
-        ${PostgreSQL_INCLUDE_DIRS}
-        "../include"
-    )
-
-target_include_directories(
+# individual settings TargetB
+target_compile_definitions(
         ${targetB}
     PRIVATE
-        ${PostgreSQL_INCLUDE_DIRS}
-        "../include"
+        SQLPP_DYNAMIC_LOADING
+        SQLPP_DYNAMIC_LOADING_FILENAME=${POSTGRESQL_LIB_FILE}
+    INTERFACE
+        SQLPP_DYNAMIC_LOADING
     )
 
 
+################################################################################
+#   Config-file Package (Targets-File)
+################################################################################
 
-
-# The include directory should be PUBLIC. However, that would store an absolute path in the package configuration
-# so leave it PRIVATE and correct that in the ...Config.cmake file. This can be changed when the FindPostgreSQL.cmake got updated.
-#target_include_directories(sqlpp-postgresql PUBLIC ${PostgreSQL_INCLUDE_DIRS})
-
-# Keep this in sync with the releases in sqlpp11
-set(sqlpp-postgresql_VERSION_MAJOR 0)
-set(sqlpp-postgresql_VERSION_MINOR 48)
-set(sqlpp-postgresql_VERSION_PATCH 0)
-set(sqlpp-postgresql_VERSION_STRING ${sqlpp-postgresql_VERSION_MAJOR}.${sqlpp-postgresql_VERSION_MINOR}.${sqlpp-postgresql_VERSION_PATCH})
-
-set_target_properties(
-        ${targetA}
-    PROPERTIES
-        VERSION     ${sqlpp-postgresql_VERSION_STRING}
-        SOVERSION   ${sqlpp-postgresql_VERSION_MAJOR}
-    )
-
-set_target_properties(
-        ${targetB}
-    PROPERTIES
-        VERSION     ${sqlpp-postgresql_VERSION_STRING}
-        SOVERSION   ${sqlpp-postgresql_VERSION_MAJOR}
-    )
-
+# actually generate the export file (into the build dir)
 install(
-    TARGETS
-        ${targetA}
     EXPORT
-        postgresqlTargets
+        ${SQLPP_EXPORT_NAME}
     DESTINATION
-        lib
-    )
-
-install(
-    TARGETS
-        ${targetB}
-    EXPORT
-        postgresqlTargets
-    DESTINATION
-        lib
-    )
-
-include(CMakePackageConfigHelpers)
-
-write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlConfigVersion.cmake"
-    VERSION
-        ${Upstream_VERSION}
-    COMPATIBILITY
-        AnyNewerVersion
-)
-
-export(
-    EXPORT
-        postgresqlTargets
-    FILE
-        "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlTargets.cmake"
+        lib/cmake/${SQLPP_EXPORT_NAME}
     NAMESPACE
-        Sqlpp::
-)
-
-install(
-    EXPORT
-        postgresqlTargets
+        ${SQLPP_NAMESAPCE}
     FILE
-        Sqlpp-postgresqlTargets.cmake
-    NAMESPACE
-        Sqlpp::
-    DESTINATION
-        ${ConfigPackageLocation}
-)
+        Sqlpp11PostgreSQLConfig.cmake
+    )
 
+
+
+
+
+# and install it
+#install(
+#    FILES
+#        "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlConfigVersion.cmake"
+#    DESTINATION
+#        ${ConfigPackageLocation}
+#    COMPONENT
+#        Devel
+#    )
+
+
+################################################################################
+#   Config-file Package (Version-File)
+################################################################################
+
+
+#include(CMakePackageConfigHelpers)
+#
+#write_basic_package_version_file(
+#        "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlConfigVersion.cmake"
+#    VERSION
+#        ${Upstream_VERSION}
+#    COMPATIBILITY
+#        AnyNewerVersion
+#)
+#
+#export(
+#    EXPORT
+#        ${SQLPP_EXPORT_NAME}
+#    FILE
+#        "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlTargets.cmake"
+#    NAMESPACE
+#        ${SQLPP_NAMESAPCE}
+#)
+#
+
+################################################################################
+#   install
+################################################################################
+
+# header files
 install(
     FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlConfigVersion.cmake"
+        ${sources_h}
     DESTINATION
-        ${ConfigPackageLocation}
-    COMPONENT
-        Devel
-)
+        include/${source_path}
+    )
+
+
+
+#install(
+#    FILES
+#        cmake/Sqlpp-postgresqlConfig.cmake
+#    DESTINATION
+#        ${ConfigPackageLocation}
+#    COMPONENT
+#        Devel
+#    )

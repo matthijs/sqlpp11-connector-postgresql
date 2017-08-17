@@ -27,19 +27,16 @@
  */
 
 #include <sqlpp11/exception.h>
+#include <sqlpp11/transaction.h>
+
 #include <sqlpp11/postgresql/connection.h>
 #include <sqlpp11/postgresql/exception.h>
-#include <sqlpp11/transaction.h>
 
 #include <algorithm>
 #include <iostream>
 
-#if __cplusplus == 201103L
-#include "make_unique.h"
-#endif
-
-#include "detail/connection_handle.h"
-#include "detail/prepared_statement_handle.h"
+#include <sqlpp11/postgresql/connection_handle.h>
+#include <sqlpp11/postgresql/prepared_statement_handle.h>
 
 #ifdef SQLPP_DYNAMIC_LOADING
 #include <sqlpp11/postgresql/dynamic_libpq.h>

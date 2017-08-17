@@ -23,28 +23,55 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-macro (build_and_run arg)
+function(
+    test_emplace
+    testname
+    )
+
+    set(
+        target
+        Test_${testname}
+        )
+
     # Add headers to sources to enable file browsing in IDEs
-    add_executable(Sqlpp11PostgreSQL${arg} ${arg}.cpp ${sqlpp_headers})
-    target_link_libraries(Sqlpp11PostgreSQL${arg} sqlpp-postgresql ${PostgreSQL_LIBRARIES})
-    include_directories("../include")
-    target_compile_features(Sqlpp11PostgreSQL${arg} PRIVATE cxx_auto_type)
-	target_include_directories(Sqlpp11PostgreSQL${arg} PRIVATE ${PostgreSQL_INCLUDE_DIRS} )
-    add_test(${arg} Sqlpp11PostgreSQL${arg})
-endmacro ()
+    add_executable(
+        ${target}
+        ${testname}.cpp
+        )
 
-macro (build_and_run_dynamic arg)
-    add_executable(Sqlpp11PostgreSQL${arg}-dynamic ${arg}.cpp ${sqlpp_headers})
-    target_link_libraries(Sqlpp11PostgreSQL${arg}-dynamic sqlpp-postgresql-dynamic dl)
-    include_directories("../include")
-    target_compile_features(Sqlpp11PostgreSQL${arg}-dynamic PRIVATE cxx_auto_type)
-	target_include_directories(Sqlpp11PostgreSQL${arg}-dynamic PRIVATE ${PostgreSQL_INCLUDE_DIRS} )
-    add_test(${arg}-dyanmic Sqlpp11PostgreSQL${arg}-dynamic)
-endmacro()
+    target_link_libraries(
+        ${target}
+        sqlpp-postgresql
+        ${PostgreSQL_LIBRARIES}
+        )
 
-build_and_run(BasicTest)
-#build_and_run_dynamic(BasicTest)
-build_and_run(DateTest)
-build_and_run(TypeTest)
-build_and_run(TransactionTest)
-build_and_run(ConstructorTest)
+
+    target_compile_features(
+        ${target}
+        PRIVATE
+            cxx_auto_type
+        )
+
+    target_include_directories(
+        ${target}
+        PRIVATE
+            ${PostgreSQL_INCLUDE_DIRS}
+            "../src"
+        )
+
+    add_test(
+        NAME
+            ${testname}
+        COMMAND
+            ${target}
+        )
+
+endfunction()
+
+#TODO(add tests for the dynamic target)
+
+test_emplace(BasicTest)
+test_emplace(DateTest)
+test_emplace(TypeTest)
+test_emplace(TransactionTest)
+test_emplace(ConstructorTest)
