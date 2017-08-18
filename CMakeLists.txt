@@ -1,28 +1,5 @@
-# Copyright (c) 2015, Matthijs Möhlmann
-# Copyright (c) 2016, Christian David
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-#   Redistributions of source code must retain the above copyright notice, this
-#   list of conditions and the following disclaimer.
-#
-#   Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# Distributed under the BSD 2-Clause License.
+# See accompanying license file for details.
 
 # Only because I haven't used older versions.
 cmake_minimum_required(
@@ -31,33 +8,71 @@ cmake_minimum_required(
     FATAL_ERROR
     )
 
+
+############################################################################################################
+# Set a name, version, and enable languages for the entire project.
+#   must be at the top:
+#   \see https://stackoverflow.com/questions/571292/how-do-i-fix-an-apparently-corrupted-cmake-build
+#   \see http://www.mail-archive.com/cmake@cmake.org/msg13392.html
+############################################################################################################
+project(
+        sqlpp11postgresql
+    VERSION
+        0.2
+    LANGUAGES
+        CXX
+    )
+
+
+
+############################################################################################################
+#   find packages
+############################################################################################################
+find_package(Sqlpp11    REQUIRED)
+find_package(PostgreSQL REQUIRED)
+
+
+############################################################################################################
+#   global variables
+############################################################################################################
 set(
-    SQLPP_NAMESAPCE
+    SQLPPP_NAMESAPCE
     "Sqlpp11::"
     )
 
 set(
-    SQLPP_EXPORT_NAME
-    "Sqlpp11PostgreSQL"
+    SQLPPP_EXPORT_NAME
+    "sqlpp11postgresql"
     )
 
 set(
     ConfigPackageLocation
-    lib/cmake/${SQLPP_EXPORT_NAME}
+    lib/cmake/${SQLPPP_EXPORT_NAME}
     )
 
-#
-# Set a name, version, and enable languages for the entire project.
-#
-project(
-        sqlpp11-connector-postgresql
-    VERSION
-        0.1
-#    DESCRIPTION
-#        "PostgreSQL Connector for Sqlpp11"
-    LANGUAGES
-        CXX
+# Keep this in sync with the releases in sqlpp11
+set(
+    SQLPPP_VERSION_MAJOR
+    0
     )
+
+set(
+    SQLPPP_VERSION_MINOR
+    48
+    )
+
+set(
+    SQLPPP_VERSION_PATCH
+    0
+    )
+
+set(
+    SQLPPP_VERSION_STRING
+    ${SQLPPP_VERSION_MAJOR}.${SQLPPP_VERSION_MINOR}.${SQLPPP_VERSION_PATCH}
+    )
+
+
+
 
 option(
     ENABLE_TESTS
@@ -75,43 +90,8 @@ set(
     )
 
 
-#find_package(Sqlpp11 REQUIRED)
-find_package(PostgreSQL REQUIRED)
-
-set(
-    DATE_INCLUDE_DIR
-        "${CMAKE_CURRENT_SOURCE_DIR}/../date"
-    CACHE
-        FILEPATH "Path to Howard Hinnant's date library"
-    )
-
-if(NOT EXISTS ${DATE_INCLUDE_DIR}/date.h)
-    message(SEND_ERROR "Can't find file date.h")
-    message("Please either")
-    message("  - git clone https://github.com/howardhinnant/date ${DATE_INCLUDE_DIR}")
-    message("  - download and unzip a current version from https://github.com/howardhinnant/date to ${DATE_INCLUDE_DIR}")
-    message("  = set DATE_INCLUDE_DIR to point to the dir containing date.h from the date library")
-    message("")
-else()
-    message("including date from ${DATE_INCLUDE_DIR}")
-endif()
-
-set(SQLPP11_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../sqlpp11/include" CACHE FILEPATH "Path to sqlpp11 includes")
-
-if(NOT EXISTS ${SQLPP11_INCLUDE_DIR}/sqlpp11/sqlpp11.h)
-    message(SEND_ERROR "Can't find file sqlpp11/sqlpp11.h")
-    message("Can't find sqlpp11/sqlpp11.h in ${SQLPP11_INCLUDE_DIR} ")
-    message("Please either")
-    message("  - git clone https://github.com/rbock/sqlpp11 ${SQLPP11_INCLUDE_DIR}")
-    message("  - download and unzip a current version from https://github.com/rbock/sqlpp11 to ${SQLPP11_INCLUDE_DIR}")
-    message("  - set DATE_INCLUDE_DIR to point to the dir containing sqlpp11/sqlpp11.h")
-    message("")
-else()
-    message("including sqlpp11 from ${SQLPP11_INCLUDE_DIR}")
-endif()
-
 ################################################################################
-#
+#   derermine the filename of the postgres shared library
 ################################################################################
 if (WIN32)
 
@@ -131,16 +111,10 @@ else()
 
 endif()
 
-message("PostgreSQL LIB FILE: ${POSTGRESQL_LIB_FILE}")
-
 
 ################################################################################
 #
 ################################################################################
-
-include_directories("${SQLPP11_INCLUDE_DIR}")
-include_directories("${DATE_INCLUDE_DIR}")
-include_directories("${PROJECT_SOURCE_DIR}/include")
 
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -151,4 +125,3 @@ if (ENABLE_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
-

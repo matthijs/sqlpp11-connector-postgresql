@@ -1,49 +1,19 @@
-# Copyright (c) 2015, Matthijs Möhlmann
-# Copyright (c) 2016, Christian Dávid
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-#   Redistributions of source code must retain the above copyright notice, this
-#   list of conditions and the following disclaimer.
-#
-#   Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-
-
-
-set(
-    source_path
-    sqlpp11/postgresql
-)
-
-
-# Keep this in sync with the releases in sqlpp11
-set(sqlpp-postgresql_VERSION_MAJOR 0)
-set(sqlpp-postgresql_VERSION_MINOR 48)
-set(sqlpp-postgresql_VERSION_PATCH 0)
-set(sqlpp-postgresql_VERSION_STRING ${sqlpp-postgresql_VERSION_MAJOR}.${sqlpp-postgresql_VERSION_MINOR}.${sqlpp-postgresql_VERSION_PATCH})
+# Distributed under the BSD 2-Clause License.
+# See accompanying license file for details.
 
 
 ############################################################################################################
+#   function
+#       sqlpp11postgresql_target_emplace
 #
+#   Create a new target and set some default properties.
+#
+#   parameter
+#       target:  The name of the new target.
+#       sources: The list of source files.
 #
 function(
-        sqlpp11_postgresql_target_emplace
+        sqlpp11postgresql_target_emplace
         target
         sources
     )
@@ -57,8 +27,8 @@ function(
     set_target_properties(
             ${target}
         PROPERTIES
-            VERSION         ${sqlpp-postgresql_VERSION_STRING}
-            SOVERSION       ${sqlpp-postgresql_VERSION_MAJOR}
+            VERSION         ${SQLPPP_VERSION_STRING}
+            SOVERSION       ${SQLPPP_VERSION_MAJOR}
             CXX_STANDARD    11
             DEBUG_POSTFIX   d
         )
@@ -85,6 +55,12 @@ function(
             BUILDING_DLL
         )
 
+    target_link_libraries(
+            ${target}
+        PUBLIC
+            sqlpp11
+        )
+
     #
     #   specify rules for installing the target
     #
@@ -92,7 +68,7 @@ function(
         TARGETS
             ${target}
         EXPORT
-            ${SQLPP_EXPORT_NAME}
+            ${SQLPPP_EXPORT_NAME}
         RUNTIME # shared library
             DESTINATION
                 bin
@@ -112,6 +88,11 @@ endfunction()
 ################################################################################
 #   collect sources
 ################################################################################
+
+set(
+    source_path
+    sqlpp11/postgresql
+)
 
 set(
     sources_cpp
@@ -170,20 +151,20 @@ source_group(
 ################################################################################
 set(
     targetA
-    sqlpp-postgresql
+    ${SQLPPP_EXPORT_NAME}
     )
 
 set(
     targetB
-    sqlpp-postgresql-dynamic
+    ${SQLPPP_EXPORT_NAME}_dynamic
     )
 
-sqlpp11_postgresql_target_emplace(
+sqlpp11postgresql_target_emplace(
     ${targetA}
     "${sources}"
     )
 
-sqlpp11_postgresql_target_emplace(
+sqlpp11postgresql_target_emplace(
     ${targetB}
     "${sources}"
     )
@@ -194,8 +175,6 @@ target_link_libraries(
         ${targetA}
     PRIVATE
         ${PostgreSQL_LIBRARIES}
-    INTERFACE
-
     )
 
 # individual settings TargetB
@@ -210,63 +189,55 @@ target_compile_definitions(
 
 
 ################################################################################
-#   Config-file Package (Targets-File)
+#   Package: Target-file
 ################################################################################
 
-# actually generate the export file (into the build dir)
+# generate the exports file into the installation folder
 install(
     EXPORT
-        ${SQLPP_EXPORT_NAME}
+        ${SQLPPP_EXPORT_NAME}
     DESTINATION
-        lib/cmake/${SQLPP_EXPORT_NAME}
+        cmake
     NAMESPACE
-        ${SQLPP_NAMESAPCE}
+        ${SQLPPP_NAMESAPCE}
     FILE
-        Sqlpp11PostgreSQLConfig.cmake
+        ${SQLPPP_EXPORT_NAME}Targets.cmake
     )
 
+################################################################################
+#   Package: Config-file
+################################################################################
 
-
-
-
-# and install it
-#install(
-#    FILES
-#        "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlConfigVersion.cmake"
-#    DESTINATION
-#        ${ConfigPackageLocation}
-#    COMPONENT
-#        Devel
-#    )
-
+install(
+    FILES
+        cmake/${SQLPPP_EXPORT_NAME}Config.cmake
+    DESTINATION
+        cmake
+    )
 
 ################################################################################
 #   Config-file Package (Version-File)
 ################################################################################
 
+include(CMakePackageConfigHelpers)
 
-#include(CMakePackageConfigHelpers)
-#
-#write_basic_package_version_file(
-#        "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlConfigVersion.cmake"
-#    VERSION
-#        ${Upstream_VERSION}
-#    COMPATIBILITY
-#        AnyNewerVersion
-#)
-#
-#export(
-#    EXPORT
-#        ${SQLPP_EXPORT_NAME}
-#    FILE
-#        "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlTargets.cmake"
-#    NAMESPACE
-#        ${SQLPP_NAMESAPCE}
-#)
-#
+write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/${SQLPPP_EXPORT_NAME}Version.cmake"
+    VERSION
+        ${Upstream_VERSION}
+    COMPATIBILITY
+        AnyNewerVersion
+)
+
+install(
+    FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/${SQLPPP_EXPORT_NAME}Version.cmake"
+    DESTINATION
+        cmake
+)
 
 ################################################################################
-#   install
+#   Installation Package
 ################################################################################
 
 # header files
@@ -276,14 +247,3 @@ install(
     DESTINATION
         include/${source_path}
     )
-
-
-
-#install(
-#    FILES
-#        cmake/Sqlpp-postgresqlConfig.cmake
-#    DESTINATION
-#        ${ConfigPackageLocation}
-#    COMPONENT
-#        Devel
-#    )
