@@ -28,7 +28,7 @@ set(LIB_HEADERS
     detail/prepared_statement_handle.h
 )
 
-add_library(sqlpp-postgresql SHARED
+add_library(sqlpp11-connector-postgresql SHARED
 	bind_result.cpp
 	connection.cpp
 	exception.cpp
@@ -39,9 +39,9 @@ add_library(sqlpp-postgresql SHARED
 )
 
 # Properties
-set_property(TARGET sqlpp-postgresql PROPERTY CXX_STANDARD 11)
+set_property(TARGET sqlpp11-connector-postgresql PROPERTY CXX_STANDARD 11)
 
-add_library(sqlpp-postgresql-dynamic SHARED
+add_library(sqlpp11-connector-postgresql-dynamic SHARED
         bind_result.cpp
         connection.cpp
 		exception.cpp
@@ -61,34 +61,34 @@ set(POSTGRESQL_LIB_FILE "lib${PostgreSQL_LIBRARIES}.so")
 endif()
 
 message("PostgreSQL LIB FILE: ${POSTGRESQL_LIB_FILE}")
-target_compile_options(sqlpp-postgresql-dynamic INTERFACE -DSQLPP_DYNAMIC_LOADING)
-target_compile_options(sqlpp-postgresql-dynamic PRIVATE -DSQLPP_DYNAMIC_LOADING -DSQLPP_DYNAMIC_LOADING_FILENAME=${POSTGRESQL_LIB_FILE})
-target_compile_features(sqlpp-postgresql PRIVATE cxx_auto_type)
-target_compile_features(sqlpp-postgresql-dynamic PRIVATE cxx_auto_type)
+target_compile_options(sqlpp11-connector-postgresql-dynamic INTERFACE -DSQLPP_DYNAMIC_LOADING)
+target_compile_options(sqlpp11-connector-postgresql-dynamic PRIVATE -DSQLPP_DYNAMIC_LOADING -DSQLPP_DYNAMIC_LOADING_FILENAME=${POSTGRESQL_LIB_FILE})
+target_compile_features(sqlpp11-connector-postgresql PRIVATE cxx_auto_type)
+target_compile_features(sqlpp11-connector-postgresql-dynamic PRIVATE cxx_auto_type)
 
-target_link_libraries(sqlpp-postgresql PRIVATE ${PostgreSQL_LIBRARIES})
+target_link_libraries(sqlpp11-connector-postgresql PRIVATE ${PostgreSQL_LIBRARIES})
 
-target_include_directories(sqlpp-postgresql PRIVATE ${PostgreSQL_INCLUDE_DIRS} "../include/")
-target_include_directories(sqlpp-postgresql-dynamic PRIVATE ${PostgreSQL_INCLUDE_DIRS} "../include/")
+target_include_directories(sqlpp11-connector-postgresql PRIVATE ${PostgreSQL_INCLUDE_DIRS} "../include/")
+target_include_directories(sqlpp11-connector-postgresql-dynamic PRIVATE ${PostgreSQL_INCLUDE_DIRS} "../include/")
 
 # The include directory should be PUBLIC. However, that would store an absolute path in the package configuration
 # so leave it PRIVATE and correct that in the ...Config.cmake file. This can be changed when the FindPostgreSQL.cmake got updated.
-#target_include_directories(sqlpp-postgresql PUBLIC ${PostgreSQL_INCLUDE_DIRS})
+#target_include_directories(sqlpp11-connector-postgresql PUBLIC ${PostgreSQL_INCLUDE_DIRS})
 
 # Keep this in sync with the releases in sqlpp11
-set(sqlpp-postgresql_VERSION_MAJOR 0)
-set(sqlpp-postgresql_VERSION_MINOR 48)
-set(sqlpp-postgresql_VERSION_PATCH 0)
-set(sqlpp-postgresql_VERSION_STRING ${sqlpp-postgresql_VERSION_MAJOR}.${sqlpp-postgresql_VERSION_MINOR}.${sqlpp-postgresql_VERSION_PATCH})
-set_target_properties(sqlpp-postgresql PROPERTIES VERSION ${sqlpp-postgresql_VERSION_STRING}
-	        SOVERSION ${sqlpp-postgresql_VERSION_MAJOR})
-set_target_properties(sqlpp-postgresql-dynamic PROPERTIES VERSION ${sqlpp-postgresql_VERSION_STRING}
-            SOVERSION ${sqlpp-postgresql_VERSION_MAJOR})
+set(sqlpp11-connector-postgresql_VERSION_MAJOR 0)
+set(sqlpp11-connector-postgresql_VERSION_MINOR 48)
+set(sqlpp11-connector-postgresql_VERSION_PATCH 0)
+set(sqlpp11-connector-postgresql_VERSION_STRING ${sqlpp11-connector-postgresql_VERSION_MAJOR}.${sqlpp11-connector-postgresql_VERSION_MINOR}.${sqlpp11-connector-postgresql_VERSION_PATCH})
+set_target_properties(sqlpp11-connector-postgresql PROPERTIES VERSION ${sqlpp11-connector-postgresql_VERSION_STRING}
+	        SOVERSION ${sqlpp11-connector-postgresql_VERSION_MAJOR})
+set_target_properties(sqlpp11-connector-postgresql-dynamic PROPERTIES VERSION ${sqlpp11-connector-postgresql_VERSION_STRING}
+            SOVERSION ${sqlpp11-connector-postgresql_VERSION_MAJOR})
 
-install(TARGETS sqlpp-postgresql
+install(TARGETS sqlpp11-connector-postgresql
         EXPORT postgresqlTargets
         DESTINATION lib)
-install(TARGETS sqlpp-postgresql-dynamic
+install(TARGETS sqlpp11-connector-postgresql-dynamic
         EXPORT postgresqlTargets
         DESTINATION lib)
 
