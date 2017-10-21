@@ -65,6 +65,7 @@ endif()
 
 include_directories("${SQLPP11_INCLUDE_DIR}")
 include_directories("${DATE_INCLUDE_DIR}")
+include_directories(/usr/local/include)
 
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
