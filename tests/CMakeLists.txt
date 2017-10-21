@@ -26,7 +26,7 @@
 macro (build_and_run arg)
     # Add headers to sources to enable file browsing in IDEs
     add_executable(Sqlpp11PostgreSQL${arg} ${arg}.cpp ${sqlpp_headers})
-    target_link_libraries(Sqlpp11PostgreSQL${arg} sqlpp-postgresql ${PostgreSQL_LIBRARIES})
+    target_link_libraries(Sqlpp11PostgreSQL${arg} sqlpp11-connector-postgresql ${PostgreSQL_LIBRARIES})
     include_directories("../include")
     target_compile_features(Sqlpp11PostgreSQL${arg} PRIVATE cxx_auto_type)
 	target_include_directories(Sqlpp11PostgreSQL${arg} PRIVATE ${PostgreSQL_INCLUDE_DIRS} )
@@ -35,7 +35,7 @@ endmacro ()
 
 macro (build_and_run_dynamic arg)
     add_executable(Sqlpp11PostgreSQL${arg}-dynamic ${arg}.cpp ${sqlpp_headers})
-    target_link_libraries(Sqlpp11PostgreSQL${arg}-dynamic sqlpp-postgresql-dynamic dl)
+    target_link_libraries(Sqlpp11PostgreSQL${arg}-dynamic sqlpp11-connector-postgresql-dynamic dl)
     include_directories("../include")
     target_compile_features(Sqlpp11PostgreSQL${arg}-dynamic PRIVATE cxx_auto_type)
 	target_include_directories(Sqlpp11PostgreSQL${arg}-dynamic PRIVATE ${PostgreSQL_INCLUDE_DIRS} )
