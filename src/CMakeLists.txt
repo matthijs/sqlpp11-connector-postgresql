@@ -28,7 +28,7 @@ set(LIB_HEADERS
     detail/prepared_statement_handle.h
 )
 
-add_library(sqlpp11-connector-postgresql SHARED
+add_library(sqlpp11-connector-postgresql
 	bind_result.cpp
 	connection.cpp
 	exception.cpp
