@@ -33,7 +33,7 @@
 
 #include <iostream>
 #include <sstream>
-#include <date.h>
+#include <date/date.h>
 
 namespace sqlpp
 {

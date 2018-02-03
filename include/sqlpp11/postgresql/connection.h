@@ -350,6 +350,8 @@ namespace sqlpp
 
       //! get the last inserted id for a certain table
       uint64_t last_insert_id(const std::string& table, const std::string& fieldname);
+
+      connection_backend getRTTI() const override { return connection_backend::POSTGRESQL; };
     };
 
     inline std::string context_t::escape(const std::string& arg)

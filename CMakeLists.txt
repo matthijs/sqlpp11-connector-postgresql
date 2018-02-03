@@ -36,14 +36,14 @@ set(ConfigPackageLocation lib/cmake/sqlpp-postgresql)
 #find_package(Sqlpp11 REQUIRED)
 find_package(PostgreSQL REQUIRED)
 
-set(DATE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../date" CACHE FILEPATH "Path to Howard Hinnant's date library")
+set(DATE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../sqlpp11/deps/date/include" CACHE FILEPATH "Path to Howard Hinnant's date library")
 
-if(NOT EXISTS ${DATE_INCLUDE_DIR}/date.h)
+if(NOT EXISTS ${DATE_INCLUDE_DIR}/date/date.h)
     message(SEND_ERROR "Can't find file date.h")
     message("Please either")
     message("  - git clone https://github.com/howardhinnant/date ${DATE_INCLUDE_DIR}")
     message("  - download and unzip a current version from https://github.com/howardhinnant/date to ${DATE_INCLUDE_DIR}")
-    message("  = set DATE_INCLUDE_DIR to point to the dir containing date.h from the date library")
+    message("  = set DATE_INCLUDE_DIR to point to the dir containing <date/date.h> from the date library")
     message("")
 else()
     message("including date from ${DATE_INCLUDE_DIR}")
@@ -65,6 +65,7 @@ endif()
 
 include_directories("${SQLPP11_INCLUDE_DIR}")
 include_directories("${DATE_INCLUDE_DIR}")
+include_directories(/usr/local/include)
 
 include_directories("${PROJECT_SOURCE_DIR}/include")
 

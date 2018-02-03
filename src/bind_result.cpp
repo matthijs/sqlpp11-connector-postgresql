@@ -29,7 +29,7 @@
 #include <sqlpp11/exception.h>
 #include <sqlpp11/postgresql/bind_result.h>
 
-#include <date.h>
+#include <date/date.h>
 #include <iostream>
 #include <sstream>
 
