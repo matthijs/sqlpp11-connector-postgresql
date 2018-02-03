@@ -32,7 +32,7 @@
 #include <sstream>
 #include <string>
 
-#include <postgresql/libpq-fe.h>
+#include <libpq-fe.h>
 
 #include <sqlpp11/postgresql/visibility.h>
 

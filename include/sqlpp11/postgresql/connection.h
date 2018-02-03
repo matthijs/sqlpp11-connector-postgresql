@@ -276,7 +276,7 @@ namespace sqlpp
       }
 
       template <typename PreparedExecute>
-      void run_prepared_execute(const PreparedExecute& x)
+      size_t run_prepared_execute(const PreparedExecute& x)
       {
         x._prepared_statement._reset();
         x._bind_params();
@@ -305,13 +305,13 @@ namespace sqlpp
 
       //! call prepare on the argument
       template <typename T>
-      auto _prepare(const T& t, const std::true_type&) -> decltype(t._prepare(*this))
+      auto _prepare(const T& t, ::sqlpp::consistent_t) -> decltype(t._prepare(*this))
       {
         return t._prepare(*this);
       }
 
-      template <typename T>
-      auto _prepare(const T& t, const std::false_type&) -> void;
+      template <typename Check, typename T>
+      auto _prepare(const T& t, Check) -> Check;
 
       template <typename T>
       auto prepare(const T& t) -> decltype(this->_prepare(t, sqlpp::prepare_check_t<_serializer_context_t, T>{}))
@@ -351,7 +351,7 @@ namespace sqlpp
       //! get the last inserted id for a certain table
       uint64_t last_insert_id(const std::string& table, const std::string& fieldname);
 
-      connection_backend getRTTI() const override { return connection_backend::POSTGRESQL; };
+      ::PGconn* native_handle();
     };
 
     inline std::string context_t::escape(const std::string& arg)

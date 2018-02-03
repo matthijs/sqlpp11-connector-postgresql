@@ -28,7 +28,7 @@ set(LIB_HEADERS
     detail/prepared_statement_handle.h
 )
 
-add_library(sqlpp11-connector-postgresql
+add_library(sqlpp11-connector-postgresql STATIC
 	bind_result.cpp
 	connection.cpp
 	exception.cpp
