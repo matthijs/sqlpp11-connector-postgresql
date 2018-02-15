@@ -28,8 +28,12 @@ include(CMakeFindDependencyMacro)
 find_dependency(Sqlpp11 REQUIRED)
 find_dependency(PostgreSQL REQUIRED)
 
-include("${CMAKE_CURRENT_LIST_DIR}/Sqlpp-postgresqlTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/Sqlpp-connector-postgresqlTargets.cmake")
 
-set_target_properties(Sqlpp::sqlpp-postgresql PROPERTIES
+set_target_properties(Sqlpp::sqlpp11-connector-postgresql PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${PostgreSQL_INCLUDE_DIRS};$<TARGET_PROPERTY:INTERFACE_INCLUDE_DIRECTORIES>"
+)
+
+set_target_properties(Sqlpp::sqlpp11-connector-postgresql-dynamic PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${PostgreSQL_INCLUDE_DIRS};$<TARGET_PROPERTY:INTERFACE_INCLUDE_DIRECTORIES>"
 )

@@ -94,24 +94,24 @@ install(TARGETS sqlpp11-connector-postgresql-dynamic
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlConfigVersion.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-connector-postgresqlConfigVersion.cmake"
   VERSION ${Upstream_VERSION}
   COMPATIBILITY AnyNewerVersion
 )
 
 export(EXPORT postgresqlTargets
-  FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlTargets.cmake"
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-connector-postgresqlTargets.cmake"
   NAMESPACE Sqlpp::
 )
 
 install(EXPORT postgresqlTargets
-  FILE Sqlpp-postgresqlTargets.cmake
+  FILE Sqlpp-connector-postgresqlTargets.cmake
   NAMESPACE Sqlpp::
   DESTINATION ${ConfigPackageLocation}
 )
 
 install(
-  FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-postgresqlConfigVersion.cmake"
+  FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/Sqlpp-connector-postgresqlConfigVersion.cmake"
   DESTINATION ${ConfigPackageLocation}
   COMPONENT Devel
 )
