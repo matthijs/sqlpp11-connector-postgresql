@@ -38,9 +38,6 @@ add_library(sqlpp11-connector-postgresql STATIC
 	result.cpp
 )
 
-# Properties
-set_property(TARGET sqlpp11-connector-postgresql PROPERTY CXX_STANDARD 11)
-
 add_library(sqlpp11-connector-postgresql-dynamic SHARED
         bind_result.cpp
         connection.cpp
