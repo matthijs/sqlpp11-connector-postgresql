@@ -11,6 +11,7 @@ int Exceptions(int, char**)
   {
     // broken_connection exception on bad config
     auto config = std::make_shared<sql::connection_config>();
+    config->host = "non-existing-host";
     assert_throw(sql::connection db(config), sql::broken_connection);
   }
 
