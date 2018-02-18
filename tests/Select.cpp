@@ -66,7 +66,8 @@ void testSelectAll(sql::connection& db, int expectedRowCount)
 int Select(int argc, char** argv)
 {
   auto config = std::make_shared<sql::connection_config>();
-  config->dbname = "sqlpp11_tests";
+  config->dbname = getenv("USER");
+  config->user = config->dbname;
   sql::connection db;
   try
   {

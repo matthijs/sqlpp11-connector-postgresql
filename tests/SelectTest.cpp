@@ -101,16 +101,24 @@ constexpr tab2 t2;
 int SelectTest(int, char**)
 {
   std::shared_ptr<sqlpp::postgresql::connection_config> conf(new sqlpp::postgresql::connection_config);
-  conf->host = "localhost";
-  conf->dbname = "postgres";
-  conf->user = "postgres";
-  conf->password = "postgres";
-  conf->debug = true;
-  conf->port = 5432;
+  conf->dbname = getenv("USER");
+  conf->user = conf->dbname;
 
   try
   {
     sqlpp::postgresql::connection db(conf);
+
+    // Make sure the table exists
+    db.execute(R"(DROP TABLE IF EXISTS t_acl;)");
+    db.execute(R"(DROP TABLE IF EXISTS tab2;)");
+    db.execute(R"(CREATE TABLE t_acl
+               (
+                 c_uid int NOT NULL,
+               ))");
+    db.execute(R"(CREATE TABLE tab2
+               (
+                 column1 int NOT NULL,
+               ))");
     db.start_transaction();
     db(sqlpp::postgresql::insert_into(a).set(a.c_uid = 99999));
     auto sel = db(sqlpp::postgresql::insert_into(a).set(a.c_uid = 99999).returning(a.c_uid));

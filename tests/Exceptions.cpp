@@ -17,7 +17,8 @@ int Exceptions(int, char**)
   model::TabFoo foo;
   model::TabBar bar;
   auto config = std::make_shared<sql::connection_config>();
-  config->dbname = "sqlpp11_tests";
+  config->dbname = getenv("USER");
+  config->user = config->dbname;
 
   sql::connection db;
   try
