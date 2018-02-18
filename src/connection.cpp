@@ -77,8 +77,7 @@ namespace sqlpp
       }
     }
 
-    connection::connection()
-        : _handle()
+    connection::connection() : _handle()
     {
     }
 
@@ -106,6 +105,11 @@ namespace sqlpp
         this->_handle = std::move(other._handle);
       }
       return *this;
+    }
+
+    void connection::connectUsing(const std::shared_ptr<connection_config>& config) noexcept(false)
+    {
+      this->_handle.reset(new detail::connection_handle(config));
     }
 
     std::shared_ptr<detail::statement_handle_t> connection::execute(const std::string& stmt)
