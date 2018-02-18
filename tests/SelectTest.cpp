@@ -113,11 +113,11 @@ int SelectTest(int, char**)
     db.execute(R"(DROP TABLE IF EXISTS tab2;)");
     db.execute(R"(CREATE TABLE t_acl
                (
-                 c_uid int NOT NULL,
+                 c_uid int NOT NULL
                ))");
     db.execute(R"(CREATE TABLE tab2
                (
-                 column1 int NOT NULL,
+                 column1 int NOT NULL
                ))");
     db.start_transaction();
     db(sqlpp::postgresql::insert_into(a).set(a.c_uid = 99999));
