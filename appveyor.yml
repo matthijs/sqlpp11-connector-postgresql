@@ -29,7 +29,7 @@ init:
 
 install:
   - cd ..
-  - git clone --branch v1.0.0 --depth 1 https://github.com/HowardHinnant/date
+  - git clone --branch v2.4 --depth 1 https://github.com/HowardHinnant/date.git
   - git clone --branch master --depth 1 https://github.com/rbock/sqlpp11.git
   - cd sqlpp11
   - cmake . -DHinnantDate_ROOT_DIR="%cd%/../date"
