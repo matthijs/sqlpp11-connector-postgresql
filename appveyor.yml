@@ -1,0 +1,36 @@
+image: Visual Studio 2015
+
+branches:
+  only:
+  - master
+  - develop
+
+environment:
+  matrix:
+     - GENERATOR: "Visual Studio 14"
+       CONFIG: Debug
+     - GENERATOR: "Visual Studio 14"
+       CONFIG: Release
+
+services:
+  - postgresql101
+
+install:
+  - cd ..
+  - git clone --branch v1.0.0 --depth 1 https://github.com/HowardHinnant/date
+  - git clone --branch master --depth 1 https://github.com/rbock/sqlpp11.git
+  - cd sqlpp11
+  - cmake . -DHinnantDate_ROOT_DIR="%cd%/../date"
+  - cd ../sqlpp11-connector-postgresql
+
+before_build:
+  - mkdir build
+  - cd build
+  - cmake .. -DCMAKE_PREFIX_PATH="C:/Program Files" -DDATE_INCLUDE_DIR="%cd%/../../date" -DENABLE_TESTS=True
+ 
+build_script:
+  - cmake --build .
+  - PATH=C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
+  - createuser -l -S -D -R $env:APPVEYOR_ACCOUNT_NAME
+  - createdb $env:APPVEYOR_ACCOUNT_NAME
+  - ctest --output-on-failure
