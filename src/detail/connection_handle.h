@@ -30,6 +30,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 
 #include <libpq-fe.h>
 #include <sqlpp11/postgresql/visibility.h>
