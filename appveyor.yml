@@ -1,8 +1,11 @@
 image: Visual Studio 2015
 
+clone_folder: C:\projects\sqlpp11-connector-postgresql
+
 branches:
   only:
-  - feature/appveyor
+  - master
+  - develop
 
 environment:
   matrix:
@@ -13,6 +16,16 @@ environment:
 
 services:
   - postgresql101
+
+init:
+  - set arch=
+  - if "%arch%"=="Win64" ( set arch= Win64)
+  - echo %arch%
+  - echo %APPVEYOR_BUILD_WORKER_IMAGE%
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%arch%" )
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015%arch%" )
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013%arch%" )
+  - echo %generator%
 
 install:
   - cd ..
@@ -25,11 +38,13 @@ install:
 before_build:
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_PREFIX_PATH="C:/Program Files" -DDATE_INCLUDE_DIR="%cd%/../../date" -DENABLE_TESTS=True
+  - cmake .. -DCMAKE_PREFIX_PATH="C:/Program Files" -DDATE_INCLUDE_DIR="%cd%/../../date" -DENABLE_TESTS=True -G %generator%
  
-build_script:
-  - cmake --build .
+build:
+  project: C:\projects\sqlpp11-connector-postgresql\build\sqlpp11-connector-postgresql.sln
+  parallel: true
+
+after_build:
   - PATH=C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
   - createuser -l -S -D -R $env:APPVEYOR_ACCOUNT_NAME
   - createdb $env:APPVEYOR_ACCOUNT_NAME
-  - ctest --output-on-failure
