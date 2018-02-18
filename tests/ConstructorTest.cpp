@@ -28,7 +28,7 @@
 
 namespace sql = sqlpp::postgresql;
 
-int main()
+int ConstructorTest(int, char**)
 {
   sql::connection db;
   return 0;

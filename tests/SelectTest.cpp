@@ -98,7 +98,7 @@ struct tab2 : sqlpp::table_t<tab2, column1>
 constexpr t_acl a;
 constexpr tab2 t2;
 
-int main()
+int SelectTest(int, char**)
 {
   std::shared_ptr<sqlpp::postgresql::connection_config> conf(new sqlpp::postgresql::connection_config);
   conf->host = "localhost";
@@ -125,12 +125,10 @@ int main()
     for (const auto& row : inserted)
       std::cout << row.c_uid;
 
-    db.rollback_transaction();
+    db.rollback_transaction(true);
   }
-  catch (sqlpp::postgresql::pg_exception e)
+  catch (const sqlpp::postgresql::failure& e)
   {
     std::cout << e.what();
-    std::cout << "\n" << e.code().toString();
-    std::cout << "\n" << e.message().toString();
   }
 }

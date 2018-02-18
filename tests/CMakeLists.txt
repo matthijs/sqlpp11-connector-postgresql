@@ -23,28 +23,51 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-macro (build_and_run arg)
-    # Add headers to sources to enable file browsing in IDEs
-    add_executable(Sqlpp11PostgreSQL${arg} ${arg}.cpp ${sqlpp_headers})
-    target_link_libraries(Sqlpp11PostgreSQL${arg} sqlpp11-connector-postgresql ${PostgreSQL_LIBRARIES})
-    include_directories("../include")
-    target_compile_features(Sqlpp11PostgreSQL${arg} PRIVATE cxx_auto_type)
-	target_include_directories(Sqlpp11PostgreSQL${arg} PRIVATE ${PostgreSQL_INCLUDE_DIRS} )
-    add_test(${arg} Sqlpp11PostgreSQL${arg})
-endmacro ()
+# The available tests
+set(test_names
+	BasicTest
+	ConstructorTest
+	DateTest
+	DateTime
+	Exceptions
+	Returning
+	Select
+	SelectTest
+	TransactionTest
+	TypeTest)
 
-macro (build_and_run_dynamic arg)
-    add_executable(Sqlpp11PostgreSQL${arg}-dynamic ${arg}.cpp ${sqlpp_headers})
-    target_link_libraries(Sqlpp11PostgreSQL${arg}-dynamic sqlpp11-connector-postgresql-dynamic dl)
-    include_directories("../include")
-    target_compile_features(Sqlpp11PostgreSQL${arg}-dynamic PRIVATE cxx_auto_type)
-	target_include_directories(Sqlpp11PostgreSQL${arg}-dynamic PRIVATE ${PostgreSQL_INCLUDE_DIRS} )
-    add_test(${arg}-dyanmic Sqlpp11PostgreSQL${arg}-dynamic)
-endmacro()
+create_test_sourcelist(test_sources test_main.cpp ${test_names})
+add_executable(sqlpp11-connector-postgresql_tests ${test_sources})
+target_link_libraries(sqlpp11-connector-postgresql_tests sqlpp11-connector-postgresql ${PostgreSQL_LIBRARIES})
+target_include_directories(sqlpp11-connector-postgresql_tests PRIVATE ${PostgreSQL_INCLUDE_DIRS} )
 
-build_and_run(BasicTest)
-#build_and_run_dynamic(BasicTest)
-build_and_run(DateTest)
-build_and_run(TypeTest)
-build_and_run(TransactionTest)
-build_and_run(ConstructorTest)
+foreach(test IN LISTS test_names)
+	add_test(NAME sqlpp11-connector-postgresql.${test}
+		COMMAND sqlpp11-connector-postgresql_tests ${test})
+endforeach()
+
+#macro (build_and_run arg)
+#    # Add headers to sources to enable file browsing in IDEs
+#    add_executable(Sqlpp11PostgreSQL${arg} ${arg}.cpp ${sqlpp_headers})
+#    target_link_libraries(Sqlpp11PostgreSQL${arg} sqlpp11-connector-postgresql ${PostgreSQL_LIBRARIES})
+#    include_directories("../include")
+#    target_compile_features(Sqlpp11PostgreSQL${arg} PRIVATE cxx_auto_type)
+#	target_include_directories(Sqlpp11PostgreSQL${arg} PRIVATE ${PostgreSQL_INCLUDE_DIRS} )
+#    add_test(${arg} Sqlpp11PostgreSQL${arg})
+#endmacro ()
+#
+#macro (build_and_run_dynamic arg)
+#    add_executable(Sqlpp11PostgreSQL${arg}-dynamic ${arg}.cpp ${sqlpp_headers})
+#    target_link_libraries(Sqlpp11PostgreSQL${arg}-dynamic sqlpp11-connector-postgresql-dynamic dl)
+#    include_directories("../include")
+#    target_compile_features(Sqlpp11PostgreSQL${arg}-dynamic PRIVATE cxx_auto_type)
+#	target_include_directories(Sqlpp11PostgreSQL${arg}-dynamic PRIVATE ${PostgreSQL_INCLUDE_DIRS} )
+#    add_test(${arg}-dyanmic Sqlpp11PostgreSQL${arg}-dynamic)
+#endmacro()
+#
+#build_and_run(BasicTest)
+##build_and_run_dynamic(BasicTest)
+#build_and_run(DateTest)
+#build_and_run(TypeTest)
+#build_and_run(TransactionTest)
+#build_and_run(ConstructorTest)

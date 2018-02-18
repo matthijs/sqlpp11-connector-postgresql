@@ -32,7 +32,7 @@
 #include <sqlpp11/sqlpp11.h>
 
 namespace sql = sqlpp::postgresql;
-int main()
+int BasicTest(int, char**)
 {
   auto config = std::make_shared<sql::connection_config>();
   config->host = "localhost";
