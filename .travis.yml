@@ -30,7 +30,7 @@ install:
   - git clone https://github.com/rbock/sqlpp11.git
   - cd sqlpp11
   - cmake -DCMAKE_BUILD_TYPE=Release .
-  - make $(nproc) && sudo make install
+  - make && sudo make install
   - cd ../sqlpp11-connector-postgresql
 
 before_script:
