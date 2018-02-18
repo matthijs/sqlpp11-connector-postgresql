@@ -16,6 +16,7 @@ services:
   - postgresql
 
 install:
+  - apt-get install -y postgresql-server-dev-all
   - pwd
   - g++ --version
   - cmake --version
@@ -28,14 +29,14 @@ install:
   - cd ..
   - git clone https://github.com/rbock/sqlpp11.git
   - cd sqlpp11
-  - cmake -DDATE_INCLUDE_DIR=/usr/local/include -DSQLPP11_INCLUDE_DIR=/usr/local/include -DCMAKE_BUILD_TYPE=Release .
-  - make && sudo make install
+  - cmake -DCMAKE_BUILD_TYPE=Release .
+  - make $(nproc) && sudo make install
   - cd ../sqlpp11-connector-postgresql
 
 before_script:
   - mkdir build
   - cd build
-  - cmake .. -DDATE_INCLUDE_DIR=/usr/local/include
+  - cmake .. -DSQLPP11_INCLUDE_DIR=/usr/local/include -DDATE_INCLUDE_DIR=/usr/local/include
 
 script:
   - cmake --build .
