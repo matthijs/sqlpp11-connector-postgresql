@@ -130,5 +130,8 @@ int SelectTest(int, char**)
   catch (const sqlpp::postgresql::failure& e)
   {
     std::cout << e.what();
+    return 1;
   }
+
+  return 0;
 }
