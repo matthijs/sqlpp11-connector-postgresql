@@ -16,7 +16,7 @@ services:
   - postgresql
 
 install:
-  - sudo apt-get install -y postgresql-server-dev-all
+  - sudo apt-get install -y postgresql-server-dev-all libboost-dev
   - pwd
   - g++ --version
   - cmake --version
