@@ -34,7 +34,7 @@
 
 namespace
 {
-  const auto now = ::date::floor<::std::chrono::milliseconds>(std::chrono::system_clock::now());
+  const auto now = ::date::floor<::std::chrono::seconds>(std::chrono::system_clock::now());
   const auto today = ::date::floor<::sqlpp::chrono::days>(now);
   const auto yesterday = today - ::sqlpp::chrono::days{1};
 
