@@ -43,7 +43,7 @@ int Returning(int, char**)
         << std::endl;
 
     std::cout
-        << db(sqlpp::postgresql::insert_into(foo).set(foo.gamma = "asd").returning(std::make_tuple(foo.c_timepoint)).front().c_timepoint
+        << db(sqlpp::postgresql::insert_into(foo).set(foo.gamma = "asd").returning(std::make_tuple(foo.c_timepoint))).front().c_timepoint
         << std::endl;
 
     auto i = sqlpp::postgresql::dynamic_insert_into(db, foo).dynamic_set().returning(foo.c_timepoint);
