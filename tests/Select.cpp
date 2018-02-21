@@ -63,7 +63,7 @@ void testSelectAll(sql::connection& db, int expectedRowCount)
   std::cerr << "--------------------------------------" << std::endl;
 }
 
-int Select(int argc, char** argv)
+int Select(int argc, char* argv[])
 {
   auto config = std::make_shared<sql::connection_config>();
   config->dbname = getenv("USER");

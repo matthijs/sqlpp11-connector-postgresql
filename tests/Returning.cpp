@@ -7,7 +7,7 @@
 #include "TabFoo.h"
 
 namespace sql = sqlpp::postgresql;
-int Returning(int, char**)
+int Returning(int, char*[])
 {
   model::TabFoo foo;
   model::TabBar bar;

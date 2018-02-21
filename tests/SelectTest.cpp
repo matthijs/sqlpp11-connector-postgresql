@@ -98,7 +98,7 @@ struct tab2 : sqlpp::table_t<tab2, column1>
 constexpr t_acl a;
 constexpr tab2 t2;
 
-int SelectTest(int, char**)
+int SelectTest(int, char*[])
 {
   std::shared_ptr<sqlpp::postgresql::connection_config> conf(new sqlpp::postgresql::connection_config);
   conf->dbname = getenv("USER");

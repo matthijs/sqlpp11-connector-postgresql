@@ -36,7 +36,11 @@ set(test_names
 	TransactionTest
 	TypeTest)
 
-create_test_sourcelist(test_sources test_main.cpp ${test_names})
+foreach(test_name ${test_names})
+  set(test_names_src ${test_names_src} ${test_name}.cpp)
+endforeach()
+
+create_test_sourcelist(test_sources test_main.cpp ${test_names_src})
 add_executable(sqlpp11-connector-postgresql_tests ${test_sources})
 target_link_libraries(sqlpp11-connector-postgresql_tests sqlpp11-connector-postgresql ${PostgreSQL_LIBRARIES})
 target_include_directories(sqlpp11-connector-postgresql_tests PRIVATE ${PostgreSQL_INCLUDE_DIRS} )

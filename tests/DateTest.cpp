@@ -72,7 +72,7 @@ namespace
 
 namespace sql = sqlpp::postgresql;
 
-int DateTest(int, char**)
+int DateTest(int, char*[])
 {
   try
   {

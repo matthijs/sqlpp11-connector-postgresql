@@ -84,7 +84,7 @@ namespace sql = sqlpp::postgresql;
 
 SQLPP_ALIAS_PROVIDER(level);
 
-int TransactionTest(int, char**)
+int TransactionTest(int, char*[])
 {
   auto config = std::make_shared<sql::connection_config>();
   config->dbname = getenv("USER");

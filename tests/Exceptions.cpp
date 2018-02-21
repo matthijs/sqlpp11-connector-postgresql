@@ -6,7 +6,7 @@
 #include "TabFoo.h"
 
 namespace sql = sqlpp::postgresql;
-int Exceptions(int, char**)
+int Exceptions(int, char*[])
 {
   {
     // broken_connection exception on bad config

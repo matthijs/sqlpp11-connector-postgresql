@@ -55,7 +55,7 @@ namespace
 
 namespace sql = sqlpp::postgresql;
 
-int TypeTest(int, char**)
+int TypeTest(int, char*[])
 {
   try
   {

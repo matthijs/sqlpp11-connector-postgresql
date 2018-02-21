@@ -39,22 +39,22 @@ add_library(sqlpp11-connector-postgresql STATIC
 )
 
 add_library(sqlpp11-connector-postgresql-dynamic SHARED
-        bind_result.cpp
-        connection.cpp
-		exception.cpp
-        prepared_statement.cpp
-        detail/connection_handle.cpp
-		detail/prepared_statement_handle.cpp
-        detail/dynamic_libpq.cpp
-		result.cpp
+	bind_result.cpp
+	connection.cpp
+	exception.cpp
+	prepared_statement.cpp
+	detail/connection_handle.cpp
+	detail/prepared_statement_handle.cpp
+	detail/dynamic_libpq.cpp
+	result.cpp
 )
 
 if (WIN32)
-get_filename_component(POSTGRESQL_LIB_FILE ${PostgreSQL_LIBRARIES} NAME)
+	get_filename_component(POSTGRESQL_LIB_FILE ${PostgreSQL_LIBRARIES} NAME)
 elseif(APPLE)
-set(POSTGRESQL_LIB_FILE "lib${PostgreSQL_LIBRARIES}.dylib")
+	set(POSTGRESQL_LIB_FILE "lib${PostgreSQL_LIBRARIES}.dylib")
 else()
-set(POSTGRESQL_LIB_FILE "lib${PostgreSQL_LIBRARIES}.so")
+	set(POSTGRESQL_LIB_FILE "lib${PostgreSQL_LIBRARIES}.so")
 endif()
 
 message("PostgreSQL LIB FILE: ${POSTGRESQL_LIB_FILE}")

@@ -50,7 +50,7 @@ namespace dynamic {
 #if defined(__linux__) || defined(__APPLE__)
 #define DYNLOAD(HNDL, NAME) NAME = reinterpret_cast<decltype( NAME )>( dlsym(HNDL, #NAME) )
 #else
-#defined DYNLOAD(HNDL, NAME) NAME = reinterpret_cast<decltype( NAME )>(GetProcAddress(HNDL, #NAME))
+#define DYNLOAD(HNDL, NAME) NAME = reinterpret_cast<decltype( NAME )>(GetProcAddress(HNDL, #NAME))
 #endif
 
 DYNDEFINE(PQescapeStringConn);

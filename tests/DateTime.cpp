@@ -60,7 +60,7 @@ void open(const std::string& name)
 }
 
 namespace sql = sqlpp::postgresql;
-int DateTime(int, char**)
+int DateTime(int, char*[])
 {
   auto config = std::make_shared<sql::connection_config>();
   config->dbname = getenv("USER");

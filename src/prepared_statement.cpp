@@ -31,6 +31,7 @@
 
 #include "detail/prepared_statement_handle.h"
 
+#include <ciso646>
 #include <iostream>
 #include <sstream>
 #include <date/date.h>
