@@ -158,7 +158,8 @@ namespace sqlpp
     {
       const auto date_digits = std::vector<char>{1, 1, 1, 1, 0, 1, 1, 0, 1, 1};  // 2016-11-10
       const auto time_digits = std::vector<char>{0, 1, 1, 0, 1, 1, 0, 1, 1};     // ' 13:12:11'
-      const auto ms_digits = std::vector<char>{0, 1, 1, 1, 1, 1, 1};             // .123
+	  const auto mcs_digits = std::vector<char>{ 0, 1, 1, 1, 1, 1, 1 };             // .000123
+      const auto ms_digits = std::vector<char>{0, 1, 1, 1 };             // .123
       const auto tz_digits = std::vector<char>{0, 1, 1};                         // -05
       const auto tz_min_digits = std::vector<char>{0, 1, 1};                     // :30
 
@@ -277,11 +278,17 @@ namespace sqlpp
         if ((len >= (date_time_size + ms_digits.size())) && (time_string[time_digits.size()] == '.'))
         {
           has_ms = true;
-          date_time_size += ms_digits.size();
+          
           const auto ms_string = time_string + time_digits.size();
-          if (check_digits(ms_string, ms_digits))
+          if (check_digits(ms_string, mcs_digits))
           {
+            date_time_size += mcs_digits.size();
             *value += std::chrono::microseconds(std::atoi(ms_string + 1));
+          }
+          else if (check_digits(ms_string, ms_digits))
+          {
+              date_time_size += ms_digits.size();
+              *value += std::chrono::milliseconds(std::atoi(ms_string + 1));
           }
         }
         if (len >= (date_time_size + tz_digits.size()))
