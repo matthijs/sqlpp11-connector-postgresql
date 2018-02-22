@@ -42,8 +42,8 @@ endforeach()
 
 create_test_sourcelist(test_sources test_main.cpp ${test_names_src})
 add_executable(sqlpp11-connector-postgresql_tests ${test_sources})
-target_link_libraries(sqlpp11-connector-postgresql_tests sqlpp11-connector-postgresql ${PostgreSQL_LIBRARIES})
-target_include_directories(sqlpp11-connector-postgresql_tests PRIVATE ${PostgreSQL_INCLUDE_DIRS} )
+target_link_libraries(sqlpp11-connector-postgresql_tests PRIVATE sqlpp11-connector-postgresql ${PostgreSQL_LIBRARIES})
+target_include_directories(sqlpp11-connector-postgresql_tests PRIVATE ${sqlpp11_INCLUDE_DIRS} ${PostgreSQL_INCLUDE_DIRS} )
 target_compile_features(sqlpp11-connector-postgresql_tests PRIVATE cxx_auto_type)
 
 foreach(test IN LISTS test_names)
