@@ -100,13 +100,23 @@ constexpr tab2 t2;
 
 int SelectTest(int, char*[])
 {
-  std::shared_ptr<sqlpp::postgresql::connection_config> conf(new sqlpp::postgresql::connection_config);
-  conf->dbname = getenv("USER");
-  conf->user = conf->dbname;
+  std::shared_ptr<sqlpp::postgresql::connection_config> config(new sqlpp::postgresql::connection_config);
+
+#ifdef WIN32
+  config->dbname = "test";
+  config->user = "test";
+  config->password = "test";
+  config->debug = true;
+#else
+  // TODO: assume there is a DB with the "username" as a name and the current user has "peer" access rights
+  config->dbname = getenv("USER");
+  config->user = config->dbname;
+  config->debug = true;
+#endif
 
   try
   {
-    sqlpp::postgresql::connection db(conf);
+    sqlpp::postgresql::connection db(config);
 
     // Make sure the table exists
     db.execute(R"(DROP TABLE IF EXISTS t_acl;)");

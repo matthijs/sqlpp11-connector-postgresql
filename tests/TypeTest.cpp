@@ -61,10 +61,17 @@ int TypeTest(int, char*[])
   {
     auto config = std::make_shared<sql::connection_config>();
 
+#ifdef WIN32
+    config->dbname = "test";
+    config->user = "test";
+	config->password = "test";
+    config->debug = true;
+#else
     // TODO: assume there is a DB with the "username" as a name and the current user has "peer" access rights
     config->dbname = getenv("USER");
     config->user = config->dbname;
     config->debug = true;
+#endif
 
     sql::connection db(config);
 
