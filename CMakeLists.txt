@@ -33,15 +33,28 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(ConfigPackageLocation lib/cmake/sqlpp-connector-postgresql)
 
-find_package(Date REQUIRED)
 find_package(Sqlpp11 REQUIRED)
 find_package(PostgreSQL REQUIRED)
-find_package(Boost REQUIRED)
 
-include_directories("${PROJECT_SOURCE_DIR}/include")
-include_directories(${Boost_INCLUDE_DIRS})
+if(NOT ${SQLPP11_FOUND})
+    message(SEND_ERROR "Can't find file sqlpp11")
+    message("Can't find sqlpp11/sqlpp11.h in ${SQLPP11_INCLUDE_DIR} ")
+    message("Please")
+    message("  - git clone https://github.com/rbock/sqlpp11")
+    message("  - specify SQLPP11_ROOT_DIR")
+    message("")
+else()
+    message("including sqlpp11 from ${SQLPP11_INCLUDE_DIR}")
+endif()
+
+#include_directories("${SQLPP11_INCLUDE_DIR}")
+#include_directories("${DATE_INCLUDE_DIR}")
+#include_directories(/usr/local/include)
+
+#include_directories("${PROJECT_SOURCE_DIR}/include")
 
 add_subdirectory(src)
+
 if (ENABLE_TESTS)
     enable_testing()
     add_subdirectory(tests)
