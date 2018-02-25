@@ -46,8 +46,8 @@ int BasicTest(int, char*[])
   catch (const sqlpp::postgresql::broken_connection& ex)
   {
     std::cout << "Got exception: '" << ex.what() << "'";
-    if (! strcmp(ex.what(), "Ident authentication failed for user \"unknown_user_must_fail\""))
-      return 1;
+    return 0;
   }
-  return 0;
+  
+  return 1;
 }
