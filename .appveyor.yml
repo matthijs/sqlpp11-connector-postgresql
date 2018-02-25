@@ -27,6 +27,6 @@ build_script:
   - mkdir build
   - cd build
   - cmake --version
-  - cmake .. -DCMAKE_CXX_FLAGS="/EHsc /wd4503" -DCMAKE_PREFIX_PATH="C:\projects\date"
+  - cmake .. -DCMAKE_CXX_FLAGS="/EHsc /wd4503" -DCMAKE_PREFIX_PATH="C:\projects\date" -DDATE_INCLUDE_DIR="C:\projects\date" -DSQLPP11_INCLUDE_DIR="C:\projects\sqlpp11"
   - cmake --build . --config %configuration%
   - ctest . --build-config %configuration%
