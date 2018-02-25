@@ -24,7 +24,7 @@ install:
   - git clone https://github.com/HowardHinnant/date
   - cd date
   - git checkout tags/v2.4
-  - cmake -DCMAKE_BUILD_TYPE=Release .
+  - cmake -DCMAKE_BUILD_TYPE=Release -DTZ_CXX_STANDARD=11 .
   - make && sudo make install
   - cd ..
   - git clone https://github.com/rbock/sqlpp11.git
@@ -36,7 +36,7 @@ install:
 before_script:
   - mkdir build
   - cd build
-  - cmake .. -DSQLPP11_INCLUDE_DIR=/usr/local/include -DDATE_INCLUDE_DIR=/usr/local/include
+  - cmake ..
 
 script:
   - cmake --build .
