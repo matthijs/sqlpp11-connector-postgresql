@@ -435,7 +435,7 @@ namespace sqlpp
         //	  template <typename... T>
         //	  using _check = logic::all_t<(is_selectable_t<T>::value or is_multi_column_t<T>::value)...>;
         template <typename... T>
-        struct _check : logic::all_t<(is_selectable_t<T>::value or is_multi_column_t<T>::value)...>
+        struct _check : logic::all_t<(is_selectable_t<T>::value or is_multi_column_t<T>::value)...>...
         {
         };
 
