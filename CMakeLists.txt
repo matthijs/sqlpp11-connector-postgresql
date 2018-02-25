@@ -33,41 +33,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(ConfigPackageLocation lib/cmake/sqlpp-connector-postgresql)
 
-#find_package(Sqlpp11 REQUIRED)
+find_package(Date REQUIRED)
+find_package(Sqlpp11 REQUIRED)
 find_package(PostgreSQL REQUIRED)
-
-set(DATE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../sqlpp11/deps/date/include" CACHE FILEPATH "Path to Howard Hinnant's date library")
-
-if(NOT EXISTS ${DATE_INCLUDE_DIR}/date/date.h)
-    message(SEND_ERROR "Can't find file date.h")
-    message("Please either")
-    message("  - git clone https://github.com/howardhinnant/date ${DATE_INCLUDE_DIR}")
-    message("  - download and unzip a current version from https://github.com/howardhinnant/date to ${DATE_INCLUDE_DIR}")
-    message("  = set DATE_INCLUDE_DIR to point to the dir containing <date/date.h> from the date library")
-    message("")
-else()
-    message("including date from ${DATE_INCLUDE_DIR}")
-endif()
-
-set(SQLPP11_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../sqlpp11/include" CACHE FILEPATH "Path to sqlpp11 includes")
-
-if(NOT EXISTS ${SQLPP11_INCLUDE_DIR}/sqlpp11/sqlpp11.h)
-    message(SEND_ERROR "Can't find file sqlpp11/sqlpp11.h")
-    message("Can't find sqlpp11/sqlpp11.h in ${SQLPP11_INCLUDE_DIR} ")
-    message("Please either")
-    message("  - git clone https://github.com/rbock/sqlpp11 ${SQLPP11_INCLUDE_DIR}")
-    message("  - download and unzip a current version from https://github.com/rbock/sqlpp11 to ${SQLPP11_INCLUDE_DIR}")
-    message("  - set DATE_INCLUDE_DIR to point to the dir containing sqlpp11/sqlpp11.h")
-    message("")
-else()
-    message("including sqlpp11 from ${SQLPP11_INCLUDE_DIR}")
-endif()
-
-include_directories("${SQLPP11_INCLUDE_DIR}")
-include_directories("${DATE_INCLUDE_DIR}")
-include_directories(/usr/local/include)
+find_package(Boost REQUIRED)
 
 include_directories("${PROJECT_SOURCE_DIR}/include")
+include_directories(${Boost_INCLUDE_DIRS})
 
 add_subdirectory(src)
 if (ENABLE_TESTS)
