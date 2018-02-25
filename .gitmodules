@@ -1,3 +1,0 @@
-[submodule "deps/sqlpp11"]
-	path = deps/sqlpp11
-	url = https://github.com/adiog/sqlpp11
