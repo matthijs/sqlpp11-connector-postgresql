@@ -13,6 +13,10 @@ environment:
        CONFIG: Debug
      - GENERATOR: "Visual Studio 14"
        CONFIG: Release
+     - GENERATOR: "Visual Studio 15"
+       CONFIG: Debug
+     - GENERATOR: "Visual Studio 15"
+       CONFIG: Release
 
 services:
   - postgresql101
