@@ -1,8 +1,18 @@
 sqlpp11-connector-postgresql
 ============================
-[![Build Status](https://travis-ci.org/volka/sqlpp11-connector-postgresql.svg?branch=master)](https://travis-ci.org/volka/sqlpp11-connector-postgresql?branch=master)
 
 PostgreSQL connector for sqlpp11 library
+
+License:
+-------------
+sqlpp11 is distributed under the [BSD 2-Clause License](https://github.com/matthijs/sqlpp11-connector-postgresql/blob/master/LICENSE).
+
+Status:
+-------------
+Branch / Compiler | gcc 4.8
+------------------|--------
+master | [![Build Status](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql.svg?branch=master)](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql?branch=master)
+develop | [![Build Status](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql.svg?branch=develop)](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql?branch=develop)
 
 Fork Info
 ===========
