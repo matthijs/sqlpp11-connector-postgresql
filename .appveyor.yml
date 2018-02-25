@@ -12,6 +12,9 @@ configuration:
 matrix:
   fast_finish: true
 
+services:
+  - postgresql
+
 build_script:
   - CD
   - cd ..
