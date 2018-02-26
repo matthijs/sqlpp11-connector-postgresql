@@ -1,35 +1,54 @@
-os:
-  - Visual Studio 2015
-  - Visual Studio 2017
+image: Visual Studio 2015
 
-platform:
-  - x64
+clone_folder: C:\projects\sqlpp11-connector-postgresql
 
-configuration:
-  #- Debug
-  - Release
+branches:
+  only:
+  - master
+  - develop
 
-matrix:
-  fast_finish: true
+environment:
+  matrix:
+     - GENERATOR: "Visual Studio 14"
+       CONFIG: Debug
+     - GENERATOR: "Visual Studio 14"
+       CONFIG: Release
+     - GENERATOR: "Visual Studio 15"
+       CONFIG: Debug
+     - GENERATOR: "Visual Studio 15"
+       CONFIG: Release
 
 services:
-  - postgresql
+  - postgresql101
 
-build_script:
-  - CD
+init:
+  - set arch=
+  - if "%arch%"=="Win64" ( set arch= Win64)
+  - echo %arch%
+  - echo %APPVEYOR_BUILD_WORKER_IMAGE%
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%arch%" )
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015%arch%" )
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013%arch%" )
+  - echo %generator%
+
+install:
   - cd ..
-  - CD
-  - git clone https://github.com/HowardHinnant/date
-  - cd date
-  - git checkout tags/v2.4
-  - cd ..
-  - git clone https://github.com/rbock/sqlpp11
-  - cd sqlpp11-connector-postgresql
-  - CD
-  - echo %configuration%
+  - git clone --branch v2.4 --depth 1 https://github.com/HowardHinnant/date.git
+  - git clone --branch master --depth 1 https://github.com/rbock/sqlpp11.git
+  - cd sqlpp11
+  - cmake . -DHinnantDate_ROOT_DIR="%cd%/../date"
+  - cd ../sqlpp11-connector-postgresql
+
+before_build:
   - mkdir build
   - cd build
-  - cmake --version
-  - cmake .. -DCMAKE_CXX_FLAGS="/EHsc /wd4503" -DCMAKE_PREFIX_PATH="C:\projects\date" -DDATE_INCLUDE_DIR="C:\projects\date\include" -DSQLPP11_INCLUDE_DIR="C:\projects\sqlpp11\include"
-  - cmake --build . --config %configuration%
-  - ctest . --build-config %configuration%
+  - cmake .. -DCMAKE_PREFIX_PATH="C:/Program Files" -DDATE_INCLUDE_DIR="%cd%/../../date" -DENABLE_TESTS=True -G %generator%
+ 
+build:
+  project: C:\projects\sqlpp11-connector-postgresql\build\sqlpp11-connector-postgresql.sln
+  parallel: true
+
+after_build:
+  - PATH=C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
+  - createuser -l -S -D -R $env:APPVEYOR_ACCOUNT_NAME
+  - createdb $env:APPVEYOR_ACCOUNT_NAME
