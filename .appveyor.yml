@@ -37,6 +37,7 @@ build_script:
   - createuser -l -S -D -R -w test
   - createdb test
   - cd ..
+  - git clone --depth 1 https://github.com/NumScale/boost-header-only.git
   - git clone --branch v2.4 --depth 1 https://github.com/HowardHinnant/date.git
   - git clone --branch master --depth 1 https://github.com/rbock/sqlpp11.git
   - cd sqlpp11
@@ -44,6 +45,6 @@ build_script:
   - cd ../sqlpp11-connector-postgresql
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_PREFIX_PATH="C:/Program Files" -DDATE_INCLUDE_DIR="%cd%/../../date" -DENABLE_TESTS=True -G %generator%
+  - cmake .. -DCMAKE_PREFIX_PATH="C:/Program Files" -DBOOST_ROOT="%cd%/../../boost-header-only/boost-1.64.0" -DDate_DIR="%cd%/../../date" -DSqlpp11_DIR="%cd%/../../sqlpp11" -D -DENABLE_TESTS=True -G %generator%
   - cmake --build . --config %configuration%
   - ctest . --config %configuration
