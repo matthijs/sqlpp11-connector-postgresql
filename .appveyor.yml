@@ -41,10 +41,10 @@ build_script:
   - git clone --branch v2.4 --depth 1 https://github.com/HowardHinnant/date.git
   - git clone --branch master --depth 1 https://github.com/rbock/sqlpp11.git
   - cd sqlpp11
-  - cmake . -DHinnantDate_ROOT_DIR="%cd%/../date" -G %generator%
+  - cmake . -DHinnantDate_ROOT_DIR="C:/projects/date" -G %generator%
   - cd ../sqlpp11-connector-postgresql
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_PREFIX_PATH="C:/Program Files;%cd%/../../sqlpp11/cmake" -DCMAKE_MODULE_PATH="%cd%/../../sqlpp11/cmake/Modules" -DBOOST_ROOT="%cd%/../../boost-header-only/boost-1.64.0" -DHinnantDate_ROOT_DIR="%cd%/../../date" -DSqlpp11_DIR="%cd%/../../sqlpp11" -D -DENABLE_TESTS=True -G %generator%
+  - cmake .. -DCMAKE_PREFIX_PATH="C:/Program Files;C:/projects/sqlpp11/cmake" -DCMAKE_MODULE_PATH="C:/projects/sqlpp11/cmake/Modules" -DBOOST_ROOT="C:/projects/boost-header-only/boost-1.64.0" -DHinnantDate_ROOT_DIR="C:/projects/date" -DSqlpp11_DIR="C:/projects/sqlpp11" -D -DENABLE_TESTS=True -G %generator%
   - cmake --build . --config %configuration%
   - ctest . --config %configuration
