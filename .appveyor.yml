@@ -26,8 +26,9 @@ build_script:
   - PATH=C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
   - set PGUSER=postgres
   - set PGPASSWORD=Password12!
-  - createuser -l -S -D -R -w test
+  - psql -c "CREATE USER test WITH PASSWORD 'test'"
   - createdb test
+  - createdb sqlpp_postgresql
   - cd ..
   - git clone --depth 1 https://github.com/NumScale/boost-header-only.git
   - git clone --branch v2.4 --depth 1 https://github.com/HowardHinnant/date.git
