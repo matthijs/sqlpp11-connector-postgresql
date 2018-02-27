@@ -39,4 +39,4 @@ build_script:
   - cd build
   - cmake .. -DCMAKE_PREFIX_PATH="C:/Program Files;C:/projects/sqlpp11/cmake" -DCMAKE_MODULE_PATH="C:/projects/sqlpp11/cmake/Modules" -DBOOST_ROOT="C:/projects/boost-header-only/boost-1.64.0" -DHinnantDate_ROOT_DIR="C:/projects/date" -DSqlpp11_DIR="C:/projects/sqlpp11" -D -DENABLE_TESTS=True -G "%generator%"
   - cmake --build . --config "%configuration%"
-  - ctest . -C "%configuration%"
+  - ctest . --output-on-failure -C "%configuration%"
