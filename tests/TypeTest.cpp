@@ -64,7 +64,7 @@ int TypeTest(int, char*[])
 #ifdef WIN32
     config->dbname = "test";
     config->user = "test";
-	config->password = "test";
+    config->password = "test";
     config->debug = true;
 #else
     // TODO: assume there is a DB with the "username" as a name and the current user has "peer" access rights
