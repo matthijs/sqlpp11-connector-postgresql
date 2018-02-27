@@ -1,5 +1,3 @@
-image: Visual Studio 2015
-
 clone_folder: C:\projects\sqlpp11-connector-postgresql
 
 branches:
@@ -9,25 +7,19 @@ branches:
 
 environment:
   matrix:
-    - GENERATOR: "Visual Studio 14"
-      CONFIG: Debug
-    - GENERATOR: "Visual Studio 14"
-      CONFIG: Release
-    - GENERATOR: "Visual Studio 15"
-      CONFIG: Debug
-    - GENERATOR: "Visual Studio 15"
-      CONFIG: Release
+    - generator: "Visual Studio 14 2015 Win64"
+      configuration: Debug
+    - generator: "Visual Studio 15 2017 Win64"
+      configuration: Debug
+    - generator: "Visual Studio 14 2015 Win64"
+      configuration: Release
+    - generator: "Visual Studio 15 2017 Win64"
+      configuration: Release
 
 services:
   - postgresql101
 
 init:
-  - set arch=
-  - if "%arch%"=="Win64" ( set arch= Win64)
-  - echo %arch%
-  - echo %APPVEYOR_BUILD_WORKER_IMAGE%
-  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%arch%" )
-  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015%arch%" )
   - echo %generator%
 
 build_script:
@@ -41,10 +33,10 @@ build_script:
   - git clone --branch v2.4 --depth 1 https://github.com/HowardHinnant/date.git
   - git clone --branch master --depth 1 https://github.com/rbock/sqlpp11.git
   - cd sqlpp11
-  - cmake . -DHinnantDate_ROOT_DIR="C:/projects/date" -G %generator%
+  - cmake . -DHinnantDate_ROOT_DIR="C:/projects/date" -G "%generator%"
   - cd ../sqlpp11-connector-postgresql
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_PREFIX_PATH="C:/Program Files;C:/projects/sqlpp11/cmake" -DCMAKE_MODULE_PATH="C:/projects/sqlpp11/cmake/Modules" -DBOOST_ROOT="C:/projects/boost-header-only/boost-1.64.0" -DHinnantDate_ROOT_DIR="C:/projects/date" -DSqlpp11_DIR="C:/projects/sqlpp11" -D -DENABLE_TESTS=True -G %generator%
-  - cmake --build . --config %configuration%
-  - ctest . --config %configuration
+  - cmake .. -DCMAKE_PREFIX_PATH="C:/Program Files;C:/projects/sqlpp11/cmake" -DCMAKE_MODULE_PATH="C:/projects/sqlpp11/cmake/Modules" -DBOOST_ROOT="C:/projects/boost-header-only/boost-1.64.0" -DHinnantDate_ROOT_DIR="C:/projects/date" -DSqlpp11_DIR="C:/projects/sqlpp11" -D -DENABLE_TESTS=True -G "%generator%"
+  - cmake --build . --config "%configuration%"
+  - ctest . -C "%configuration%"
