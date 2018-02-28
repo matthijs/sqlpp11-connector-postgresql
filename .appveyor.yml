@@ -7,13 +7,17 @@ branches:
 
 environment:
   matrix:
-    - generator: "Visual Studio 14 2015 Win64"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      generator: "Visual Studio 14 2015 Win64"
       configuration: Debug
-    - generator: "Visual Studio 15 2017 Win64"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      generator: "Visual Studio 15 2017 Win64"
       configuration: Debug
-    - generator: "Visual Studio 14 2015 Win64"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      generator: "Visual Studio 14 2015 Win64"
       configuration: Release
-    - generator: "Visual Studio 15 2017 Win64"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      generator: "Visual Studio 15 2017 Win64"
       configuration: Release
 
 services:
