@@ -36,7 +36,7 @@ install:
 before_script:
   - mkdir build
   - cd build
-  - cmake ..
+  - cmake .. -DCMAKE_MODULE_PATH="/usr/local/lib/cmake/Sqlpp11"
 
 script:
   - cmake --build .
