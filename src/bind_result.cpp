@@ -36,7 +36,7 @@
 #include "detail/prepared_statement_handle.h"
 
 #if defined(_WIN32) || defined(_WIN64)
-#pragma warning (disable:4800)	// int to bool
+#pragma warning (disable:4800)  // int to bool
 #endif
 
 namespace sqlpp
@@ -158,7 +158,6 @@ namespace sqlpp
     {
       const auto date_digits = std::vector<char>{1, 1, 1, 1, 0, 1, 1, 0, 1, 1};  // 2016-11-10
       const auto time_digits = std::vector<char>{0, 1, 1, 0, 1, 1, 0, 1, 1};     // ' 13:12:11'
-      const auto ms_digits = std::vector<char>{0, 1, 1, 1, 1, 1, 1};             // .123
       const auto tz_digits = std::vector<char>{0, 1, 1};                         // -05
       const auto tz_min_digits = std::vector<char>{0, 1, 1};                     // :30
 
@@ -274,15 +273,41 @@ namespace sqlpp
         }
 
         bool has_ms = false;
-        if ((len >= (date_time_size + ms_digits.size())) && (time_string[time_digits.size()] == '.'))
+        if ((len > date_time_size) && (time_string[time_digits.size()] == '.'))
         {
           has_ms = true;
-          date_time_size += ms_digits.size();
-          const auto ms_string = time_string + time_digits.size();
-          if (check_digits(ms_string, ms_digits))
+          const auto ms_string = time_string + time_digits.size() + 1;
+
+          int digits_count = 0;
+          while (ms_string[digits_count] != '\0' && ms_string[digits_count] != '-' && ms_string[digits_count] != '+')
           {
-            *value += std::chrono::microseconds(std::atoi(ms_string + 1));
+            if (!std::isdigit(ms_string[digits_count]))
+            {
+              if (_handle->debug())
+                std::cerr << "PostgreSQL debug: got invalid date_time" << std::endl;
+              *value = {};
+              return;
+            }
+
+            ++digits_count;
           }
+
+          if (digits_count == 0)
+          {
+            if (_handle->debug())
+              std::cerr << "PostgreSQL debug: got invalid date_time" << std::endl;
+            *value = {};
+            return;
+          }
+
+          date_time_size += digits_count;
+
+          int pg_ms_num = std::atoi(ms_string);
+
+          while (digits_count++ < 6)
+            pg_ms_num *= 10;
+
+          *value += std::chrono::microseconds(pg_ms_num);
         }
         if (len >= (date_time_size + tz_digits.size()))
         {

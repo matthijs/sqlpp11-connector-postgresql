@@ -34,7 +34,7 @@
 
 namespace
 {
-  const auto now = ::date::floor<::std::chrono::seconds>(std::chrono::system_clock::now());
+  const auto now = ::date::floor<::std::chrono::microseconds>(std::chrono::system_clock::now());
   const auto today = ::date::floor<::sqlpp::chrono::days>(now);
   const auto yesterday = today - ::sqlpp::chrono::days{1};
 
@@ -60,11 +60,21 @@ void open(const std::string& name)
 }
 
 namespace sql = sqlpp::postgresql;
-int DateTime(int, char**)
+int DateTime(int, char*[])
 {
   auto config = std::make_shared<sql::connection_config>();
+
+#ifdef WIN32
+  config->dbname = "test";
+  config->user = "test";
+  config->password = "test";
+  config->debug = true;
+#else
+  // TODO: assume there is a DB with the "username" as a name and the current user has "peer" access rights
   config->dbname = getenv("USER");
   config->user = config->dbname;
+  config->debug = true;
+#endif
 
   sql::connection db;
   try
@@ -88,7 +98,7 @@ int DateTime(int, char**)
                  c_day date
                ))");
 
-  model::TabFoo tab;
+  model::TabFoo tab = {};
   try
   {
     db(insert_into(tab).default_values());

@@ -1,3 +1,4 @@
+#ifdef SQLPP_DYNAMIC_LOADING
 #if defined _WIN32 || defined __CYGWIN__
 #ifdef BUILDING_DLL
 #ifdef __GNUC__
@@ -21,4 +22,8 @@
 #define DLL_PUBLIC
 #define DLL_LOCAL
 #endif
+#endif
+#else
+#define DLL_PUBLIC
+#define DLL_LOCAL
 #endif

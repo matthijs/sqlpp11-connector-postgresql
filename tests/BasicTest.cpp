@@ -32,7 +32,7 @@
 #include <sqlpp11/sqlpp11.h>
 
 namespace sql = sqlpp::postgresql;
-int BasicTest(int, char**)
+int BasicTest(int, char*[])
 {
   auto config = std::make_shared<sql::connection_config>();
   config->host = "localhost";
@@ -46,8 +46,8 @@ int BasicTest(int, char**)
   catch (const sqlpp::postgresql::broken_connection& ex)
   {
     std::cout << "Got exception: '" << ex.what() << "'";
-    if (! strcmp(ex.what(), "Ident authentication failed for user \"unknown_user_must_fail\""))
-      return 1;
+    return 0;
   }
-  return 0;
+  
+  return 1;
 }
