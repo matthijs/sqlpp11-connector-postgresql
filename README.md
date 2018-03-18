@@ -14,22 +14,25 @@ Branch / Compiler | gcc 4.8 | MSVC 2015/2017
 master | [![Build Status](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql.svg?branch=master)](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql?branch=master) | [![Build status](https://ci.appveyor.com/api/projects/status/bmor62aunb03hoeg/branch/master?svg=true)](https://ci.appveyor.com/project/matthijs/sqlpp11-connector-postgresql)
 develop | [![Build Status](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql.svg?branch=develop)](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql?branch=develop) | [![Build status](https://ci.appveyor.com/api/projects/status/bmor62aunb03hoeg/branch/develop?svg=true)](https://ci.appveyor.com/project/matthijs/sqlpp11-connector-postgresql)
 
-Fork Info
-===========
+Examples
+========
 
-This is a fork of the sqlpp11-connector-postgresql repository by matthijs. It adds the following features:
+An example on how to use this library
+```c++
+auto config = std::make_shared<sqlpp::postgresql::connection_config>();
+config->host = "127.0.0.1";
+config->user = "someuser";
+config->password = "some-random-password";
+config->dbname = "somedb";
 
-* impement a "dynamic loading" variant which loads the libpq library using dlopen / LoadLibrary. Link agsinst the 
-  sqlpp-postgresql-dynamic.so library (and other connectors, e.g. sqlpp-sqlite3-dynamic) to support both databases 
-  in one binary without requiring all the different database client libraries to be installed.
+sqlpp::postgresql::connection db(config);
 
-* implement sqlpp11 std::chrono / "Hinnant Date" based date/time handling
+TabFoo foo;
+for(const auto& row: db(select(foo.name, foo.hasFun).from(foo).where(foo.id > 17 and foo.name.like("%bar%"))) {
+  std::cerr << row.name << std::endl;
+}
+```
 
-* implement support for setting isolation levels for transactions
-
-* implements missing connection::execute() function
-
-* implemented "integration tests" that will work with a local PostgreSQL DB where a database with the name "$USER" 
-  is present and the $USER can login via "peer" authentication. Use "cmake -DENABLE\_TESTS=True ..." to build tests.
-
-* some minor cleanups and optimizations
+Connection configuration
+========================
+You can use all possible authentication options that are available in PostgreSQL. See [here](https://www.postgresql.org/docs/10/static/libpq-connect.html#LIBPQ-CONNSTRING) for more information about the options.
