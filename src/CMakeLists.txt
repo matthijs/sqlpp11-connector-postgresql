@@ -74,7 +74,7 @@ target_include_directories(sqlpp11-connector-postgresql-dynamic PRIVATE ${sqlpp1
 
 # Keep this in sync with the releases in sqlpp11
 set(sqlpp11-connector-postgresql_VERSION_MAJOR 0)
-set(sqlpp11-connector-postgresql_VERSION_MINOR 48)
+set(sqlpp11-connector-postgresql_VERSION_MINOR 54)
 set(sqlpp11-connector-postgresql_VERSION_PATCH 0)
 set(sqlpp11-connector-postgresql_VERSION_STRING ${sqlpp11-connector-postgresql_VERSION_MAJOR}.${sqlpp11-connector-postgresql_VERSION_MINOR}.${sqlpp11-connector-postgresql_VERSION_PATCH})
 set_target_properties(sqlpp11-connector-postgresql PROPERTIES VERSION ${sqlpp11-connector-postgresql_VERSION_STRING}
