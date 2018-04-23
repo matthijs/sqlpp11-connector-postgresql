@@ -146,7 +146,7 @@ for table in tables:
     _writeLine(fd, 1, "};")
 
     # end of namespace
-    for ns in nsList:
+    for ns in reversed(nsList):
         _writeLine(fd, 0, "} // namespace " + ns)
     _writeLine(fd, 0, "")
     _writeLine(fd, 0, "#endif")
