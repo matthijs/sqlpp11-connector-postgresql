@@ -2,10 +2,11 @@
 #
 # Generate C++ structs for the tables.
 
+import argparse
 import os
 import sys
 import psycopg2
-import argparse
+import re
 
 # Generate a argument parser
 parser = argparse.ArgumentParser(description='Create C++ structs from a database table structure.')
@@ -17,11 +18,12 @@ parser.add_argument('-o', '--output-dir', dest='outputdir', help='Output directo
 parser.add_argument('-n', '--namespace', dest='namespace', help='C++ namespace', default='model')
 args = parser.parse_args()
 
+def _getIncludeGuard(namespace, table):
+    val = re.sub("[^A-Za-z0-9]+", "_", namespace + "_" + table + "_h")
+    return val.upper()
+
 def _writeLine(fd, indent, line):
     fd.write(("\t" * indent) + line + "\n")
-
-def _getIncludeGuard(namespace, table):
-    return namespace.upper() + "_" + table.upper() + "_H"
 
 # SQL types
 types = {
@@ -39,7 +41,7 @@ types = {
     'double': 'floating_point',
     'float': 'floating_point',
     'numeric': 'floating_point',
-    
+
     'json' : 'text',
     'jsonb' : 'text',
 
@@ -54,6 +56,8 @@ types = {
     'USER-DEFINED': 'varchar',
 }
 
+nsList = args.namespace.split('::')
+
 # Connect to the database and fetch information from the information_schema
 # schema
 conn = psycopg2.connect("host=" + args.host + " user=" + args.user + " password=" + args.password + " dbname=" + args.dbname)
@@ -67,11 +71,13 @@ for table in tables:
     _writeLine(fd, 0, "#ifndef " + _getIncludeGuard(args.namespace, table[0]))
     _writeLine(fd, 0, "#define " + _getIncludeGuard(args.namespace, table[0]))
     _writeLine(fd, 0, "")
+    _writeLine(fd, 0, "")
     _writeLine(fd, 0, "#include <sqlpp11/table.h>")
     _writeLine(fd, 0, "#include <sqlpp11/char_sequence.h>")
     _writeLine(fd, 0, "#include <sqlpp11/column_types.h>")
     _writeLine(fd, 0, "")
-    _writeLine(fd, 0, "namespace " + args.namespace + " {")
+    for ns in nsList:
+        _writeLine(fd, 0, "namespace " + ns + " {")
     _writeLine(fd, 0, "")
     _writeLine(fd, 1, "namespace " + table[0] + "_ {")
 
@@ -140,7 +146,8 @@ for table in tables:
     _writeLine(fd, 1, "};")
 
     # end of namespace
-    _writeLine(fd, 0, "}")
+    for ns in reversed(nsList):
+        _writeLine(fd, 0, "} // namespace " + ns)
     _writeLine(fd, 0, "")
     _writeLine(fd, 0, "#endif")
 
