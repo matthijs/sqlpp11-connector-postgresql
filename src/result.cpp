@@ -30,10 +30,19 @@
 #include <sqlpp11/postgresql/result.h>
 #include <string>
 
+#ifdef SQLPP_DYNAMIC_LOADING
+#include <sqlpp11/postgresql/dynamic_libpq.h>
+#endif
+
 namespace sqlpp
 {
   namespace postgresql
   {
+
+#ifdef SQLPP_DYNAMIC_LOADING
+    using namespace dynamic;
+#endif
+
     Result::Result() : m_result(nullptr)
     {
     }
@@ -55,6 +64,11 @@ namespace sqlpp
       const std::string Err = StatusError();
       if (!Err.empty())
         ThrowSQLError(Err, query());
+    }
+
+    const char* Result::getPqValue(PGresult* result, int record, int field) const
+    {
+      return const_cast<const char*>(PQgetvalue(result, record, field));
     }
 
     [[noreturn]] void Result::ThrowSQLError(const std::string& Err, const std::string& Query) const

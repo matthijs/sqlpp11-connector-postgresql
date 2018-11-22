@@ -68,7 +68,7 @@ namespace sqlpp
         T t(0);
         try
         {
-          t = boost::lexical_cast<T>(PQgetvalue(m_result, record, field));
+          t = boost::lexical_cast<T>(getPqValue(m_result, record, field));
         }
         catch (boost::bad_lexical_cast)
         {
@@ -93,6 +93,10 @@ namespace sqlpp
       bool hasError();
       void checkIndex(int record, int field) const noexcept(false);
 
+      // move PQgetvalue to implementation so we don't depend on the libpq in the
+      // public interface
+      const char* getPqValue(PGresult* result, int record, int field) const;
+
       PGresult* m_result;
       std::string m_query;
     };
@@ -100,7 +104,7 @@ namespace sqlpp
     template <>
     inline const char* Result::getValue<const char*>(int record, int field) const
     {
-      return const_cast<const char*>(PQgetvalue(m_result, record, field));
+      return const_cast<const char*>(getPqValue(m_result, record, field));
     }
 
     template <>
@@ -113,7 +117,7 @@ namespace sqlpp
     inline bool Result::getValue<bool>(int record, int field) const
     {
       checkIndex(record, field);
-      auto val = PQgetvalue(m_result, record, field);
+      auto val = getPqValue(m_result, record, field);
       if (*val == 't')
         return true;
       else if (*val == 'f')

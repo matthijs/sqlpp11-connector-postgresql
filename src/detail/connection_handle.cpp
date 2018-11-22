@@ -197,6 +197,14 @@ namespace sqlpp
           PQfinish(this->postgres);
         }
       }
+
+      void connection_handle::deallocate_prepared_statement(const std::string& name)
+      {
+         std::string cmd = "DEALLOCATE \"" + name + "\"";
+         PGresult* result = PQexec(postgres, cmd.c_str());
+         PQclear(result);
+         prepared_statement_names.erase(name);
+      }
     }
   }
 }
