@@ -1,4 +1,5 @@
 #include "prepared_statement_handle.h"
+#include <algorithm>
 #include <random>
 #include <sqlpp11/postgresql/connection_config.h>
 

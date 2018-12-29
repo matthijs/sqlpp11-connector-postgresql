@@ -36,8 +36,6 @@
 
 #include <sqlpp11/postgresql/visibility.h>
 
-#include <boost/lexical_cast.hpp>
-
 namespace sqlpp
 {
   namespace postgresql
@@ -66,12 +64,10 @@ namespace sqlpp
         static_assert(std::is_arithmetic<T>::value, "Value must be numeric type");
         checkIndex(record, field);
         T t(0);
-        try
+        auto txt = std::string(PQgetvalue(m_result, record, field));
+        if(txt != "")
         {
-          t = boost::lexical_cast<T>(PQgetvalue(m_result, record, field));
-        }
-        catch (boost::bad_lexical_cast)
-        {
+          t = std::stold(txt);
         }
         return t;
       }
