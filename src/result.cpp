@@ -29,6 +29,7 @@
 #include <sqlpp11/postgresql/exception.h>
 #include <sqlpp11/postgresql/result.h>
 #include <string>
+#include <cstring>
 
 #ifdef SQLPP_DYNAMIC_LOADING
 #include <sqlpp11/postgresql/dynamic_libpq.h>
@@ -197,7 +198,7 @@ namespace sqlpp
       {
         const char* p = PQresultErrorField(m_result, PG_DIAG_STATEMENT_POSITION);
         if (p)
-          pos = boost::lexical_cast<int>(p);
+          pos = std::stoi(std::string(p));
       }
       return pos;
     }
@@ -217,7 +218,7 @@ namespace sqlpp
     int Result::affected_rows()
     {
       const char* const RowsStr = PQcmdTuples(m_result);
-      return RowsStr[0] ? boost::lexical_cast<int>(RowsStr) : 0;
+      return RowsStr[0] ? std::stoi(std::string(RowsStr)) : 0;
     }
 
     int Result::records_size() const
