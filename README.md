@@ -9,10 +9,10 @@ sqlpp11 is distributed under the [BSD 2-Clause License](https://github.com/matth
 
 Status:
 -------------
-Branch / Compiler | gcc 4.8 | MSVC 2015/2017
-------------------|---------|---------------
-master | [![Build Status](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql.svg?branch=master)](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql?branch=master) | [![Build status](https://ci.appveyor.com/api/projects/status/bmor62aunb03hoeg/branch/master?svg=true)](https://ci.appveyor.com/project/matthijs/sqlpp11-connector-postgresql)
-develop | [![Build Status](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql.svg?branch=develop)](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql?branch=develop) | [![Build status](https://ci.appveyor.com/api/projects/status/bmor62aunb03hoeg/branch/develop?svg=true)](https://ci.appveyor.com/project/matthijs/sqlpp11-connector-postgresql)
+Branch / Compiler | gcc 4.8 | MSVC 2015/2017 | Code coverage
+------------------|---------|-------------------------------
+master | [![Build Status](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql.svg?branch=master)](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql?branch=master) | [![Build status](https://ci.appveyor.com/api/projects/status/bmor62aunb03hoeg/branch/master?svg=true)](https://ci.appveyor.com/project/matthijs/sqlpp11-connector-postgresql) | [![Coverage Status](https://coveralls.io/repos/github/matthijs/sqlpp11-connector-postgresql/badge.svg?branch=master)](https://coveralls.io/github/matthijs/sqlpp11-connector-postgresql?branch=master)
+develop | [![Build Status](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql.svg?branch=develop)](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql?branch=develop) | [![Build status](https://ci.appveyor.com/api/projects/status/bmor62aunb03hoeg/branch/develop?svg=true)](https://ci.appveyor.com/project/matthijs/sqlpp11-connector-postgresql) | [![Coverage Status](https://coveralls.io/repos/github/matthijs/sqlpp11-connector-postgresql/badge.svg?branch=master)](https://coveralls.io/github/matthijs/sqlpp11-connector-postgresql?branch=develop)
 
 Examples
 ========

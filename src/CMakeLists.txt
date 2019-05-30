@@ -61,6 +61,20 @@ else()
     endif()
 endif()
 
+# Generate code coverage if enabled
+if (CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+	# Add required flags for code coverage
+	target_compile_options(sqlpp11-connector-postgresql PUBLIC -O0 --coverage)
+	target_compile_options(sqlpp11-connector-postgresql-dynamic PUBLIC -O0 --coverage)
+	if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
+		target_link_options(sqlpp11-connector-postgresql INTERFACE --coverage)
+		target_link_options(sqlpp11-connector-postgresql-dynamic INTERFACE --coverage)
+	else()
+		target_link_libraries(sqlpp11-connector-postgresql INTERFACE --coverage)
+		target_link_libraries(sqlpp11-connector-postgresql-dynamic INTERFACE --coverage)
+	endif()
+endif()
+
 target_compile_options(sqlpp11-connector-postgresql-dynamic INTERFACE -DSQLPP_DYNAMIC_LOADING)
 target_compile_options(sqlpp11-connector-postgresql-dynamic PRIVATE -DBUILDING_DLL -DSQLPP_DYNAMIC_LOADING -DSQLPP_DYNAMIC_LOADING_FILENAME=${POSTGRESQL_LIB_FILE})
 target_compile_features(sqlpp11-connector-postgresql PRIVATE cxx_auto_type)
