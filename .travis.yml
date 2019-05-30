@@ -46,4 +46,4 @@ script:
   - ctest --output-on-failure
 
 after_success:
-  - coveralls --root .. --gcov-options '\-lp'
+  - coveralls --root .. --exclude build --gcov-options '\-lp'
