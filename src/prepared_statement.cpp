@@ -157,7 +157,7 @@ namespace sqlpp
          // only update once an hour
          if (now - last_query > 3600)
          {
-#ifdef _WINDOWS
+#if defined(_WINDOWS) || defined(__MINGW32__)
             offset = -_timezone;
 #else
             struct tm* tm  = std::localtime(&now);
