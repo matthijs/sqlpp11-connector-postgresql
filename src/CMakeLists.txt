@@ -57,7 +57,7 @@ else()
     if("${PostgreSQL_LIBRARIES}" MATCHES ".+lib.+so")
 	    get_filename_component(POSTGRESQL_LIB_FILE ${PostgreSQL_LIBRARIES} NAME)
     else()
-        set(POSTGRESQL_LIB_FILE "lib${PostgreSQL_LIBRARIES}.so")
+        set(POSTGRESQL_LIB_FILE "${PostgreSQL_LIBRARIES}.so")
     endif()
 endif()
 
