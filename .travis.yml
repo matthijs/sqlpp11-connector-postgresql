@@ -40,7 +40,4 @@ before_script:
 
 script:
   - cmake --build .
-  - echo -e "sudo -u postgres createuser -l -S -D -R $USER\nsudo -u postgres createdb $USER" > setup_db.sh
-  - chmod a+x setup_db.sh
-  - sudo ./setup_db.sh
   - ctest --output-on-failure
