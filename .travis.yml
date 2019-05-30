@@ -39,10 +39,10 @@ install:
 before_script:
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_MODULE_PATH="/usr/local/lib/cmake/Sqlpp11"
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCODE_COVERAGE=ON -DCMAKE_MODULE_PATH="/usr/local/lib/cmake/Sqlpp11"
 
 script:
-  - cmake -DCMAKE_BUILD_TYPE=Debug -DCODE_COVERAGE=ON --build .
+  - cmake --build .
   - ctest --output-on-failure
 
 after_success:
