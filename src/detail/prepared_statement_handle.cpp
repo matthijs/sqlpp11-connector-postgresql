@@ -3,10 +3,19 @@
 #include <random>
 #include <sqlpp11/postgresql/connection_config.h>
 
+#ifdef SQLPP_DYNAMIC_LOADING
+#include <sqlpp11/postgresql/dynamic_libpq.h>
+#endif
+
 namespace sqlpp
 {
   namespace postgresql
   {
+
+#ifdef SQLPP_DYNAMIC_LOADING
+    using namespace dynamic;
+#endif
+
     namespace detail
     {
       statement_handle_t::statement_handle_t(connection_handle& _connection) : connection(_connection)

@@ -36,4 +36,5 @@ set_target_properties(Sqlpp::sqlpp11-connector-postgresql PROPERTIES
 
 set_target_properties(Sqlpp::sqlpp11-connector-postgresql-dynamic PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${Sqlpp11_INCLUDE_DIRS};${PostgreSQL_INCLUDE_DIRS};$<TARGET_PROPERTY:INTERFACE_INCLUDE_DIRECTORIES>"
+  INTERFACE_LINK_LIBRARIES "${PostgreSQL_LIBRARIES};$<TARGET_PROPERTY:INTERFACE_LINK_LIBRARIES>"
 )
