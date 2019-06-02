@@ -19,7 +19,7 @@ before_install:
   - pip install --user cpp-coveralls
 
 install:
-  - sudo apt-get install -y postgresql-server-dev-all libboost-dev
+  - sudo apt-get install -y postgresql-server-dev-all
   - pwd
   - g++ --version
   - cmake --version
