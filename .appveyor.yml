@@ -34,10 +34,11 @@ build_script:
   - createdb test
   - createdb sqlpp_postgresql
   - cd ..
-  - git clone --branch v2.4 --depth 1 https://github.com/HowardHinnant/date.git
-  - git clone --branch master --depth 1 https://github.com/rbock/sqlpp11.git
+  - git clone https://github.com/HowardHinnant/date.git
+  - git clone https://github.com/rbock/sqlpp11.git
   - cd sqlpp11
   - cmake . -DHinnantDate_ROOT_DIR="C:/projects/date" -G "%generator%"
+  - cmake --build . --config %configuration%
   - cd ../sqlpp11-connector-postgresql
   - mkdir build
   - cd build

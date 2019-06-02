@@ -26,7 +26,6 @@ install:
   - cd ..
   - git clone https://github.com/HowardHinnant/date
   - cd date
-  - git checkout tags/v2.4
   - cmake -DCMAKE_BUILD_TYPE=Release -DTZ_CXX_STANDARD=11 .
   - make VERBOSE=1 && sudo make install
   - cd ..
