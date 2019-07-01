@@ -33,6 +33,10 @@ include("${CMAKE_CURRENT_LIST_DIR}/Sqlpp-connector-postgresqlTargets.cmake")
 set_property(TARGET Sqlpp::sqlpp11-connector-postgresql APPEND PROPERTY
   INTERFACE_INCLUDE_DIRECTORIES "${Sqlpp11_INCLUDE_DIRS};${PostgreSQL_INCLUDE_DIRS}"
 )
+set_property(TARGET Sqlpp::sqlpp11-connector-postgresql APPEND PROPERTY
+  INTERFACE_LINK_LIBRARIES "${PostgreSQL_LIBRARIES}"
+)
+
 
 set_property(TARGET Sqlpp::sqlpp11-connector-postgresql-dynamic APPEND PROPERTY
   INTERFACE_INCLUDE_DIRECTORIES "${Sqlpp11_INCLUDE_DIRS};${PostgreSQL_INCLUDE_DIRS}"
