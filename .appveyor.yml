@@ -39,6 +39,7 @@ build_script:
   - cd sqlpp11
   - cmake . -DHinnantDate_ROOT_DIR="C:/projects/date" -G "%generator%"
   - cmake --build . --config %configuration%
+  - cmake --build . --target install
   - cd ../sqlpp11-connector-postgresql
   - mkdir build
   - cd build
