@@ -28,7 +28,7 @@
 #ifndef SQLPP_POSTGRESQL_NO_CONFLICT_H
 #define SQLPP_POSTGRESQL_NO_CONFLICT_H
 
-#include <sqlpp11/postgresql/do_nothing.h>
+#include <sqlpp11/postgresql/on_conflict_do_nothing.h>
 #include <sqlpp11/statement.h>
 
 namespace sqlpp
@@ -37,16 +37,74 @@ namespace sqlpp
 
   namespace postgresql
   {
-    struct on_conflict_name_t
-    {
-    };
+    //struct on_conflict_name_t
+    //{
+    //};
 
-    struct on_conflict_t : public statement_name_t<on_conflict_name_t, tag::is_on_conflict>
+    struct on_conflict_t //: public statement_name_t<on_conflict_name_t, tag::is_on_conflict>
     {
+		using _traits = make_traits<no_value_t, tag::is_noop>;
+		using _nodes = sqlpp::detail::type_vector<>;
+
+		using _data_t = no_data_t;
+
+		template<typename Policies>
+		struct _impl_t
+		{
+			// workaround for msvc bug https://connect.microsoft.com/VisualStudio/Feedback/Details/2091069
+			_impl_t() = default;
+			_impl_t(const _data_t& data) : _data(data)
+			{
+			}
+
+			_data_t _data;
+		};
+
+		template<typename Policies>
+		struct _base_t
+		{
+			using _data_t = no_data_t;
+
+			// workaround for msvc bug https://connect.microsoft.com/VisualStudio/Feedback/Details/2091069
+			template<typename... Args>
+			_base_t(Args&&... args) : on_conflict{std::forward<Args>(args)...}
+			{
+			}
+
+			_impl_t<Policies> on_conflict;
+			_impl_t<Policies>& operator()()
+			{
+				return on_conflict;
+			}
+			const _impl_t<Policies>& operator()() const
+			{
+				return on_conflict;
+			}
+
+			template<typename T>
+			static auto _get_member(T t) -> decltype(t.on_conflict)
+			{
+				return t.on_conflict;
+			}
+
+			template <typename Check, typename T>
+			using _new_statement_t = new_statement_t<Check, Policies, on_conflict_t, T>;
+
+			using _consistency_check = consistent_t;
+
+			// implement do_nothing
+			auto do_nothing() const -> _new_statement_t<consistent_t, on_conflict_do_nothing_t>
+			{
+				return {static_cast<const derived_statement_t<Policies>&>(*this), on_conflict_do_nothing_t::_data_t{}};
+			}
+
+			// TODO: implement do_update
+			//void do_update(...);
+		};
     };
 
     template <typename Database>
-    using blank_on_conflict_t = statement_t<Database, on_conflict_t, no_do_nothing_t>;
+    using blank_on_conflict_t = statement_t<Database, on_conflict_t/*, no_do_nothing_t*/>;
     // no_do_update>;
 
     inline blank_on_conflict_t<void> on_conflict()
@@ -102,8 +160,9 @@ namespace sqlpp
 
         using _database_t = typename Policies::_database_t;
 
+		// Disable all checks for now
         template <typename... T>
-        static constexpr auto _check_tuple(std::tuple<T...>) -> check_selected_columns_t<T...>
+        static constexpr auto _check_tuple(std::tuple<T...>) -> consistent_t /*check_selected_columns_t<T...>*/
         {
           return {};
         }
@@ -120,14 +179,15 @@ namespace sqlpp
 
         using _consistency_check = consistent_t;
 
-        auto on_conflict() const -> _new_statement_t<consistent_t, do_nothing_t>
+        auto on_conflict() const -> _new_statement_t<consistent_t, on_conflict_t>
         {
+			return {static_cast<const derived_statement_t<Policies>&>(*this), on_conflict_t::_data_t{}};
         }
       };
     };
   }  // namespace postgresql
 
-  template <typename Context>
+  /*template <typename Context>
   struct serializer_t<Context, postgresql::on_conflict_name_t>
   {
     using _serialize_check = consistent_t;
@@ -138,7 +198,7 @@ namespace sqlpp
       context << "ON CONFLICT ";
       return context;
     }
-  };
+  };*/
 }  // namespace sqlpp
 
 #endif
