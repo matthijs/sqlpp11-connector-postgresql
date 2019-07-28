@@ -38,19 +38,20 @@ namespace sqlpp
 
   namespace postgresql
   {
-	  struct on_conflict_do_nothing_name_t
-	  {
-	  };
-	  struct on_conflict_do_nothing_t : public statement_name_t<on_conflict_do_nothing_t, tag::is_on_conflict_do_nothing>
-	  {
-	  };
-  }
+    struct on_conflict_do_nothing_name_t
+    {
+    };
+    struct on_conflict_do_nothing_t
+        : public statement_name_t<on_conflict_do_nothing_name_t, tag::is_on_conflict_do_nothing>
+    {
+    };
+  }  // namespace postgresql
 
   template <typename Context>
-  struct serializer_t<Context, postgresql::on_conflict_do_nothing_t>
+  struct serializer_t<Context, postgresql::on_conflict_do_nothing_name_t>
   {
     using _serialize_check = consistent_t;
-    using Operand = postgresql::on_conflict_do_nothing_t;
+    using Operand = postgresql::on_conflict_do_nothing_name_t;
 
     static Context& _(const Operand& o, Context& context)
     {
