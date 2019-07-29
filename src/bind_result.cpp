@@ -30,13 +30,14 @@
 #include <sqlpp11/postgresql/bind_result.h>
 
 #include <date/date.h>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 
 #include "detail/prepared_statement_handle.h"
 
 #if defined(_WIN32) || defined(_WIN64)
-#pragma warning (disable:4800)  // int to bool
+#pragma warning(disable : 4800)  // int to bool
 #endif
 
 namespace sqlpp
@@ -183,7 +184,7 @@ namespace sqlpp
         }
         return true;
       }
-    }
+    }  // namespace
 
     void bind_result_t::_bind_date_result(size_t _index, ::sqlpp::chrono::day_point* value, bool* is_null)
     {
@@ -276,6 +277,7 @@ namespace sqlpp
         if ((len > date_time_size) && (time_string[time_digits.size()] == '.'))
         {
           has_ms = true;
+          date_time_size++; // Taking the '.' into account
           const auto ms_string = time_string + time_digits.size() + 1;
 
           int digits_count = 0;
@@ -320,23 +322,19 @@ namespace sqlpp
           {
             zone_min = std::atoi(tz_string + tz_digits.size() + 1);
           }
-          // ignore -00:xx, as there currently is no timezone using it, and hopefully never will be
-          if (zone_hour >= 0)
+          if (_handle->debug())
           {
-            //*value += std::chrono::hours(zone_hour) + std::chrono::minutes(zone_min);
+            std::cerr << "PostgreSQL debug: Timezone is " << zone_hour << " : " << zone_min << std::endl;
           }
-          else
-          {
-            //*value += std::chrono::hours(zone_hour) - std::chrono::minutes(zone_min);
-          }
+          *value += std::chrono::hours(zone_hour);
+          // minutes should be removed from timestamp if TZ is -XX:YY
+          *value += (zone_hour >= 0 ? 1 : -1) * std::chrono::minutes(zone_min);
         }
         if (_handle->debug())
         {
           auto ts = std::chrono::system_clock::to_time_t(*value);
-          std::tm* tm = std::localtime(&ts);
-          std::string time_str{"1900-01-01 00:00:00 CEST"};
-          strftime(const_cast<char*>(time_str.data()), time_str.size(), "%F %T %Z", tm);
-          std::cerr << "PostgreSQL debug: calculated timestamp " << time_str << std::endl;
+          std::cerr << "PostgreSQL debug: calculated timestamp " << std::put_time(std::localtime(&ts), "%F %T %Z")
+                    << std::endl;
         }
       }
       else
@@ -344,5 +342,5 @@ namespace sqlpp
         *value = {};
       }
     }
-  }
-}
+  }  // namespace postgresql
+}  // namespace sqlpp
