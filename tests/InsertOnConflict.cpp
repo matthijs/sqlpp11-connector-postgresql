@@ -51,20 +51,19 @@ int InsertOnConflict(int argc, char** argv)
   std::cout << serialize(insert1, printer).str() << std::endl;
   printer.reset();
 
-  auto insert2 = sql::insert_into(foo).default_values().on_conflict().do_update(foo.beta = 5, foo.gamma = "test bla",
-                                                                                foo.c_bool = true);
+  auto insert2 = sql::insert_into(foo).default_values().on_conflict().do_update(foo.beta = 5, foo.gamma = "test bla", foo.c_bool = true);
   std::cout << serialize(insert2, printer).str() << std::endl;
+  printer.reset();
 
-  // sql::insert_into(foo).default_values().on_conflict().do_nothing();
-  /*sql::insert_into(foo).set(foo.gamma = "dsa")
-    .on_conflict()
-      .do_nothing();*/
+  // With where statement
+  auto insert3 = sql::insert_into(foo).default_values().on_conflict().do_update(foo.beta = 5, foo.gamma = "test bla", foo.c_bool = true).where(foo.beta == 2);
+  std::cout << serialize(insert3, printer).str() << std::endl;
+  printer.reset();
 
-  /*sql::insert_into(foo).set(foo.gamma = "dsa")
-    .on_conflict()
-    .do_update()
-      .set(column_list...)
-      .where(expressions...);*/
+  // Returning
+  auto insert4 = sql::insert_into(foo).default_values().on_conflict().do_update(foo.beta = 5, foo.gamma = "test bla", foo.c_bool = true).returning(foo.beta);
+  std::cout << serialize(insert4, printer).str() << std::endl;
+  printer.reset();
 
   return 0;
 }
