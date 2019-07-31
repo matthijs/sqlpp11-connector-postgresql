@@ -37,7 +37,7 @@ namespace sqlpp
   {
     template <typename Database>
     using blank_insert_t =
-        statement_t<Database, insert_t, no_into_t, no_insert_value_list_t, no_returning_t, no_on_conflict_t>;
+        statement_t<Database, insert_t, no_into_t, no_insert_value_list_t, no_on_conflict_t, no_returning_t>;
 
     inline auto insert() -> blank_insert_t<void>
     {
