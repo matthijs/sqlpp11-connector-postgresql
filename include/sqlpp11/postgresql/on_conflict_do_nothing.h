@@ -38,24 +38,91 @@ namespace sqlpp
 
   namespace postgresql
   {
-    struct on_conflict_do_nothing_name_t
+    // Forward declaration
+    template <typename ConflictTarget>
+    struct on_conflict_data_t;
+
+    template <typename ConflictTarget>
+    struct on_conflict_do_nothing_data_t
     {
+      on_conflict_do_nothing_data_t(on_conflict_data_t<ConflictTarget> column) : _column(column)
+      {
+      }
+
+      on_conflict_do_nothing_data_t(const on_conflict_do_nothing_data_t&) = default;
+      on_conflict_do_nothing_data_t(on_conflict_do_nothing_data_t&&) = default;
+      on_conflict_do_nothing_data_t& operator=(const on_conflict_do_nothing_data_t&) = default;
+      on_conflict_do_nothing_data_t& operator=(on_conflict_do_nothing_data_t&&) = default;
+      ~on_conflict_do_nothing_data_t() = default;
+
+      on_conflict_data_t<ConflictTarget> _column;
     };
+
+    template <typename ConflictTarget>
     struct on_conflict_do_nothing_t
-        : public statement_name_t<on_conflict_do_nothing_name_t, tag::is_on_conflict_do_nothing>
     {
+      using _traits = make_traits<no_value_t, tag::is_on_conflict_do_nothing>;
+      using _nodes = sqlpp::detail::type_vector<ConflictTarget>;
+
+      // Data
+      using _data_t = on_conflict_do_nothing_data_t<ConflictTarget>;
+
+      // Member implementation and methods
+      template <typename Policies>
+      struct _impl_t
+      {
+        // workaround for msvc bug https://connect.microsoft.com/VisualStudio/Feedback/Details/2173269
+        _impl_t() = default;
+        _impl_t(const _data_t& data) : _data(data)
+        {
+        }
+
+        _data_t _data;
+      };
+
+      // Base template to be inherited by the statement
+      template <typename Policies>
+      struct _base_t
+      {
+        using _data_t = on_conflict_do_nothing_data_t<ConflictTarget>;
+        // workaround for msvc bug https://connect.microsoft.com/VisualStudio/Feedback/Details/2173269
+
+        template <typename... Args>
+        _base_t(Args&&... args) : column{std::forward<Args>(args)...}
+        {
+        }
+
+        _impl_t<Policies> column;
+        _impl_t<Policies>& operator()()
+        {
+          return column;
+        }
+        const _impl_t<Policies>& operator()() const
+        {
+          return column;
+        }
+
+        template <typename T>
+        static auto _get_member(T t) -> decltype(t.column)
+        {
+          return t.column;
+        }
+
+        using _consistency_check = consistent_t;
+      };
     };
   }  // namespace postgresql
 
-  template <typename Context>
-  struct serializer_t<Context, postgresql::on_conflict_do_nothing_name_t>
+  template <typename Context, typename ConflictTarget>
+  struct serializer_t<Context, postgresql::on_conflict_do_nothing_data_t<ConflictTarget>>
   {
     using _serialize_check = consistent_t;
-    using Operand = postgresql::on_conflict_do_nothing_name_t;
+    using Operand = postgresql::on_conflict_do_nothing_data_t<ConflictTarget>;
 
     static Context& _(const Operand& o, Context& context)
     {
-      context << " ON CONFLICT DO NOTHING";
+      serialize(o._column, context);
+      context << "DO NOTHING";
       return context;
     }
   };

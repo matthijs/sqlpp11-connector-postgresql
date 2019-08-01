@@ -40,10 +40,12 @@ namespace sqlpp
   namespace postgresql
   {
     // Assignments data
-    template <typename Database, typename... Assignments>
+    template <typename Database, typename ConflictTarget, typename... Assignments>
     struct on_conflict_do_update_data_t
     {
-      on_conflict_do_update_data_t(std::tuple<Assignments...> assignments) : _assignments(assignments)
+      on_conflict_do_update_data_t(on_conflict_data_t<ConflictTarget> conflict_target,
+                                   std::tuple<Assignments...> assignments)
+          : _conflict_target(conflict_target), _assignments(assignments)
       {
       }
 
@@ -53,16 +55,17 @@ namespace sqlpp
       on_conflict_do_update_data_t& operator=(on_conflict_do_update_data_t&&) = default;
       ~on_conflict_do_update_data_t() = default;
 
+      on_conflict_data_t<ConflictTarget> _conflict_target;
       std::tuple<Assignments...> _assignments;
       // interpretable_list_t<Database> _dynamic_assignments;
     };
 
     // Where data
-    template <typename Database, typename Expression, typename... Assignments>
+    template <typename Database, typename ConflictTarget, typename Expression, typename... Assignments>
     struct on_conflict_do_update_where_data_t
     {
-      on_conflict_do_update_where_data_t(Expression expression,
-                                         on_conflict_do_update_data_t<Database, Assignments...> assignments)
+      on_conflict_do_update_where_data_t(
+          Expression expression, on_conflict_do_update_data_t<Database, ConflictTarget, Assignments...> assignments)
           : _expression(expression), _assignments(assignments)
       {
       }
@@ -73,19 +76,19 @@ namespace sqlpp
       on_conflict_do_update_where_data_t& operator=(on_conflict_do_update_where_data_t&&) = default;
 
       Expression _expression;
-      on_conflict_do_update_data_t<Database, Assignments...> _assignments;
+      on_conflict_do_update_data_t<Database, ConflictTarget, Assignments...> _assignments;
       // interpretable_list_t<Database> _dynamic_expressions;
     };
 
     // extra where statement
-    template <typename Database, typename Expression, typename... Assignments>
+    template <typename Database, typename ConflictTarget, typename Expression, typename... Assignments>
     struct on_conflict_do_update_where_t
     {
       using _traits = make_traits<no_value_t, tag::is_on_conflict_do_update>;
-      using _nodes = sqlpp::detail::type_vector<Expression, Assignments...>;
+      using _nodes = sqlpp::detail::type_vector<ConflictTarget, Expression, Assignments...>;
       using _is_dynamic = is_database<Database>;
 
-      using _data_t = on_conflict_do_update_where_data_t<Database, Expression, Assignments...>;
+      using _data_t = on_conflict_do_update_where_data_t<Database, ConflictTarget, Expression, Assignments...>;
 
       // Member implementation and methods
       template <typename Policies>
@@ -103,7 +106,7 @@ namespace sqlpp
       template <typename Policies>
       struct _base_t
       {
-        using _data_t = on_conflict_do_update_where_data_t<Database, Expression, Assignments...>;
+        using _data_t = on_conflict_do_update_where_data_t<Database, ConflictTarget, Expression, Assignments...>;
 
         // workaround for msvc bug https://connect.microsoft.com/VisualStudio/Feedback/Details/2173269
         template <typename... Args>
@@ -133,15 +136,15 @@ namespace sqlpp
     };
 
     // Use the update_list
-    template <typename Database, typename... Assignments>
+    template <typename Database, typename ConflictTarget, typename... Assignments>
     struct on_conflict_do_update_t
     {
       using _traits = make_traits<no_value_t, tag::is_on_conflict_do_update>;
-      using _nodes = sqlpp::detail::type_vector<Assignments...>;
+      using _nodes = sqlpp::detail::type_vector<ConflictTarget, Assignments...>;
       using _is_dynamic = is_database<Database>;
 
       // Data
-      using _data_t = on_conflict_do_update_data_t<Database, Assignments...>;
+      using _data_t = on_conflict_do_update_data_t<Database, ConflictTarget, Assignments...>;
 
       // Member implementation with data and methods
       template <typename Policies>
@@ -160,7 +163,7 @@ namespace sqlpp
       template <typename Policies>
       struct _base_t
       {
-        using _data_t = on_conflict_do_update_data_t<Database, Assignments...>;
+        using _data_t = on_conflict_do_update_data_t<Database, ConflictTarget, Assignments...>;
 
         // workaround for msvc bug https://connect.microsoft.com/VisualStudio/Feedback/Details/2173269
         template <typename... Args>
@@ -193,24 +196,27 @@ namespace sqlpp
         // WHERE
         template <typename Expression>
         auto where(Expression expression) const
-            -> _new_statement_t<consistent_t, on_conflict_do_update_where_t<void, Expression, Assignments...>>
+            -> _new_statement_t<consistent_t,
+                                on_conflict_do_update_where_t<void, ConflictTarget, Expression, Assignments...>>
         {
           return {static_cast<const derived_statement_t<Policies>&>(*this),
-                  on_conflict_do_update_where_data_t<void, Expression, Assignments...>(expression, assignments._data)};
+                  on_conflict_do_update_where_data_t<void, ConflictTarget, Expression, Assignments...>(
+                      expression, assignments._data)};
         }
       };
     };
   }  // namespace postgresql
 
-  template <typename Context, typename Database, typename... Assignments>
-  struct serializer_t<Context, postgresql::on_conflict_do_update_data_t<Database, Assignments...>>
+  template <typename Context, typename Database, typename ConflictTarget, typename... Assignments>
+  struct serializer_t<Context, postgresql::on_conflict_do_update_data_t<Database, ConflictTarget, Assignments...>>
   {
     using _serialize_check = consistent_t;
-    using Operand = postgresql::on_conflict_do_update_data_t<Database, Assignments...>;
+    using Operand = postgresql::on_conflict_do_update_data_t<Database, ConflictTarget, Assignments...>;
 
     static Context& _(const Operand& o, Context& context)
     {
-      context << " ON CONFLICT DO UPDATE SET ";
+      serialize(o._conflict_target, context);
+      context << "DO UPDATE SET ";
       interpret_tuple(o._assignments, ",", context);
       /*if (sizeof...(Assignments) and not o._dynamic_assignments.empty())
       {
@@ -221,11 +227,14 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Database, typename Expression, typename... Assignments>
-  struct serializer_t<Context, postgresql::on_conflict_do_update_where_data_t<Database, Expression, Assignments...>>
+  template <typename Context, typename Database, typename ConflictTarget, typename Expression, typename... Assignments>
+  struct serializer_t<
+      Context,
+      postgresql::on_conflict_do_update_where_data_t<Database, ConflictTarget, Expression, Assignments...>>
   {
     using _serialize_check = consistent_t;
-    using Operand = postgresql::on_conflict_do_update_where_data_t<Database, Expression, Assignments...>;
+    using Operand =
+        postgresql::on_conflict_do_update_where_data_t<Database, ConflictTarget, Expression, Assignments...>;
 
     static Context& _(const Operand& o, Context& context)
     {

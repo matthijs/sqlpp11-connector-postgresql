@@ -38,12 +38,29 @@ namespace sqlpp
 
   namespace postgresql
   {
+    template <typename ConflictTarget>
+    struct on_conflict_data_t
+    {
+      on_conflict_data_t(ConflictTarget column) : _column(column)
+      {
+      }
+
+      on_conflict_data_t(const on_conflict_data_t&) = default;
+      on_conflict_data_t(on_conflict_data_t&&) = default;
+      on_conflict_data_t& operator=(const on_conflict_data_t&) = default;
+      on_conflict_data_t& operator=(on_conflict_data_t&&) = default;
+      ~on_conflict_data_t() = default;
+
+      ConflictTarget _column;
+    };
+
+    template <typename ConflictTarget>
     struct on_conflict_t
     {
       using _traits = make_traits<no_value_t, tag::is_noop>;
-      using _nodes = sqlpp::detail::type_vector<>;
+      using _nodes = sqlpp::detail::type_vector<ConflictTarget>;
 
-      using _data_t = no_data_t;
+      using _data_t = on_conflict_data_t<ConflictTarget>;
 
       template <typename Policies>
       struct _impl_t
@@ -60,7 +77,7 @@ namespace sqlpp
       template <typename Policies>
       struct _base_t
       {
-        using _data_t = no_data_t;
+        using _data_t = on_conflict_data_t<ConflictTarget>;
 
         // workaround for msvc bug https://connect.microsoft.com/VisualStudio/Feedback/Details/2091069
         template <typename... Args>
@@ -90,19 +107,21 @@ namespace sqlpp
         using _consistency_check = consistent_t;
 
         // DO NOTHING
-        auto do_nothing() const -> _new_statement_t<consistent_t, on_conflict_do_nothing_t>
+        auto do_nothing() const -> _new_statement_t<consistent_t, on_conflict_do_nothing_t<ConflictTarget>>
         {
-          return {static_cast<const derived_statement_t<Policies>&>(*this), on_conflict_do_nothing_t::_data_t{}};
+          return {static_cast<const derived_statement_t<Policies>&>(*this),
+                  on_conflict_do_nothing_data_t<ConflictTarget>{on_conflict._data}};
         }
 
         // DO UPDATE
         template <typename... Assignments>
         auto do_update(Assignments... assignments) const
-            -> _new_statement_t<consistent_t, on_conflict_do_update_t<void, Assignments...>>
+            -> _new_statement_t<consistent_t, on_conflict_do_update_t<void, ConflictTarget, Assignments...>>
         {
           // using Check = check_update_static_set_t<Assignments...>;
           return {static_cast<const derived_statement_t<Policies>&>(*this),
-                  on_conflict_do_update_data_t<void, Assignments...>{std::make_tuple(assignments...)}};
+                  on_conflict_do_update_data_t<void, ConflictTarget, Assignments...>(on_conflict._data,
+                                                                                     std::make_tuple(assignments...))};
         }
       };
     };
@@ -174,26 +193,47 @@ namespace sqlpp
 
         using _consistency_check = consistent_t;
 
-        auto on_conflict() const -> _new_statement_t<consistent_t, on_conflict_t>
+        auto on_conflict() const -> _new_statement_t<consistent_t, on_conflict_t<no_data_t>>
         {
-          return {static_cast<const derived_statement_t<Policies>&>(*this), on_conflict_t::_data_t{}};
+          return {static_cast<const derived_statement_t<Policies>&>(*this), on_conflict_data_t<no_data_t>{no_data_t{}}};
+        }
+
+        template <typename ConflictTarget>
+        auto on_conflict(ConflictTarget column) const -> _new_statement_t<consistent_t, on_conflict_t<ConflictTarget>>
+        {
+          return {static_cast<const derived_statement_t<Policies>&>(*this), on_conflict_data_t<ConflictTarget>{column}};
         }
       };
     };
   }  // namespace postgresql
 
-  /*template <typename Context>
-  struct serializer_t<Context, postgresql::on_conflict_name_t>
+  template <typename Context, typename ConflictTarget>
+  struct serializer_t<Context, postgresql::on_conflict_data_t<ConflictTarget>>
   {
     using _serialize_check = consistent_t;
-    using Operand = postgresql::on_conflict_name_t;
+    using Operand = postgresql::on_conflict_data_t<ConflictTarget>;
 
     static Context& _(const Operand& o, Context& context)
     {
-      context << "ON CONFLICT ";
+      context << " ON CONFLICT (";
+      serialize(o._column, context);
+      context << ") ";
       return context;
     }
-  };*/
+  };
+
+  template <typename Context>
+  struct serializer_t<Context, postgresql::on_conflict_data_t<no_data_t>>
+  {
+    using _serialize_check = consistent_t;
+    using Operand = postgresql::on_conflict_data_t<no_data_t>;
+
+    static Context& _(const Operand& o, Context& context)
+    {
+      context << " ON CONFLICT ";
+      return context;
+    }
+  };
 }  // namespace sqlpp
 
 #endif

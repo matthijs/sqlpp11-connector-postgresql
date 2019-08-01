@@ -51,18 +51,39 @@ int InsertOnConflict(int argc, char** argv)
   std::cout << serialize(insert1, printer).str() << std::endl;
   printer.reset();
 
-  auto insert2 = sql::insert_into(foo).default_values().on_conflict().do_update(foo.beta = 5, foo.gamma = "test bla", foo.c_bool = true);
+  // Test on conflict (with conflict target)
+  auto insert1_1 = sql::insert_into(foo).default_values().on_conflict(foo.beta).do_nothing();
+  std::cout << serialize(insert1_1, printer).str() << std::endl;
+  printer.reset();
+
+  auto insert2 = sql::insert_into(foo).default_values().on_conflict(foo.beta).do_update(
+      foo.beta = 5, foo.gamma = "test bla", foo.c_bool = true);
   std::cout << serialize(insert2, printer).str() << std::endl;
   printer.reset();
 
   // With where statement
-  auto insert3 = sql::insert_into(foo).default_values().on_conflict().do_update(foo.beta = 5, foo.gamma = "test bla", foo.c_bool = true).where(foo.beta == 2);
+  auto insert3 = sql::insert_into(foo)
+                     .default_values()
+                     .on_conflict(foo.beta)
+                     .do_update(foo.beta = 5, foo.gamma = "test bla", foo.c_bool = true)
+                     .where(foo.beta == 2)
+                     .returning(foo.gamma);
   std::cout << serialize(insert3, printer).str() << std::endl;
   printer.reset();
 
   // Returning
-  auto insert4 = sql::insert_into(foo).default_values().on_conflict().do_update(foo.beta = 5, foo.gamma = "test bla", foo.c_bool = true).returning(foo.beta);
+  auto insert4 = sql::insert_into(foo)
+                     .default_values()
+                     .on_conflict(foo.beta)
+                     .do_update(foo.beta = 5, foo.gamma = "test bla", foo.c_bool = true)
+                     .returning(foo.beta);
   std::cout << serialize(insert4, printer).str() << std::endl;
+  printer.reset();
+
+  // Conflict target
+  auto insert5 = sql::insert_into(foo).default_values().on_conflict(foo.beta).do_update(
+      foo.beta = 5, foo.gamma = "test bla", foo.c_bool = true);
+  std::cout << serialize(insert5, printer).str() << std::endl;
   printer.reset();
 
   return 0;
