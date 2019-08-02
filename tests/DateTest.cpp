@@ -54,16 +54,16 @@ namespace
   template<class Db>
   void prepare_table(Db&& db, bool with_tz)
   {
+    db.execute("SET TIME ZONE 'UTC'");
+    db.execute("DROP TABLE IF EXISTS tab_date_time");
     if (with_tz)
     {
       // prepare test with timezone
-      db.execute("DROP TABLE IF EXISTS tab_date_time");
       db.execute("CREATE TABLE tab_date_time (col_day_point DATE, col_time_point TIMESTAMP WITH TIME ZONE)");
     }
     else
     {
     // prepare  test without timezone
-    db.execute("DROP TABLE IF EXISTS tab_date_time");
     db.execute("CREATE TABLE tab_date_time (col_day_point DATE, col_time_point TIMESTAMP)");
     }
   }

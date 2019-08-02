@@ -30,11 +30,17 @@ find_dependency(PostgreSQL REQUIRED)
 
 include("${CMAKE_CURRENT_LIST_DIR}/Sqlpp-connector-postgresqlTargets.cmake")
 
-set_target_properties(Sqlpp::sqlpp11-connector-postgresql PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${Sqlpp11_INCLUDE_DIRS};${PostgreSQL_INCLUDE_DIRS};$<TARGET_PROPERTY:INTERFACE_INCLUDE_DIRECTORIES>"
+set_property(TARGET Sqlpp::sqlpp11-connector-postgresql APPEND PROPERTY
+  INTERFACE_INCLUDE_DIRECTORIES "${Sqlpp11_INCLUDE_DIRS};${PostgreSQL_INCLUDE_DIRS}"
+)
+set_property(TARGET Sqlpp::sqlpp11-connector-postgresql APPEND PROPERTY
+  INTERFACE_LINK_LIBRARIES "${PostgreSQL_LIBRARIES}"
 )
 
-set_target_properties(Sqlpp::sqlpp11-connector-postgresql-dynamic PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${Sqlpp11_INCLUDE_DIRS};${PostgreSQL_INCLUDE_DIRS};$<TARGET_PROPERTY:INTERFACE_INCLUDE_DIRECTORIES>"
-  INTERFACE_LINK_LIBRARIES "${PostgreSQL_LIBRARIES};$<TARGET_PROPERTY:INTERFACE_LINK_LIBRARIES>"
+
+set_property(TARGET Sqlpp::sqlpp11-connector-postgresql-dynamic APPEND PROPERTY
+  INTERFACE_INCLUDE_DIRECTORIES "${Sqlpp11_INCLUDE_DIRS};${PostgreSQL_INCLUDE_DIRS}"
+)
+set_property(TARGET Sqlpp::sqlpp11-connector-postgresql-dynamic APPEND PROPERTY
+  INTERFACE_LINK_LIBRARIES "${PostgreSQL_LIBRARIES}"
 )

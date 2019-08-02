@@ -86,7 +86,8 @@ int DateTime(int, char*[])
     std::cerr << "For testing, you'll need to create a database sqlpp_postgresql" << std::endl;
     throw;
   }
-
+  
+  db.execute(R"(SET TIME ZONE 'UTC';)");
   db.execute(R"(DROP TABLE IF EXISTS tabfoo;)");
   db.execute(R"(CREATE TABLE tabfoo
                (
