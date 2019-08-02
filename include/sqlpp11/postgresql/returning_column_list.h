@@ -28,19 +28,19 @@
 #ifndef SQLPP_POSTGRESQL_RETURNING_COLUMN_LIST_H
 #define SQLPP_POSTGRESQL_RETURNING_COLUMN_LIST_H
 
-#include <tuple>
-#include <sqlpp11/operand_check.h>
-#include <sqlpp11/result_row.h>
-#include <sqlpp11/table.h>
 #include <sqlpp11/data_types/no_value.h>
-#include <sqlpp11/field_spec.h>
-#include <sqlpp11/expression_fwd.h>
-#include <sqlpp11/select_pseudo_table.h>
-#include <sqlpp11/named_interpretable.h>
-#include <sqlpp11/interpret_tuple.h>
-#include <sqlpp11/policy_update.h>
-#include <sqlpp11/detail/type_set.h>
 #include <sqlpp11/detail/copy_tuple_args.h>
+#include <sqlpp11/detail/type_set.h>
+#include <sqlpp11/expression_fwd.h>
+#include <sqlpp11/field_spec.h>
+#include <sqlpp11/interpret_tuple.h>
+#include <sqlpp11/named_interpretable.h>
+#include <sqlpp11/operand_check.h>
+#include <sqlpp11/policy_update.h>
+#include <sqlpp11/result_row.h>
+#include <sqlpp11/select_pseudo_table.h>
+#include <sqlpp11/table.h>
+#include <tuple>
 
 namespace sqlpp
 {
@@ -69,7 +69,7 @@ namespace sqlpp
                                     tag::is_selectable>;  // TODO: Is this correct?
         using _alias_t = typename Column::_alias_t;
       };
-    }
+    }  // namespace detail
 
     template <typename Db>
     struct dynamic_returning_column_list
@@ -102,7 +102,7 @@ namespace sqlpp
         return true;
       }
     };
-  }
+  }  // namespace postgresql
 
   template <typename Context, typename Db>
   struct serializer_t<Context, postgresql::dynamic_returning_column_list<Db>>
@@ -239,8 +239,7 @@ namespace sqlpp
 
         // workaround for msvc bug https://connect.microsoft.com/VisualStudio/Feedback/Details/2173269
         template <typename... Args>
-        _base_t(Args&&... args)
-            : returning_columns{std::forward<Args>(args)...}
+        _base_t(Args&&... args) : returning_columns{std::forward<Args>(args)...}
         {
         }
 
@@ -270,12 +269,12 @@ namespace sqlpp
         }
 
         // Checks
-        using _column_check =
+        using _table_check =
             typename std::conditional<Policies::template _no_unknown_tables<returning_column_list_t>::value,
                                       consistent_t,
                                       assert_no_unknown_tables_in_returning_columns_t>::type;
 
-        using _consistency_check = ::sqlpp::detail::get_first_if<is_inconsistent_t, consistent_t, _column_check>;
+        using _consistency_check = ::sqlpp::detail::get_first_if<is_inconsistent_t, consistent_t, _table_check>;
       };
 
       // Result methods
@@ -408,8 +407,7 @@ namespace sqlpp
 
         // workaround for msvc bug https://connect.microsoft.com/VisualStudio/Feedback/Details/2173269
         template <typename... Args>
-        _base_t(Args&... args)
-            : no_returned_columns{std::forward<Args>(args)...}
+        _base_t(Args&... args) : no_returned_columns{std::forward<Args>(args)...}
         {
         }
 
@@ -505,7 +503,7 @@ namespace sqlpp
         }
       };
     };
-  }
+  }  // namespace postgresql
 
   // Interpreters
   template <typename Context, typename Database, typename... Columns>
@@ -533,6 +531,6 @@ namespace sqlpp
   //        return statement_t<void, no_returning_column_list_t>().returning(std::forward<T>(t)...);
   //      }
   //    }
-}
+}  // namespace sqlpp
 
 #endif
