@@ -108,6 +108,7 @@ namespace sqlpp
           return t.column;
         }
 
+        // No consistency check needed, do nothing is just do nothing.
         using _consistency_check = consistent_t;
       };
     };

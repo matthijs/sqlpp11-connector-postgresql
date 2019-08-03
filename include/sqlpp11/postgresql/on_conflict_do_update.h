@@ -32,6 +32,7 @@
 #include <sqlpp11/interpret_tuple.h>
 #include <sqlpp11/interpretable_list.h>
 #include <sqlpp11/type_traits.h>
+#include <sqlpp11/where.h>
 
 namespace sqlpp
 {
@@ -130,7 +131,6 @@ namespace sqlpp
           return t.where;
         }
 
-        // TODO: better checks
         using _consistency_check = consistent_t;
       };
     };
@@ -187,7 +187,6 @@ namespace sqlpp
           return t.assignments;
         }
 
-        // TODO: better checks
         using _consistency_check = consistent_t;
 
         template <typename Check, typename T>
@@ -196,7 +195,7 @@ namespace sqlpp
         // WHERE
         template <typename Expression>
         auto where(Expression expression) const
-            -> _new_statement_t<consistent_t,
+            -> _new_statement_t<check_where_static_t<Expression>,
                                 on_conflict_do_update_where_t<void, ConflictTarget, Expression, Assignments...>>
         {
           return {static_cast<const derived_statement_t<Policies>&>(*this),
