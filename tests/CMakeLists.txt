@@ -25,17 +25,16 @@
 
 # The available tests
 set(test_names
-	#BasicTest
-	#ConstructorTest
-	#DateTest
-	#DateTime
-	#Exceptions
-	#Returning
-	#ReturningAssert
-	#Select
-	#SelectTest
-	#TransactionTest
-	#TypeTest
+	BasicTest
+	ConstructorTest
+	DateTest
+	DateTime
+	Exceptions
+	Returning
+	Select
+	SelectTest
+	TransactionTest
+	TypeTest
 	InsertOnConflict
 	)
 
