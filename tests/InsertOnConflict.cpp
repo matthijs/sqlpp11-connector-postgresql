@@ -37,7 +37,7 @@
 
 namespace sql = sqlpp::postgresql;
 
-int InsertOnConflict(int argc, char** argv)
+int InsertOnConflict(int, char*[])
 {
   model::TabFoo foo = {};
   // model::TabBar bar = {};
