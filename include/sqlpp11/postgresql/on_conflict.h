@@ -34,7 +34,10 @@
 
 namespace sqlpp
 {
-  SQLPP_VALUE_TRAIT_GENERATOR(is_on_conflict)
+  SQLPP_VALUE_TRAIT_GENERATOR(is_on_conflict);
+
+  SQLPP_PORTABLE_STATIC_ASSERT(assert_on_conflict_action_t,
+                               "either do_nothing() or do_update(...) is required with on_conflict");
 
   namespace postgresql
   {
@@ -148,7 +151,7 @@ namespace sqlpp
         template <typename Check, typename T>
         using _new_statement_t = new_statement_t<Check, Policies, on_conflict_t, T>;
 
-        using _consistency_check = consistent_t;
+        using _consistency_check = assert_on_conflict_action_t;
 
         // DO NOTHING
         auto do_nothing() const -> _new_statement_t<consistent_t, on_conflict_do_nothing_t<ConflictTarget>>
