@@ -7,6 +7,10 @@ compiler:
   - gcc
   #- clang
 
+addons:
+  apt:
+    packages: lcov
+
 notifications:
   email:
     on_success: change
