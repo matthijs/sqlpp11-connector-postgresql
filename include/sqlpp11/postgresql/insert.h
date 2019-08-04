@@ -28,6 +28,7 @@
 #define SQLPP_POSTGRESQL_INSERT_H
 
 #include <sqlpp11/insert.h>
+#include <sqlpp11/postgresql/on_conflict.h>
 #include <sqlpp11/postgresql/returning.h>
 
 namespace sqlpp
@@ -35,7 +36,8 @@ namespace sqlpp
   namespace postgresql
   {
     template <typename Database>
-    using blank_insert_t = statement_t<Database, insert_t, no_into_t, no_insert_value_list_t, no_returning_t>;
+    using blank_insert_t =
+        statement_t<Database, insert_t, no_into_t, no_insert_value_list_t, no_on_conflict_t, no_returning_t>;
 
     inline auto insert() -> blank_insert_t<void>
     {
@@ -61,7 +63,7 @@ namespace sqlpp
       static_assert(std::is_base_of<connection, Database>::value, "Invalid database parameter");
       return {blank_insert_t<Database>().into(table)};
     }
-  }
-}
+  }  // namespace postgresql
+}  // namespace sqlpp
 
 #endif
