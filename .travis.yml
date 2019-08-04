@@ -38,11 +38,18 @@ install:
 before_script:
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCODE_COVERAGE=ON -DCMAKE_MODULE_PATH="/usr/local/lib/cmake/Sqlpp11"
+  - cmake .. -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug -DCODE_COVERAGE=ON -DCMAKE_MODULE_PATH="/usr/local/lib/cmake/Sqlpp11"
 
 script:
   - cmake --build .
   - ctest --output-on-failure
 
 after_success:
-  - coveralls --root .. --exclude build --gcov-options '\-lp'
+  # Create lcov report
+  - lcov --directory . --capture --output-file coverage.info
+  # Filter out system information
+  - lcov --remove coverage.info '/usr/*' --output-file coverage.info
+  # Output
+  - lcov --list coverage.info
+  # Upload to codecov
+  - bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
