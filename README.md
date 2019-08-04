@@ -9,10 +9,10 @@ sqlpp11 is distributed under the [BSD 2-Clause License](https://github.com/matth
 
 Status:
 -------------
-Branch / Compiler | gcc 4.8 | MSVC 2015/2017 | Code coverage
-------------------|---------|----------------|--------------
-master | [![Build Status](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql.svg?branch=master)](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql?branch=master) | [![Build status](https://ci.appveyor.com/api/projects/status/bmor62aunb03hoeg/branch/master?svg=true)](https://ci.appveyor.com/project/matthijs/sqlpp11-connector-postgresql) | [![codecov](https://codecov.io/gh/matthijs/sqlpp11-connector-postgresql/branch/master/graph/badge.svg)](https://codecov.io/gh/matthijs/sqlpp11-connector-postgresql)
-develop | [![Build Status](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql.svg?branch=develop)](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql?branch=develop) | [![Build status](https://ci.appveyor.com/api/projects/status/bmor62aunb03hoeg/branch/develop?svg=true)](https://ci.appveyor.com/project/matthijs/sqlpp11-connector-postgresql) | [![codecov](https://codecov.io/gh/matthijs/sqlpp11-connector-postgresql/branch/develop/graph/badge.svg)](https://codecov.io/gh/matthijs/sqlpp11-connector-postgresql)
+[![Build Status](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql.svg?branch=master)](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql?branch=master)
+[![Build status](https://ci.appveyor.com/api/projects/status/bmor62aunb03hoeg/branch/master?svg=true)](https://ci.appveyor.com/project/matthijs/sqlpp11-connector-postgresql)
+[![codecov](https://codecov.io/gh/matthijs/sqlpp11-connector-postgresql/branch/master/graph/badge.svg)](https://codecov.io/gh/matthijs/sqlpp11-connector-postgresql)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ad98471cab324e1093f9554b88e90004)](https://www.codacy.com/app/matthijs_2/sqlpp11-connector-postgresql)
 
 Examples
 ========
