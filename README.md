@@ -13,6 +13,7 @@ Status:
 [![Build status](https://ci.appveyor.com/api/projects/status/bmor62aunb03hoeg/branch/master?svg=true)](https://ci.appveyor.com/project/matthijs/sqlpp11-connector-postgresql)
 [![codecov](https://codecov.io/gh/matthijs/sqlpp11-connector-postgresql/branch/master/graph/badge.svg)](https://codecov.io/gh/matthijs/sqlpp11-connector-postgresql)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ad98471cab324e1093f9554b88e90004)](https://www.codacy.com/app/matthijs_2/sqlpp11-connector-postgresql)
+[![Join the chat at https://gitter.im/sqlpp11/Lobby](https://badges.gitter.im/sqlpp11/Lobby.svg)](https://gitter.im/sqlpp11/Lobby)
 
 Examples
 ========
