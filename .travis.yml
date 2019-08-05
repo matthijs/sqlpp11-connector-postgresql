@@ -59,6 +59,7 @@ before_script:
   - cd ..
 
 script:
+  - cat cov-int/scm_log.txt
   - cmake --build build
   - cd build
   - ctest --output-on-failure
