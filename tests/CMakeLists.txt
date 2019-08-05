@@ -70,6 +70,8 @@ TestStaticCheck(OnConflictMissingAssignmentsDoUpdate)
 TestStaticCheck(OnConflictInvalidAssignmentsDoUpdate)
 TestStaticCheck(OnConflictEmptyWhereDoUpdate)
 TestStaticCheck(OnConflictInvalidWhereDoUpdate)
+TestStaticCheck(ReturningEmptyAssert)
+TestStaticCheck(ReturningInvalidArgument)
 
 #macro (build_and_run arg)
 #    # Add headers to sources to enable file browsing in IDEs
