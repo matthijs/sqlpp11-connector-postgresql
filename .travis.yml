@@ -53,7 +53,10 @@ install:
   - cd ../sqlpp11-connector-postgresql
 
 before_script:
-  - cmake -B build -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug -DCODE_COVERAGE=ON -DCMAKE_MODULE_PATH="/usr/local/lib/cmake/Sqlpp11"
+  - mkdir build
+  - cd build
+  - cmake .. -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug -DCODE_COVERAGE=ON -DCMAKE_MODULE_PATH="/usr/local/lib/cmake/Sqlpp11"
+  - cd ..
 
 script:
   - cmake --build build
