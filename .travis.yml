@@ -13,7 +13,7 @@ addons:
       description: "PostgreSQL connector for sqlpp11"
     notification_email: matthijs@cacholong.nl
     build_command_prepend: "mkdir build-cov && cd build-cov && cmake .. -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug && cd .."
-    build_command: "make -C build-cov test"
+    build_command: "make -C build-cov"
     branch_pattern: develop
 
 language: cpp
