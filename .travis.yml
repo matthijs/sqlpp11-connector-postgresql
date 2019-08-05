@@ -6,13 +6,13 @@ env:
 
 addons:
   apt:
-    packages: lcov
+    packages: lcov postgresql-server-dev-all
   coverity_scan:
     project:
       name: "matthijs/sqlpp11-connector-postgresql"
       description: "PostgreSQL connector for sqlpp11"
     notification_email: matthijs@cacholong.nl
-    build_command_prepend: "mkdir build-cov && cd build-cov && cmake .. -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug && cd .."
+    build_command_prepend: "cmake -B build-cov -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug"
     build_command: "cmake --build build-cov"
     branch_pattern: develop
 
@@ -37,7 +37,6 @@ before_install:
   - pip install --user cpp-coveralls
 
 install:
-  - sudo apt-get install -y postgresql-server-dev-all
   - pwd
   - g++ --version
   - cmake --version
