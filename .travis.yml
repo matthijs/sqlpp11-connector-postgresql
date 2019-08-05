@@ -19,7 +19,7 @@ addons:
 language: cpp
 
 sudo: required
-dist: bionic
+dist: xenial
 
 compiler:
   - gcc
