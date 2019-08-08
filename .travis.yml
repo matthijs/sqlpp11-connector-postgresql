@@ -1,20 +1,6 @@
-env:
-  global:
-    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-    #   via the "travis encrypt" command using the project repo's public key
-    - secure: "qh0902Uk8uJnh479efbxlMVtko8szM+FDqrweWJG46mmSlYQtehGI3iO4alPdcWvo+YMnvOZXnnBsfF84N0AYHYkUg3e7XOgmeLMlSCbu/iBOBdn645sdJMtHY8wos+zItgSk5GzP1ap4hf/juqr1jfQZIoD1c4eiW9G53oEOKDeC8MiyvAQmi4vCWnQ/Y2gDELCzzGf7t2u0z9n19+NjFwScSRMVGWAKh3t0h7bOt7zohu2Ywc4ZfKYBI7J/gZpimbwRiVHja8GUrxcng+oARhCGDefJ6xkJs/msCeVd/9oMJg5Twlr20/k+16fVqlLz/o2MRJEwKKa0xCydvBBX9RyXHQm75sufSspFNkD01U7Dpnrv5KpMfaInUxnO7BV3D74EgjLpUIMHwEhFUV/G0kYJ1z6KDZq37tOAQKuGMyCVUkmKGyN/WJn8H5F0zbKFwmzBUSctMYelnH2J1JEFlvgckjMIoyj6oI6NAQhZcUMEWyANbO1sO9aCkKyBWSgxPeW8KRW569s0mUAUGfG9ZXUwIOK5PkrLfBCfj0DojYWWZt2u/vpmNYWrVT4j2GaYE4v0m9gTk+91819nAk6yyRTF/7bPBETF0nKLmvYTwBE1TJ1lOVs9SMUOBcljFH5eFHJUCTlzH5LlFGdsd4A0cBQKh0toRk41BQmPUJWM4Y="
-
 addons:
   apt:
     packages: lcov postgresql-server-dev-all
-  coverity_scan:
-    project:
-      name: "matthijs/sqlpp11-connector-postgresql"
-      description: "PostgreSQL connector for sqlpp11"
-    notification_email: matthijs@cacholong.nl
-    build_command_prepend: "mkdir build-cov && cd build-cov && cmake .. -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug && cd .."
-    build_command: "make -C build-cov"
-    branch_pattern: develop
 
 language: cpp
 
@@ -59,7 +45,6 @@ before_script:
   - cd ..
 
 script:
-  - cat cov-int/scm_log.txt
   - cmake --build build
   - cd build
   - ctest --output-on-failure
