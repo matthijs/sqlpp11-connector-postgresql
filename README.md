@@ -3,11 +3,11 @@ sqlpp11-connector-postgresql
 
 PostgreSQL connector for sqlpp11 library
 
-License:
+License
 -------------
 sqlpp11 is distributed under the [BSD 2-Clause License](https://github.com/matthijs/sqlpp11-connector-postgresql/blob/master/LICENSE).
 
-Status:
+Status
 -------------
 [![Build Status](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql.svg?branch=master)](https://travis-ci.org/matthijs/sqlpp11-connector-postgresql?branch=master)
 [![Build status](https://ci.appveyor.com/api/projects/status/bmor62aunb03hoeg/branch/master?svg=true)](https://ci.appveyor.com/project/matthijs/sqlpp11-connector-postgresql)
@@ -16,7 +16,7 @@ Status:
 [![Join the chat at https://gitter.im/sqlpp11/Lobby](https://badges.gitter.im/sqlpp11/Lobby.svg)](https://gitter.im/sqlpp11/Lobby)
 
 Examples
-========
+-------------
 
 An example on how to use this library
 ```c++
@@ -53,5 +53,5 @@ db(insert_into(foo).default_values().on_conflict(foo.id).do_update(foo.name = "s
 The only limitation in on_conflict() is the conflict_target. Only a column is supported in the conflict_target. If there is need for a more sophisticated conflict_target please create an issue.
 
 Connection configuration
-========================
+------------------------
 You can use all possible authentication options that are available in PostgreSQL. See [here](https://www.postgresql.org/docs/10/static/libpq-connect.html#LIBPQ-CONNSTRING) for more information about the options.
