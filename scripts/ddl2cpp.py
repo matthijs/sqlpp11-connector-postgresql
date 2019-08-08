@@ -5,7 +5,6 @@
 import argparse
 import errno
 import os
-import sys
 import psycopg2
 import re
 
