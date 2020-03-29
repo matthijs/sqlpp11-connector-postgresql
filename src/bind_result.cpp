@@ -273,10 +273,8 @@ namespace sqlpp
           return;
         }
 
-        bool has_ms = false;
         if ((len > date_time_size) && (time_string[time_digits.size()] == '.'))
         {
-          has_ms = true;
           date_time_size++; // Taking the '.' into account
           const auto ms_string = time_string + time_digits.size() + 1;
 
