@@ -34,7 +34,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(ConfigPackageLocation lib/cmake/sqlpp-connector-postgresql)
 
-find_package(Sqlpp11 REQUIRED)
+# Try to find the necessary files on the system installation if not already loaded via add_subdirectory() from parent project
+if (NOT TARGET sqlpp11)
+    find_package(Sqlpp11 REQUIRED)
+endif()
 find_package(PostgreSQL REQUIRED)
 
 include_directories("${PROJECT_SOURCE_DIR}/include")
