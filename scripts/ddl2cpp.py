@@ -130,7 +130,7 @@ for table in tables:
     for ns in nsList:
         _writeLine(fd, 0, "namespace " + ns + " {")
     _writeLine(fd, 0, "")
-    _writeLine(fd, 0, "namespace " + tableSchema + " {")
+    _writeLine(fd, 0, "namespace " + tableSchema + "_ {")
 
     tableColumnsNamespace = tableName + "_"
     _writeLine(fd, 1, "namespace " + tableColumnsNamespace + " {")
