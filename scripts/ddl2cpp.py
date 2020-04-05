@@ -51,7 +51,7 @@ types = {
     'bool': 'boolean',
     'boolean': 'boolean',
     'double': 'floating_point',
-    'double precission': 'floating_point',
+    'double precision': 'floating_point',
     'float': 'floating_point',
     'numeric': 'floating_point',
     'decimal': 'floating_point',
