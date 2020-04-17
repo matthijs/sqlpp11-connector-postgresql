@@ -110,6 +110,10 @@ int Select(int argc, char* argv[])
   db(insert_into(tab).set(tab.c_bool = true, tab.gamma = "cheesecake"));
   testSelectAll(db, 3);
 
+  // Test size functionality
+  const auto test_size = db(select(all_of(tab)).from(tab).unconditionally());
+  assert(test_size.size() == 3);
+
   // selecting two multicolumns
   for (const auto& row :
        db(select(multi_column(tab.alpha, tab.beta, tab.gamma).as(left), multi_column(all_of(tab)).as(tab))

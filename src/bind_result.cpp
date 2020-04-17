@@ -1,5 +1,5 @@
 /**
- * Copyright © 2014-2015, Matthijs Möhlmann
+ * Copyright © 2014-2020, Matthijs Möhlmann
  * Copyright © 2015-2016, Bartosz Wieczorek
  * All rights reserved.
  *
@@ -275,7 +275,7 @@ namespace sqlpp
 
         if ((len > date_time_size) && (time_string[time_digits.size()] == '.'))
         {
-          date_time_size++; // Taking the '.' into account
+          date_time_size++;  // Taking the '.' into account
           const auto ms_string = time_string + time_digits.size() + 1;
 
           int digits_count = 0;
@@ -339,6 +339,11 @@ namespace sqlpp
       {
         *value = {};
       }
+    }
+
+    int bind_result_t::size() const
+    {
+      return _handle->result.records_size();
     }
   }  // namespace postgresql
 }  // namespace sqlpp

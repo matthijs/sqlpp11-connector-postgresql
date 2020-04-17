@@ -1,5 +1,5 @@
 /**
- * Copyright © 2014-2015, Matthijs Möhlmann
+ * Copyright © 2014-2020, Matthijs Möhlmann
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -94,8 +94,10 @@ namespace sqlpp
       void _bind_text_result(size_t index, const char** value, size_t* len);
       void _bind_date_result(size_t index, ::sqlpp::chrono::day_point* value, bool* is_null);
       void _bind_date_time_result(size_t index, ::sqlpp::chrono::microsecond_point* value, bool* is_null);
+
+      int size() const;
     };
-  }
-}
+  }  // namespace postgresql
+}  // namespace sqlpp
 
 #endif
