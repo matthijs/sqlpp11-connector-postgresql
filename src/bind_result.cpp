@@ -146,6 +146,27 @@ namespace sqlpp
       }
     }
 
+    void bind_result_t::_bind_blob_result(size_t index, const uint8_t** value, size_t* len)
+    {
+
+      auto index = static_cast<int>(_index);
+      if (_handle->debug())
+      {
+        std::cerr << "PostgreSQL debug: binding blob result at index: " << index << std::endl;
+      }
+
+      if (_handle->result.isNull(_handle->count, index))
+      {
+        *value = nullptr;
+        *len = 0;
+      }
+      else
+      {
+        *value = _handle->result.getValue<const uint8_t*>(_handle->count, index);
+        *len   = _handle->result.length(_handle->count, index);
+      }
+    }
+
     // same parsing logic as SQLite connector
     // PostgreSQL will return one of those (using the default ISO client):
     //
