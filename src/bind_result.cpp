@@ -146,7 +146,7 @@ namespace sqlpp
       }
     }
 
-    void bind_result_t::_bind_blob_result(size_t index, const uint8_t** value, size_t* len)
+    void bind_result_t::_bind_blob_result(size_t _index, const uint8_t** value, size_t* len)
     {
 
       auto index = static_cast<int>(_index);

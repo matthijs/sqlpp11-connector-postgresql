@@ -125,11 +125,7 @@ namespace sqlpp
     template <>
     inline const uint8_t* Result::getValue<const uint8_t*>(int record, int field) const 
     {
-      checkIndex(record, field);
-      int blen = PQgetlength(m_result, record, field);
-      // How to use blen here? Memcopy and create a new buffer
-      char* bptr = getPqValue(m_result, record, field);
-      return const_cast<const uint8_t*>(bptr);
+      return reinterpret_cast<const uint8_t*>(getValue<const char*>(record, field));
     }
   }
 }
