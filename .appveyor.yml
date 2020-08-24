@@ -35,6 +35,11 @@ build_script:
   - createdb sqlpp_postgresql
   - cd ..
   - git clone https://github.com/HowardHinnant/date.git
+  - cd date
+  - cmake . -G "%generator%"
+  - cmake --build . --config %configuration%
+  - cmake --build . --target install
+  - cd ..
   - git clone https://github.com/rbock/sqlpp11.git
   - cd sqlpp11
   - cmake . -DHinnantDate_ROOT_DIR="C:/projects/date" -G "%generator%"

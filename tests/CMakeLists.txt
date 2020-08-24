@@ -44,7 +44,7 @@ endforeach()
 
 create_test_sourcelist(test_sources test_main.cpp ${test_names_src})
 add_executable(sqlpp11-connector-postgresql_tests ${test_sources})
-target_link_libraries(sqlpp11-connector-postgresql_tests PRIVATE sqlpp11 sqlpp11-connector-postgresql ${PostgreSQL_LIBRARIES})
+target_link_libraries(sqlpp11-connector-postgresql_tests PRIVATE sqlpp11::sqlpp11 sqlpp11-connector-postgresql ${PostgreSQL_LIBRARIES})
 target_include_directories(sqlpp11-connector-postgresql_tests PRIVATE ${sqlpp11_INCLUDE_DIRS} ${PostgreSQL_INCLUDE_DIRS} )
 target_compile_features(sqlpp11-connector-postgresql_tests PRIVATE cxx_auto_type)
 
@@ -56,7 +56,7 @@ endforeach()
 function(TestStaticCheck TEST_NAME)
 	add_executable(${TEST_NAME} EXCLUDE_FROM_ALL static_fail/${TEST_NAME}.cpp)
 	target_include_directories(${TEST_NAME} PRIVATE ${sqlpp11_INCLUDE_DIRS} ${PostgreSQL_INCLUDE_DIRS} )
-	target_link_libraries(${TEST_NAME} PRIVATE sqlpp11 sqlpp11-connector-postgresql ${PostgreSQL_LIBRARIES})
+	target_link_libraries(${TEST_NAME} PRIVATE sqlpp11::sqlpp11 sqlpp11-connector-postgresql ${PostgreSQL_LIBRARIES})
 	add_test(NAME ${TEST_NAME}
 		COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${TEST_NAME})
 	set_tests_properties(${TEST_NAME} PROPERTIES WILL_FAIL TRUE)

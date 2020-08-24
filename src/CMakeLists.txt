@@ -80,8 +80,8 @@ target_compile_options(sqlpp11-connector-postgresql-dynamic PRIVATE -DBUILDING_D
 target_compile_features(sqlpp11-connector-postgresql PRIVATE cxx_auto_type)
 target_compile_features(sqlpp11-connector-postgresql-dynamic PRIVATE cxx_auto_type)
 
-target_link_libraries(sqlpp11-connector-postgresql PRIVATE sqlpp11 $<BUILD_INTERFACE:${PostgreSQL_LIBRARIES}>)
-target_link_libraries(sqlpp11-connector-postgresql-dynamic PUBLIC sqlpp11 PRIVATE ${PostgreSQL_LIBRARIES})
+target_link_libraries(sqlpp11-connector-postgresql PRIVATE sqlpp11::sqlpp11 $<BUILD_INTERFACE:${PostgreSQL_LIBRARIES}>)
+target_link_libraries(sqlpp11-connector-postgresql-dynamic PUBLIC sqlpp11::sqlpp11 PRIVATE ${PostgreSQL_LIBRARIES})
 
 target_include_directories(sqlpp11-connector-postgresql PRIVATE ${sqlpp11_INCLUDE_DIRS} ${PostgreSQL_INCLUDE_DIRS} "../include/")
 target_include_directories(sqlpp11-connector-postgresql-dynamic PRIVATE ${sqlpp11_INCLUDE_DIRS} ${PostgreSQL_INCLUDE_DIRS} "../include/")
