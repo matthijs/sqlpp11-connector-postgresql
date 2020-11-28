@@ -354,6 +354,12 @@ namespace sqlpp
     {
       std::string sql = "SELECT currval('" + table + "_" + fieldname + "_seq')";
       PGresult* res = PQexec(_handle->postgres, sql.c_str());
+      if (PQresultStatus(res) != PGRES_TUPLES_OK)
+      {
+        std::string err{PQresultErrorMessage(res)};
+        PQclear(res);
+        throw sqlpp::exception("PostgreSQL error: Failed to read last insert ID: " + err);
+      }
 
       // Parse the number and return.
       std::string in{PQgetvalue(res, 0, 0)};
