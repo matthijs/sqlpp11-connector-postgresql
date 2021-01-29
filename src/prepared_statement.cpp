@@ -33,6 +33,7 @@
 
 #include <ciso646>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <date/date.h>
 
@@ -89,7 +90,10 @@ namespace sqlpp
       _handle->nullValues[index] = is_null;
       if (!is_null)
       {
-        _handle->paramValues[index] = std::to_string(*value);
+        std::ostringstream out;
+        out.precision(std::numeric_limits<double>::digits10);
+        out << std::fixed << *value;
+        _handle->paramValues[index] = out.str();
       }
     }
 
