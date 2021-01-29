@@ -60,7 +60,7 @@ int Exceptions(int, char*[])
     assert_throw(db(insert_into(foo).set(foo.gamma = "123456")), sql::check_violation);
     db(insert_into(foo).set(foo.beta = 5));
     assert_throw(db(insert_into(foo).set(foo.beta = 5)), sql::integrity_constraint_violation);
-    assert_throw(db.last_insert_id("tabfoo", "no_such_column"), sqlpp::exception);
+    assert_throw(db.last_insert_id("tabfoo", "no_such_column"), sqlpp::postgresql::undefined_table);
   }
   catch (const sql::failure& e)
   {

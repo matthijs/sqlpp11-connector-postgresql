@@ -358,7 +358,7 @@ namespace sqlpp
       {
         std::string err{PQresultErrorMessage(res)};
         PQclear(res);
-        throw sqlpp::exception("PostgreSQL error: Failed to read last insert ID: " + err);
+        throw sqlpp::postgresql::undefined_table(err, sql);
       }
 
       // Parse the number and return.
