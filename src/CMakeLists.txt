@@ -95,9 +95,12 @@ set(sqlpp11-connector-postgresql_VERSION_MAJOR 0)
 set(sqlpp11-connector-postgresql_VERSION_MINOR 54)
 set(sqlpp11-connector-postgresql_VERSION_PATCH 0)
 set(sqlpp11-connector-postgresql_VERSION_STRING ${sqlpp11-connector-postgresql_VERSION_MAJOR}.${sqlpp11-connector-postgresql_VERSION_MINOR}.${sqlpp11-connector-postgresql_VERSION_PATCH})
-set_target_properties(sqlpp11-connector-postgresql PROPERTIES VERSION ${sqlpp11-connector-postgresql_VERSION_STRING}
-	        SOVERSION ${sqlpp11-connector-postgresql_VERSION_MAJOR})
-set_target_properties(sqlpp11-connector-postgresql-dynamic PROPERTIES VERSION ${sqlpp11-connector-postgresql_VERSION_STRING}
+set_target_properties(sqlpp11-connector-postgresql PROPERTIES 
+                VERSION ${sqlpp11-connector-postgresql_VERSION_STRING}
+	        SOVERSION ${sqlpp11-connector-postgresql_VERSION_MAJOR}
+		POSITION_INDEPENDENT_CODE ON)
+set_target_properties(sqlpp11-connector-postgresql-dynamic PROPERTIES 
+            VERSION ${sqlpp11-connector-postgresql_VERSION_STRING}
             SOVERSION ${sqlpp11-connector-postgresql_VERSION_MAJOR})
 
 set_property(TARGET sqlpp11-connector-postgresql APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
