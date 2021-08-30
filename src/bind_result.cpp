@@ -226,6 +226,28 @@ namespace sqlpp
       }
     }
 
+    namespace {
+
+      long get_timezone_offset()
+      {
+         static time_t last_query = 0;
+         static long offset = 0;
+         time_t now = time(nullptr);
+         // only update once an hour
+         if (now - last_query > 3600)
+         {
+#if defined(_WINDOWS) || defined(__MINGW32__)
+            offset = -_timezone;
+#else
+            struct tm* tm  = std::localtime(&now);
+            offset = tm->tm_gmtoff;
+            last_query = now;
+#endif
+         }
+         return offset;
+      }
+    }
+
     // always returns local time for timestamp with time zone
     void bind_result_t::_bind_date_time_result(size_t _index, ::sqlpp::chrono::microsecond_point* value, bool* is_null)
     {
@@ -324,15 +346,20 @@ namespace sqlpp
           {
             std::cerr << "PostgreSQL debug: Timezone is " << zone_hour << " : " << zone_min << std::endl;
           }
-          *value += std::chrono::hours(zone_hour);
-          // minutes should be removed from timestamp if TZ is -XX:YY
-          *value += (zone_hour >= 0 ? 1 : -1) * std::chrono::minutes(zone_min);
+	  { // move back to UTC time
+            *value -= std::chrono::hours(zone_hour);
+            // minutes should be added to timestamp if TZ is -XX:YY
+	    // std::chrono is OK with negative values
+            *value -= std::chrono::minutes(zone_hour >= 0 ? zone_min : -zone_min);
+	  }
+	  // then move to the expected localtime result
+	  *value += std::chrono::seconds(get_timezone_offset());
         }
         if (_handle->debug())
         {
           auto ts = std::chrono::system_clock::to_time_t(*value);
-          std::cerr << "PostgreSQL debug: calculated timestamp " << std::put_time(std::localtime(&ts), "%F %T %Z")
-                    << std::endl;
+          std::cerr << "PostgreSQL debug: calculated timestamp " << std::put_time(std::gmtime(&ts), "%F %T")
+                    << "\n";
         }
       }
       else
