@@ -257,6 +257,33 @@ namespace sqlpp
       return result;
     }
 
+	
+    std::string connection::escape_raw(const std::string& s) const
+    {
+      validate_connection_handle();
+      
+      unsigned long length;
+      const unsigned char *buff = PQescapeByteaConn(_handle->postgres, (const unsigned char *)s.data(), s.size(), &length);
+      if(nullptr == buff)
+	  return std::string{};
+      const std::string result((const char *)buff, length);
+      PQfreemem((void *)buff);
+      return result;
+    }
+    
+    std::string connection::unescape_raw(const std::string& s) const
+    {
+      validate_connection_handle();
+      
+      unsigned long length;
+      const unsigned char *buff = PQunescapeBytea((const unsigned char *)s.c_str(), &length);
+      if(nullptr == buff)
+	  return std::string{};
+      const std::string result((const char *)buff, length);
+      PQfreemem((void *)buff);
+      return result;
+    }
+    
     //! start transaction
     void connection::start_transaction(sqlpp::isolation_level level)
     {

@@ -286,6 +286,10 @@ namespace sqlpp
       // escape argument
       std::string escape(const std::string& s) const;
 
+      // escape binary data
+      std::string escape_raw(const std::string& s) const;
+      std::string unescape_raw(const std::string& s) const;
+      
       //! call run on the argument
       template <typename T>
       auto _run(const T& t, sqlpp::consistent_t) -> decltype(t._run(*this))
