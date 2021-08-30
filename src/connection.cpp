@@ -256,7 +256,6 @@ namespace sqlpp
       result.resize(length);
       return result;
     }
-
 	
     std::string connection::escape_raw(const std::string& s) const
     {
