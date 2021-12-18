@@ -1,3 +1,7 @@
+Archived
+========
+This library is now integrated into [sqlpp11](https://github.com/rbock/sqlpp11) and so this library is now archived.
+
 sqlpp11-connector-postgresql
 ============================
 
